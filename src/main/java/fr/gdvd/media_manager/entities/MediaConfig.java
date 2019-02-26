@@ -7,8 +7,10 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 @Data @ToString
 @NoArgsConstructor @AllArgsConstructor
@@ -17,6 +19,7 @@ public class MediaConfig {
 
     @Id
     private String id;
-    private List<Document> lists=new ArrayList<>();
+    private Document path;
+    //    private Map<String, Map<String, List<String>>> path = new HashMap<>();
 
 }

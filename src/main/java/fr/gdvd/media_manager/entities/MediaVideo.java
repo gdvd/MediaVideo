@@ -18,10 +18,10 @@ public class MediaVideo {
 
     @Id
     private String id;
-    private String urlFile;
-    private List<Object> info;
-    private List<Object> video;
-    private List<Object> audio;
-    private List<Object> text;
+    private Document urlFile;
+    private Document info;
+    private Document video;
+    private Document audio;
+    private Document text;
 
 }

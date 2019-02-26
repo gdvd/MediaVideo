@@ -10,4 +10,5 @@ public class MediaManagerApplication {
         SpringApplication.run(MediaManagerApplication.class, args);
     }
 
+
 }
