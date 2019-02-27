@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface MediaConfigService {
 
-    public List<MediaConfigRepository> getAllList();
-    public List<String> getOneList(String pathId);
+    public List<String> getAllPath();
+    public List<String> getEntryById(String id);
 
 }

@@ -9,4 +9,5 @@ public interface MediaVideoService {
     public List<String> listMediaVideoByPath(String path);
     public MediaVideo getListOfPath();
 
+    public String getOne(String id);
 }

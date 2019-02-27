@@ -1,7 +1,6 @@
 package fr.gdvd.media_manager.entities;
 
 
-import com.sun.javafx.beans.IDProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor @AllArgsConstructor @ToString
@@ -18,10 +18,10 @@ public class MediaVideo {
 
     @Id
     private String id;
-    private Document urlFile;
-    private Document info;
-    private Document video;
-    private Document audio;
-    private Document text;
+    private List<Map<String, String>> urlFile;
+    private Map<String, Object> info;
+    private Map<String, Object> video;
+    private Map<String, Object> audio;
+    private Map<String, Object> text;
 
 }
