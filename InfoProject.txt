@@ -1,0 +1,9 @@
+To make a request on : localhost:8085/getOneVideoPartialInfo/
+Application/Json :
+{
+"id": "fc5d921e106214c460b1e981e8839718",
+"info":["Format"],
+"video":["Format", "Duration"],
+"audio":["Format"],
+"text":["Format"]
+}
