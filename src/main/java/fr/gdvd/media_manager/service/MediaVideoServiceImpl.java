@@ -6,6 +6,7 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,17 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         doc.append("text", searchData(mv.getText(), text));
         return doc;
     }
+
+    @Override
+    public List<Document> getSeveralVideoPartialInfo(List<String> ids, List<String> info, List<String> video, List<String> audio, List<String> text) {
+        List<Document> ld = new ArrayList<>();
+        for (String id:ids) {
+
+        }
+
+        return null;
+    }
+
     private Map<String, Object> searchData(Map<String, Object> objMV, List<String> dataNeeded){
         Map<String, Object> mp = new HashMap<>();
         if(dataNeeded == null)return mp;

@@ -14,6 +14,8 @@ public class ObjectRequestBody {
     @NotNull
     public String id;
     @Nullable
+    public List<String > ids;
+    @Nullable
     public List<String> info;
     @Nullable
     public List<String> video;

@@ -16,6 +16,10 @@ public class MediaVideoController {
     @Autowired
     private MediaVideoServiceImpl mediaVideoService;
 
+    /**************************
+    *  Request for one video
+    ***************************/
+
     @GetMapping(value = "/videoByIdToInfo/{id}/name")
     public String getOneVideoName(@PathVariable String id){
         String str = mediaVideoService.getOneNameByIdmd5(id);
@@ -52,8 +56,27 @@ public class MediaVideoController {
 
     @GetMapping(value = "/videoByIdToInfo")
     public Document getOneVideoPartialInfo(@RequestBody @NonNull ObjectRequestBody objectRequestBody){
-        Document doc = mediaVideoService.getOneVideoPartialInfo(
+        Document doc = null;
+        //TODO: test this
+        String idStr = mediaVideoService.getOneNameByIdmd5(objectRequestBody.getId());
+        if (idStr=="")return doc;
+        doc = mediaVideoService.getOneVideoPartialInfo(
                 objectRequestBody.getId(),
+                objectRequestBody.getInfo(),
+                objectRequestBody.getVideo(),
+                objectRequestBody.getAudio(),
+                objectRequestBody.getText()
+        );
+        return doc;
+    }
+    /********************************
+     *  Request for several video
+     *******************************/
+
+    @GetMapping(value = "/videoByIdsToInfo")
+    public List<Document> getSeveralVideoPartialInfo(@RequestBody @NonNull ObjectRequestBody objectRequestBody){
+        List<Document> doc = mediaVideoService.getSeveralVideoPartialInfo(
+                objectRequestBody.getIds(),
                 objectRequestBody.getInfo(),
                 objectRequestBody.getVideo(),
                 objectRequestBody.getAudio(),
