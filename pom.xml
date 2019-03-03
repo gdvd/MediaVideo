@@ -10,9 +10,9 @@
     </parent>
     <groupId>fr.gdvd</groupId>
     <artifactId>media_manager</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>media_manager</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Read mongoDB to have mediaInfo video</description>
 
     <properties>
         <java.version>1.8</java.version>

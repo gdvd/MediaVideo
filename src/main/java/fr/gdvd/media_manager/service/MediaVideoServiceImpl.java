@@ -45,9 +45,9 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         Document doc = new Document("id", id)
                 .append("urlFile", mv.getUrlFile());
         doc.append("info", searchData(mv.getInfo(), info));
-        doc.append("video", searchData(mv.getVideo(), video));
-        doc.append("audio", searchData(mv.getAudio(), audio));
-        doc.append("text", searchData(mv.getText(), text));
+        doc.append("video", searchDataInList(mv.getVideo(), video));
+        doc.append("audio", searchDataInList(mv.getAudio(), audio));
+        doc.append("text", searchDataInList(mv.getText(), text));
         return doc;
     }
 
@@ -57,7 +57,33 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         for (String id:ids) {
 
         }
+        return null;
+    }
 
+    @Override
+    public Document getNameWithId(String id) {
+        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
+        if (mv == null) return null;
+        Document doc = new Document("id", id)
+                .append("urlFile", mv.getUrlFile());
+        /*List<MediaConfig> listMediaConfig = mediaConfigRepository.findAll();
+        List<Document> listResult = new ArrayList<>();
+
+        for (MediaConfig res : listMediaConfig) {
+            if (res.getId().equals("IDs_by_path")) {
+                for (Map<String, List<String>> lmc : res.getPath()) {
+                    if (((lmc.keySet()).toArray()[0]).equals(id)) {
+                        for (List<String> lstr : lmc.values()) {
+                            for (String sid : lstr) {
+                                MediaVideo mv = mediaVideoRepository.findById(sid).orElse(null);
+                                Document doc = new Document(sid, mv.getUrlFile().get(0));
+                                listResult.add(doc);
+                            }
+                        }
+                    }
+                }
+            }
+        }*/
         return null;
     }
 
@@ -74,4 +100,22 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         }
         return mp;
     }
+
+    private List<Map<String, Object>> searchDataInList(Object objMV, List<String> dataNeeded){
+        List<Map<String, Object>> res = new ArrayList<>();
+        if(objMV instanceof Map){
+            Map<String, Object> mp = searchData((Map<String, Object>) objMV, dataNeeded);
+            res.add(mp);
+        }
+        if(objMV instanceof List){
+            for (Object ob: (List)objMV) {
+                if(ob instanceof Map){
+                    Map<String, Object> mp = searchData((Map<String, Object>) ob, dataNeeded);
+                    res.add(mp);
+                }
+            }
+        }
+        return res;
+    }
+
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 
-@RestController(value = "video/")
+@RestController
 public class MediaVideoController {
 
     @Autowired
@@ -49,6 +49,16 @@ public class MediaVideoController {
                 id,
                 Arrays.asList("Duration", "FileSize", "File_Modified_Date"), // To info
                 Arrays.asList("Format", "CodecID", "BitRate_Nominal"), // To video
+                Arrays.asList(), // To  audio
+                Arrays.asList()); // To text
+        return doc;
+    }
+    @GetMapping(value = "/videoByIdToInfo/name/{id}")
+    public Document getOneVideoPartialInfoName(@PathVariable String id){
+        Document doc = mediaVideoService.getOneVideoPartialInfo(
+                id,
+                Arrays.asList(), // To info
+                Arrays.asList(), // To video
                 Arrays.asList(), // To  audio
                 Arrays.asList()); // To text
         return doc;

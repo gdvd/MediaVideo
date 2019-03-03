@@ -20,6 +20,7 @@ public class MediaManagerApplication {
         SpringApplication.run(MediaManagerApplication.class, args);
     }
 
+
 //    @Bean // Test reading db
 //    CommandLineRunner start(MediaVideoRepository mediaVideoRepository, MediaConfigRepository mediaConfigRepository) {
 //        return args -> {

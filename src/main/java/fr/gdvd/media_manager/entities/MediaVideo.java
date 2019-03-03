@@ -20,8 +20,8 @@ public class MediaVideo {
     private String id;
     private List<Map<String, String>> urlFile;
     private Map<String, Object> info;
-    private Map<String, Object> video;
-    private Map<String, Object> audio;
-    private Map<String, Object> text;
+    private List<Map<String, Object>> video;
+    private List<Map<String, Object>> audio;
+    private List<Map<String, Object>> text;
 
 }

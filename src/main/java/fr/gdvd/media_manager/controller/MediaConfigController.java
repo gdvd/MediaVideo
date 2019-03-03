@@ -1,6 +1,7 @@
 package fr.gdvd.media_manager.controller;
 
 import fr.gdvd.media_manager.service.MediaConfigServiceImpl;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +19,17 @@ public class MediaConfigController {
     }
 
     @GetMapping(value="/path/{id}")
-    public List<String> getOnePathByPathVariable(@PathVariable String id) {
+    public List<String> getIdByPathVariable(@PathVariable String id) {
         return mediaConfigService.getEntryById(id);
     }
 
-
+    /*@GetMapping(value="/path/name/{id}")
+    public List<Document> getIdAndNamehByPathVariable(@PathVariable String id) {
+        return mediaConfigService.getEntryAndNameById(id);
+    }*/
+    /*@GetMapping(value="/path/{id}/names")
+    public List<String> getIdAndNameshByPathVariable(@PathVariable String id) {
+        return mediaConfigService.getEntryById(id);
+    }*/
 
 }
