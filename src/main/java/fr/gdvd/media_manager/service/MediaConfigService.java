@@ -10,4 +10,5 @@ public interface MediaConfigService {
     public List<String> getAllPath();
     public List<Document> getAllPaths();
     public List<String> getEntryById(String id);
+    public Document updateDocWithOnePath(String path, List<String> list);
 }

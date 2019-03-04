@@ -66,24 +66,6 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         if (mv == null) return null;
         Document doc = new Document("id", id)
                 .append("urlFile", mv.getUrlFile());
-        /*List<MediaConfig> listMediaConfig = mediaConfigRepository.findAll();
-        List<Document> listResult = new ArrayList<>();
-
-        for (MediaConfig res : listMediaConfig) {
-            if (res.getId().equals("IDs_by_path")) {
-                for (Map<String, List<String>> lmc : res.getPath()) {
-                    if (((lmc.keySet()).toArray()[0]).equals(id)) {
-                        for (List<String> lstr : lmc.values()) {
-                            for (String sid : lstr) {
-                                MediaVideo mv = mediaVideoRepository.findById(sid).orElse(null);
-                                Document doc = new Document(sid, mv.getUrlFile().get(0));
-                                listResult.add(doc);
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
         return null;
     }
 

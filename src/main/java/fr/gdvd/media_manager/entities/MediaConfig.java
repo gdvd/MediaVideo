@@ -17,8 +17,6 @@ public class MediaConfig {
 
     @Id
     private String id;
-//    private Document path;
-//    private Map<String, ArrayList<Map<String, ArrayList<String>>>> path2;
     private List<Map<String, List<String>>> path;
 
 }

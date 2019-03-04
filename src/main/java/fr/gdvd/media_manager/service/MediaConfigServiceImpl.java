@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.service;
 
+import com.mongodb.client.model.Filters;
 import fr.gdvd.media_manager.dao.MediaConfigRepository;
 import fr.gdvd.media_manager.dao.MediaVideoRepository;
 import fr.gdvd.media_manager.entities.MediaConfig;
@@ -8,10 +9,10 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.addToSet;
 
 
 @Service
@@ -74,6 +75,25 @@ public class MediaConfigServiceImpl implements MediaConfigService {
             }
         }
         return listResult;
+    }
+
+    @Override
+    public Document updateDocWithOnePath(String path, List<String> list) {
+        Document doc = new Document();
+        List<MediaConfig> listMediaConfig = mediaConfigRepository.findAll();
+        for (MediaConfig res : listMediaConfig) {
+            if (res.getId().equals("IDs_by_path")) {
+                List<Map<String, List<String>>> mres = res.getPath();
+                Map<String, List<String>> mtoadd = new HashMap<String, List<String>>();
+                mtoadd.put(path, list);
+                mres.add(mtoadd);
+                res.setPath(mres);
+                mediaConfigRepository.save(res);
+                doc.append("_id", "IDs_by_path");
+                doc.append("path",res.getPath());
+            }
+        }
+        return doc;
     }
 
 

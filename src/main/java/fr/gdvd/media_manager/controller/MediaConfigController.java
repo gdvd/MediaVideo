@@ -28,13 +28,9 @@ public class MediaConfigController {
         return mediaConfigService.getEntryById(id);
     }
 
-    /*@GetMapping(value="/path/name/{id}")
-    public List<Document> getIdAndNamehByPathVariable(@PathVariable String id) {
-        return mediaConfigService.getEntryAndNameById(id);
-    }*/
-    /*@GetMapping(value="/path/{id}/names")
-    public List<String> getIdAndNameshByPathVariable(@PathVariable String id) {
-        return mediaConfigService.getEntryById(id);
-    }*/
+    @PostMapping(value = "/path/saveOnePath")
+    public Document updateDocWithOnePath(@RequestBody String path,
+                                @RequestBody List<String> list){ return mediaConfigService.updateDocWithOnePath(path, list);}
+
 
 }
