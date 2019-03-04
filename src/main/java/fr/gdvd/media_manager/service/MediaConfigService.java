@@ -8,5 +8,6 @@ import java.util.List;
 public interface MediaConfigService {
 
     public List<String> getAllPath();
+    public List<Document> getAllPaths();
     public List<String> getEntryById(String id);
 }

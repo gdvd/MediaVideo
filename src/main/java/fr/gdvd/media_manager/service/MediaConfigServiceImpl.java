@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,25 @@ public class MediaConfigServiceImpl implements MediaConfigService {
             }
         }
         return listKeyword;
+    }
+
+    @Override
+    public List<Document> getAllPaths() {
+        List<MediaConfig> listMediaConfig = mediaConfigRepository.findAll();
+        List<Document> listDocuments = new ArrayList<>();
+
+        for (MediaConfig res : listMediaConfig) {
+            if (res.getId().equals("IDs_by_path")) {
+                List<Map<String, List<String>>> map = res.getPath();
+                for (Map<String, List<String>> lmc : map) {
+                    for (Map.Entry<String, List<String>> lstr: lmc.entrySet()){
+                        Document doc = new Document(lstr.getKey(),lstr.getValue());
+                        listDocuments.add(doc);
+                    }
+                }
+            }
+        }
+        return listDocuments;
     }
 
     @Override

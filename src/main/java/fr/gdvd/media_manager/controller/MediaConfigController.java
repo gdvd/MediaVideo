@@ -18,6 +18,11 @@ public class MediaConfigController {
         return mediaConfigService.getAllPath();
     }
 
+    @GetMapping(value="/path/allPaths")
+    public List<Document> getAllPaths() {
+        return mediaConfigService.getAllPaths();
+    }
+
     @GetMapping(value="/path/{id}")
     public List<String> getIdByPathVariable(@PathVariable String id) {
         return mediaConfigService.getEntryById(id);
