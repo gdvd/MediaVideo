@@ -28,8 +28,8 @@ public class MediaConfigController {
         return mediaConfigService.getEntryById(id);
     }
 
-    @PostMapping(value = "/path/saveOnePath")
-    public Document updateDocWithOnePath(@RequestBody String path,
+    @PostMapping(value = "/path/saveOnePath/{path}")
+    public Document updateDocWithOnePath(@PathVariable String path,
                                 @RequestBody List<String> list){ return mediaConfigService.updateDocWithOnePath(path, list);}
 
 

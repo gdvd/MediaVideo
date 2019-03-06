@@ -1,4 +1,4 @@
-package fr.gdvd.media_manager.configuration;
+package fr.gdvd.media_manager.sec;
 
 public interface SecurityParams {
 
