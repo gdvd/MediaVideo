@@ -10,5 +10,5 @@ public interface MediaVideoService {
     public Document getOneVideoPartialInfo(String id, List<String> info, List<String> video, List<String> audio, List<String> text/**/);
     public List<Document> getSeveralVideoPartialInfo(List<String> ids, List<String> info, List<String> video, List<String> audio, List<String> text);
     public Document getNameWithId(String id);
-
+    public Document savedataid(Document dataid);
 }

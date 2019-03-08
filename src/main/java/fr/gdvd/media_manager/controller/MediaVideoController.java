@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
@@ -93,6 +94,11 @@ public class MediaVideoController {
                 objectRequestBody.getText()
         );
         return doc;
+    }
+
+    @PostMapping(value="/video/saveid")
+    public Document saveid(@RequestBody @NotNull Document dataid){
+        return mediaVideoService.savedataid(dataid);
     }
 
 }

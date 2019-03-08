@@ -69,6 +69,19 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         return null;
     }
 
+    @Override
+    public Document savedataid(Document dataid) {
+        MediaVideo mv = new MediaVideo();
+        mv.setId((String) dataid.get("id"));
+        mv.setUrlFile((List<Map<String, String>>) dataid.get("urlFile"));
+        mv.setInfo((Map<String, Object>) dataid.get("info"));
+        mv.setVideo((List<Map<String, Object>>) dataid.get("video"));
+        mv.setAudio((List<Map<String, Object>>) dataid.get("audio"));
+        mv.setText((List<Map<String, Object>>) dataid.get("text"));
+        mediaVideoRepository.save(mv);
+        return dataid;
+    }
+
     private Map<String, Object> searchData(Map<String, Object> objMV, List<String> dataNeeded){
         Map<String, Object> mp = new HashMap<>();
         if(dataNeeded == null)return mp;
