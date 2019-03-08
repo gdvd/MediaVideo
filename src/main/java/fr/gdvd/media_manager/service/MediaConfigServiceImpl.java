@@ -1,18 +1,17 @@
 package fr.gdvd.media_manager.service;
 
-import com.mongodb.client.model.Filters;
 import fr.gdvd.media_manager.dao.MediaConfigRepository;
 import fr.gdvd.media_manager.dao.MediaVideoRepository;
 import fr.gdvd.media_manager.entities.MediaConfig;
-import fr.gdvd.media_manager.entities.MediaVideo;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.addToSet;
 
 
 @Service

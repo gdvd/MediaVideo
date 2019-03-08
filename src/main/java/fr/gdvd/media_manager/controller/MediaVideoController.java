@@ -20,19 +20,19 @@ public class MediaVideoController {
     *  Request for one video
     ***************************/
 
-    @GetMapping(value = "/videoByIdToInfo/{id}/name")
+   /* @GetMapping(value = "/video/videoByIdToInfo/{id}/name")
     public String getOneVideoName(@PathVariable String id){
         String str = mediaVideoService.getOneNameByIdmd5(id);
         return str;
-    }
+    }*/
 
-    @GetMapping(value = {"/videoByIdToInfo/{id}", "/videoByIdToInfo/{id}/all"})
+    @GetMapping(value = {"/video/videoByIdToInfo/{id}", "/videoByIdToInfo/{id}/all"})
     public Document getOneVideoAllInfo(@PathVariable String id){
         Document doc = mediaVideoService.getAllInfo4OneNameByIdmd5(id);
         return doc;
     }
 
-    @GetMapping(value = "/videoByIdToInfo/{id}/default")
+    @GetMapping(value = "/video/videoByIdToInfo/{id}/default")
     public Document getOneVideoPartialInfoDefault(@PathVariable String id){
         Document doc = mediaVideoService.getOneVideoPartialInfo(
                 id,
@@ -43,7 +43,7 @@ public class MediaVideoController {
         return doc;
     }
 
-    @GetMapping(value = "/videoByIdToInfo/{id}/light")
+    @GetMapping(value = "/video/videoByIdToInfo/{id}/light")
     public Document getOneVideoPartialInfoLight(@PathVariable String id){
         Document doc = mediaVideoService.getOneVideoPartialInfo(
                 id,
@@ -53,7 +53,7 @@ public class MediaVideoController {
                 Arrays.asList()); // To text
         return doc;
     }
-    @GetMapping(value = "/videoByIdToInfo/name/{id}")
+    @GetMapping(value = "/video/videoByIdToInfo/{id}/name")
     public Document getOneVideoPartialInfoName(@PathVariable String id){
         Document doc = mediaVideoService.getOneVideoPartialInfo(
                 id,
@@ -64,7 +64,7 @@ public class MediaVideoController {
         return doc;
     }
 
-    @GetMapping(value = "/videoByIdToInfo")
+    @GetMapping(value = "/video/videoByIdToInfo")
     public Document getOneVideoPartialInfo(@RequestBody @NonNull ObjectRequestBody objectRequestBody){
         Document doc = null;
         //TODO: test this
@@ -83,7 +83,7 @@ public class MediaVideoController {
      *  Request for several video
      *******************************/
 
-    @GetMapping(value = "/videoByIdsToInfo")
+    @GetMapping(value = "/video/videoByIdsToInfo")
     public List<Document> getSeveralVideoPartialInfo(@RequestBody @NonNull ObjectRequestBody objectRequestBody){
         List<Document> doc = mediaVideoService.getSeveralVideoPartialInfo(
                 objectRequestBody.getIds(),
