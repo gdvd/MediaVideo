@@ -79,19 +79,38 @@ public class MediaConfigServiceImpl implements MediaConfigService {
     @Override
     public Document updateDocWithOnePath(String path, List<String> list) {
         Document doc = new Document();
+        doc.append("_id", "IDs_by_path");
         List<MediaConfig> listMediaConfig = mediaConfigRepository.findAll();
         for (MediaConfig res : listMediaConfig) {
             if (res.getId().equals("IDs_by_path")) {
                 List<Map<String, List<String>>> mres = res.getPath();
+                //search if path exist -> make nothing and return
+                for(Map<String, List<String>> mp: mres){
+                    if(mp.containsKey(path)){
+                        doc.append("path",res.getPath());
+                        return doc;
+                    }
+                }
                 Map<String, List<String>> mtoadd = new HashMap<String, List<String>>();
                 mtoadd.put(path, list);
                 mres.add(mtoadd);
                 res.setPath(mres);
+                // the doc "IDs_by_path" exist -> update
                 mediaConfigRepository.save(res);
-                doc.append("_id", "IDs_by_path");
                 doc.append("path",res.getPath());
+                return doc;
             }
         }
+        MediaConfig res = new MediaConfig();
+        res.setId("IDs_by_path");
+        Map<String, List<String>> objToSave = new HashMap<>();
+        objToSave.put(path, list);
+        List<Map<String, List<String>>> mres = new ArrayList<>();
+        mres.add(objToSave);
+        res.setPath(mres);
+        // the doc "IDs_by_path" dosn't exist -> create a new doc wiht : "path"&"list"
+        mediaConfigRepository.save(res);
+        doc.append("path",res.getPath());
         return doc;
     }
 
