@@ -1,15 +1,18 @@
 package fr.gdvd.media_manager.service;
 
+import com.mongodb.client.model.Filters;
 import fr.gdvd.media_manager.dao.MediaVideoRepository;
 import fr.gdvd.media_manager.entities.MediaVideo;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.addToSet;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 public class MediaVideoServiceImpl implements MediaVideoService {
@@ -21,7 +24,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
     public String getOneNameByIdmd5(String id) {
         MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
         if (mv == null) return "";
-        String str =  (mv.getUrlFile().get(0).values().toArray()[0].toString());
+        String str = (mv.getUrlFile().get(0).values().toArray()[0].toString());
         return str;
     }
 
@@ -54,7 +57,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
     @Override
     public List<Document> getSeveralVideoPartialInfo(List<String> ids, List<String> info, List<String> video, List<String> audio, List<String> text) {
         List<Document> ld = new ArrayList<>();
-        for (String id:ids) {
+        for (String id : ids) {
 
         }
         return null;
@@ -83,12 +86,12 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         return dataid;
     }
 
-    private Map<String, Object> searchData(Map<String, Object> objMV, List<String> dataNeeded){
+    private Map<String, Object> searchData(Map<String, Object> objMV, List<String> dataNeeded) {
         Map<String, Object> mp = new HashMap<>();
-        if(dataNeeded == null)return mp;
-        for (String strNeeded:dataNeeded) {
-            for (Map.Entry<String, Object> objAvaible: objMV.entrySet()) {
-                if(objAvaible.getKey().equals(strNeeded)){
+        if (dataNeeded == null) return mp;
+        for (String strNeeded : dataNeeded) {
+            for (Map.Entry<String, Object> objAvaible : objMV.entrySet()) {
+                if (objAvaible.getKey().equals(strNeeded)) {
                     mp.put(strNeeded, objAvaible.getValue());
                     break;
                 }
@@ -97,15 +100,15 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         return mp;
     }
 
-    private List<Map<String, Object>> searchDataInList(Object objMV, List<String> dataNeeded){
+    private List<Map<String, Object>> searchDataInList(Object objMV, List<String> dataNeeded) {
         List<Map<String, Object>> res = new ArrayList<>();
-        if(objMV instanceof Map){
+        if (objMV instanceof Map) {
             Map<String, Object> mp = searchData((Map<String, Object>) objMV, dataNeeded);
             res.add(mp);
         }
-        if(objMV instanceof List){
-            for (Object ob: (List)objMV) {
-                if(ob instanceof Map){
+        if (objMV instanceof List) {
+            for (Object ob : (List) objMV) {
+                if (ob instanceof Map) {
                     Map<String, Object> mp = searchData((Map<String, Object>) ob, dataNeeded);
                     res.add(mp);
                 }
@@ -114,4 +117,62 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         return res;
     }
 
+    public List<Map<String, List<String>>> searchtitlecontain(String request) {
+        List<Map<String, List<String>>> res = new ArrayList<>();
+        List<MediaVideo> lmv = mediaVideoRepository.findAll();
+        for (MediaVideo mv : lmv) {
+            List<Map<String, String>> ls = mv.getUrlFile();
+            for (Map<String, String> mp : ls) {
+                for (String s : mp.values()) {
+                    if (s.toLowerCase().contains(request.toLowerCase())) {
+                        //We found it, write it in res
+                        /*res = */
+                        addElementToList(res, s, mv.getId());
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    private List<Map<String, List<String>>> addElementToList(List<Map<String, List<String>>> res,
+                                                             String titleFound, String idStr) {
+        for (Map<String, List<String>> mp : res) {
+            for (Map.Entry<String, List<String>> me : mp.entrySet()) {
+                if (me.getKey().equals(idStr)) {
+                    List<String> ls = mp.get(idStr);
+                    ls.add(titleFound);
+                    mp.put(idStr, ls);
+                    return res;
+                }
+            }
+            List<String> ltf = new ArrayList<>();
+            ltf.add(titleFound);
+            mp.put(idStr, ltf);
+            return res;
+        }
+        return res;
+    }
+
+    public List<Map<String, List<String>>> searchtitleregex(String request) {
+        List<Map<String, List<String>>> res = new ArrayList<>();
+        List<MediaVideo> lmv = mediaVideoRepository.findAll();
+        for (MediaVideo mv : lmv) {
+            List<Map<String, String>> ls = mv.getUrlFile();
+            for (Map<String, String> mp : ls) {
+                for (String s : mp.values()) {
+                    //Test avec Regex
+                }
+            }
+        }
+
+        return res;
+    }
+
+    /*public List<MediaVideo> doSomething(String idPath) {
+        mediaVideoRepository.findAll(eq("_id", "iDs_by_path"), addToSet("path", eq("", "")));
+        //Sol3(idem) set("path", set(# , set(path, list)))
+        return mediaVideoRepository.findAll();
+    }*/
 }

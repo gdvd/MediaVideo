@@ -21,6 +21,8 @@ public class MediaConfigServiceImpl implements MediaConfigService {
     private MediaConfigRepository mediaConfigRepository;
     @Autowired
     private MediaVideoRepository mediaVideoRepository;
+    @Autowired
+    private  FindInPath findInPath;
 
     @Override
     public List<String> getAllPath() {
@@ -36,6 +38,26 @@ public class MediaConfigServiceImpl implements MediaConfigService {
             }
         }
         return listKeyword;
+    }
+
+    @Override
+    public List<Map<String, List<String>>> getAllPathsToMap() {
+        List<MediaConfig> listMediaConfig = mediaConfigRepository.findAll();
+        List<Map<String, List<String>>> result = new ArrayList<>();
+
+        for (MediaConfig resid : listMediaConfig) {
+            if (resid.getId().equals("IDs_by_path")) {
+                for (Map<String, List<String>> lmc : resid.getPath()) {
+                    for (Map.Entry<String, List<String>> lstr: lmc.entrySet()){
+                        Map<String, List<String>> ls = new HashMap<>();
+                        ls.put(lstr.getKey(), lstr.getValue());
+                        result.add(ls);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override

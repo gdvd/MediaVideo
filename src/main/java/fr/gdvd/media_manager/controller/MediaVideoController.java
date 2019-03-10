@@ -8,8 +8,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class MediaVideoController {
@@ -38,9 +40,9 @@ public class MediaVideoController {
         Document doc = mediaVideoService.getOneVideoPartialInfo(
                 id,
                 Arrays.asList("Format", "Duration", "FileSize", "Format_Version", "File_Modified_Date"), // To info
-                Arrays.asList("Format", "Duration", "CodecID", "BitRate_Nominal", "Width", "Height", "Encoded_Library"), // To video
-                Arrays.asList("Format", "Duration", "CodecID", "Language", "Forced"), // To  audio
-                Arrays.asList("Format", "Duration")); // To text
+                Arrays.asList("CodecID", "Width", "Height", "BitRate"), // To video
+                Arrays.asList("CodecID", "Language", "Forced"), // To  audio
+                Arrays.asList("Language")); // To text
         return doc;
     }
 
@@ -80,11 +82,20 @@ public class MediaVideoController {
         );
         return doc;
     }
+    @GetMapping(value = "/video/searchtitlecontain")
+    public List<Map<String, List<String>>> searchtitlecontain(@RequestBody @NonNull String request){
+        return mediaVideoService.searchtitlecontain(request);
+    }
+    @GetMapping(value = "/video/searchtitleregex")
+    public List<Map<String, List<String>>> searchtitleregex(@RequestBody @NonNull String request){
+        return mediaVideoService.searchtitleregex(request);
+    }
+
     /********************************
      *  Request for several video
      *******************************/
 
-    @GetMapping(value = "/video/videoByIdsToInfo")
+   /* @GetMapping(value = "/video/videoByIdsToInfo")
     public List<Document> getSeveralVideoPartialInfo(@RequestBody @NonNull ObjectRequestBody objectRequestBody){
         List<Document> doc = mediaVideoService.getSeveralVideoPartialInfo(
                 objectRequestBody.getIds(),
@@ -94,7 +105,7 @@ public class MediaVideoController {
                 objectRequestBody.getText()
         );
         return doc;
-    }
+    }*/
 
     @PostMapping(value="/video/saveid")
     public Document saveid(@RequestBody @NotNull Document dataid){

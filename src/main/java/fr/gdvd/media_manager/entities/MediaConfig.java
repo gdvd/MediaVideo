@@ -18,5 +18,5 @@ public class MediaConfig {
     @Id
     private String id;
     private List<Map<String, List<String>>> path;
-
+    private List<Map<String, String>> pathGeneral;
 }
