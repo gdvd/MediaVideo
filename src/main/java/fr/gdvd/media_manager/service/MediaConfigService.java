@@ -7,9 +7,9 @@ import java.util.Map;
 
 public interface MediaConfigService {
 
-    public List<String> getAllPath();
-    public List<Map<String, List<String>>> getAllPathsToMap();
-    public List<Document> getAllPaths();
-    public List<String> getEntryById(String id);
-    public Document updateDocWithOnePath(String path, List<String> list);
+//    public List<String> getAllPath();
+//    public List<Map<String, List<String>>> getAllPathsToMap();
+//    public List<Document> getAllPaths();
+//    public List<String> getEntryById(String id);
+//    public Document updateDocWithOnePath(String path, List<String> list);
 }

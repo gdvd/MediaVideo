@@ -1,7 +1,9 @@
 package fr.gdvd.media_manager.sec;
 
 
-import fr.gdvd.media_manager.entities.AppUser;
+import fr.gdvd.media_manager.dao.MediaRoleRepository;
+import fr.gdvd.media_manager.entities.MediaRole;
+import fr.gdvd.media_manager.entities.MediaUser;
 import fr.gdvd.media_manager.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,15 +23,18 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private MediaRoleRepository mediaRoleRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AppUser appUser = accountService.loadUserByUserName(username);
-        if(appUser==null) throw new UsernameNotFoundException("invalid user");
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        MediaUser mediaUser = accountService.loadUserByUserName(login);
+        if(mediaUser==null) throw new UsernameNotFoundException("invalid user");
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        appUser.getRoles().forEach(r->{
-            authorities.add(new SimpleGrantedAuthority(r.getRoleName()));
+        mediaUser.getRoles().forEach(r->{
+//            MediaRole mr = mediaRoleRepository.findById(r.getId()).orElse(null);
+            authorities.add(new SimpleGrantedAuthority(r.getRole() /*mr.getRole()*/));
         });
-        return new User(appUser.getUserName(), appUser.getPassword(), authorities);
+        return new User(mediaUser.getLogin(), mediaUser.getPassword(), authorities);
     }
 }

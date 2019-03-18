@@ -12,6 +12,6 @@ public interface MediaVideoService {
     public List<Document> getSeveralVideoPartialInfo(List<String> ids, List<String> info, List<String> video, List<String> audio, List<String> text);
     public Document getNameWithId(String id);
     public Document savedataid(Document dataid);
-    public List<Map<String, List<String>>> searchtitlecontain(String request);
-    public List<Map<String, List<String>>> searchtitleregex(String request);
+    public Map<String, Map<String, List<String>>> searchtitlecontain(String request);
+    public void test();
 }

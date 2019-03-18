@@ -14,7 +14,7 @@ import java.util.Map;
 @RequestMapping("path")
 public class MediaConfigController {
 
-    @Autowired
+/*    @Autowired
     MediaConfigService mediaConfigService;
     @Autowired
     FindInPath findInPath;
@@ -46,7 +46,7 @@ public class MediaConfigController {
 
     @PatchMapping(value = "/saveOnePath/{path}")
     public Document updateDocWithOnePath(@PathVariable String path,
-                                @RequestBody List<String> list){ return mediaConfigService.updateDocWithOnePath(path, list);}
+                                @RequestBody List<String> list){ return mediaConfigService.updateDocWithOnePath(path, list);}*/
 
 
 }

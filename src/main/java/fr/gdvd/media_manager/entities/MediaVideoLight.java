@@ -1,6 +1,5 @@
 package fr.gdvd.media_manager.entities;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-@NoArgsConstructor @AllArgsConstructor @ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 @Document
-public class MediaVideo {
+public class MediaVideoLight {
 
     @Id
     private String id;

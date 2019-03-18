@@ -1,18 +1,13 @@
 package fr.gdvd.media_manager.service;
 
-import com.mongodb.client.model.Filters;
 import fr.gdvd.media_manager.dao.MediaVideoRepository;
 import fr.gdvd.media_manager.entities.MediaVideo;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.addToSet;
-import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 public class MediaVideoServiceImpl implements MediaVideoService {
@@ -22,18 +17,18 @@ public class MediaVideoServiceImpl implements MediaVideoService {
 
     @Override
     public String getOneNameByIdmd5(String id) {
-        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
+        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
         if (mv == null) return "";
-        String str = (mv.getUrlFile().get(0).values().toArray()[0].toString());
-        return str;
+//        String str = (mv.getUrlFile().get(0).values().toArray()[0].toString());
+        return null /*str*/;
     }
 
     @Override
     public Document getAllInfo4OneNameByIdmd5(String id) {
-        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
+        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
         if (mv == null) return null;
         Document doc = new Document("id", id)
-                .append("urlFile", mv.getUrlFile())
+//                .append("urlFile", mv.getUrlFile())
                 .append("info", mv.getInfo())
                 .append("video", mv.getVideo())
                 .append("audio", mv.getAudio())
@@ -43,11 +38,12 @@ public class MediaVideoServiceImpl implements MediaVideoService {
 
     @Override
     public Document getOneVideoPartialInfo(String id, List<String> info, List<String> video, List<String> audio, List<String> text/**/) {
-        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
+        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
         if (mv == null) return null;
         Document doc = new Document("id", id)
-                .append("urlFile", mv.getUrlFile());
-        doc.append("info", searchData(mv.getInfo(), info));
+//                .append("urlFile", mv.getUrlFile())
+                ;
+//        doc.append("info", searchData(mv.getInfo(), info));
         doc.append("video", searchDataInList(mv.getVideo(), video));
         doc.append("audio", searchDataInList(mv.getAudio(), audio));
         doc.append("text", searchDataInList(mv.getText(), text));
@@ -65,10 +61,11 @@ public class MediaVideoServiceImpl implements MediaVideoService {
 
     @Override
     public Document getNameWithId(String id) {
-        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
+        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
         if (mv == null) return null;
         Document doc = new Document("id", id)
-                .append("urlFile", mv.getUrlFile());
+//                .append("urlFile", mv.getUrlFile())
+                ;
         return null;
     }
 
@@ -77,8 +74,8 @@ public class MediaVideoServiceImpl implements MediaVideoService {
 
         MediaVideo mv = new MediaVideo();
         mv.setId((String) dataid.get("id"));
-        mv.setUrlFile((List<Map<String, String>>) dataid.get("urlFile"));
-        mv.setInfo((Map<String, Object>) dataid.get("info"));
+//        mv.setUrlFile((List<Map<String, String>>) dataid.get("urlFile"));
+//        mv.setInfo((Map<String, Object>) dataid.get("info"));
         mv.setVideo((List<Map<String, Object>>) dataid.get("video"));
         mv.setAudio((List<Map<String, Object>>) dataid.get("audio"));
         mv.setText((List<Map<String, Object>>) dataid.get("text"));
@@ -117,57 +114,72 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         return res;
     }
 
-    public List<Map<String, List<String>>> searchtitlecontain(String request) {
-        List<Map<String, List<String>>> res = new ArrayList<>();
+    public Map<String, Map<String, List<String>>> searchtitlecontain(String req) {
+
+        byte[] decodedBytes = Base64.getDecoder().decode(req);
+        String request = new String(decodedBytes);
+
+        /*Map<String, Map<String, List<String>>> res = new HashMap<>();
         List<MediaVideo> lmv = mediaVideoRepository.findAll();
         for (MediaVideo mv : lmv) {
             List<Map<String, String>> ls = mv.getUrlFile();
             for (Map<String, String> mp : ls) {
-                for (String s : mp.values()) {
-                    if (s.toLowerCase().contains(request.toLowerCase())) {
+                for (Map.Entry<String, String> m: mp.entrySet()) {
+                    if (m.getValue().toLowerCase().contains(request.toLowerCase())) {
                         //We found it, write it in res
-                        /*res = */
-                        addElementToList(res, s, mv.getId());
+                        res = addElementToMap(res, m.getValue(), mv.getId(), m.getKey());
                     }
                 }
             }
-        }
+        }*/
 
-        return res;
+        return null /*res*/;
     }
 
-    private List<Map<String, List<String>>> addElementToList(List<Map<String, List<String>>> res,
-                                                             String titleFound, String idStr) {
-        for (Map<String, List<String>> mp : res) {
-            for (Map.Entry<String, List<String>> me : mp.entrySet()) {
-                if (me.getKey().equals(idStr)) {
-                    List<String> ls = mp.get(idStr);
-                    ls.add(titleFound);
-                    mp.put(idStr, ls);
+    private Map<String, Map<String, List<String>>> addElementToMap(
+            Map<String, Map<String, List<String>>> res, String titleFound, String idStr, String pathid) {
+        if(res.size()==0){
+            Map<String, List<String>> re = new HashMap<>();
+            List<String> l = new ArrayList<>();
+            l.add(titleFound);
+            re.put(idStr, l);
+            res.put(pathid, re);
+        }else{
+            for(Map.Entry<String, Map<String, List<String>>>r : res.entrySet()){
+                if(r.getKey().equals(pathid)){
+                    for(Map.Entry<String, List<String>> re: r.getValue().entrySet()){
+                        if(re.getKey().equals(idStr)){
+                            List<String> lf = re.getValue();
+                            lf.add(titleFound);
+                            Map<String, List<String>> ress = new HashMap<>();
+                            ress.put(idStr, lf);
+                            res.put(pathid, ress);
+                            return res;
+                        }
+                    }
+
+                    List<String> lf = new ArrayList<>();
+                    lf.add(titleFound);
+                    Map<String, List<String>> msl = new HashMap<>();
+                    msl.putAll(res.get(pathid));
+                    msl.put(idStr, lf);
+                    res.replace(pathid, res.get(pathid), msl);
                     return res;
-                }
+                }/*else{
+                    Map<String, List<String>> re = new HashMap<>();
+                    List<String> l = new ArrayList<>();
+                    l.add(titleFound);
+                    re.put(idStr, l);
+                    res.put(pathid, re);
+                    return res;
+                }*/
             }
-            List<String> ltf = new ArrayList<>();
-            ltf.add(titleFound);
-            mp.put(idStr, ltf);
-            return res;
         }
         return res;
     }
 
-    public List<Map<String, List<String>>> searchtitleregex(String request) {
-        List<Map<String, List<String>>> res = new ArrayList<>();
-        List<MediaVideo> lmv = mediaVideoRepository.findAll();
-        for (MediaVideo mv : lmv) {
-            List<Map<String, String>> ls = mv.getUrlFile();
-            for (Map<String, String> mp : ls) {
-                for (String s : mp.values()) {
-                    //Test avec Regex
-                }
-            }
-        }
-
-        return res;
+    @Override
+    public void test() {
     }
 
     /*public List<MediaVideo> doSomething(String idPath) {

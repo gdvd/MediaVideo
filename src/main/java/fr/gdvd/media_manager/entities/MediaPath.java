@@ -13,10 +13,12 @@ import java.util.*;
 @Data @ToString
 @NoArgsConstructor @AllArgsConstructor
 @Document
-public class MediaConfig {
+public class MediaPath {
 
     @Id
     private String id;
-    private List<Map<String, List<String>>> path;
-    private List<Map<String, String>> pathGeneral;
+    private boolean active;
+    private String pathGeneral;
+    private String nameExport;
+    private List<String> videoids;
 }
