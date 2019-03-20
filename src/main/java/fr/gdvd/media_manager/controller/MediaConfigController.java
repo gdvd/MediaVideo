@@ -1,17 +1,7 @@
 package fr.gdvd.media_manager.controller;
 
-import fr.gdvd.media_manager.service.FindInPath;
-import fr.gdvd.media_manager.service.MediaConfigService;
-import fr.gdvd.media_manager.service.MediaConfigServiceImpl;
-import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-
-@RestController
-@RequestMapping("path")
+/*@RestController
+@RequestMapping("path")*/
 public class MediaConfigController {
 
 /*    @Autowired

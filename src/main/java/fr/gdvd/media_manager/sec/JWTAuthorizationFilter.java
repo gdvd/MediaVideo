@@ -47,18 +47,11 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SecurityParams.PRIVATE_SECRET)).build();
             DecodedJWT decodeJWT = verifier.verify(jwt.substring(SecurityParams.TOKEN_PREFIX.length()));
-            /*String*/ username = decodeJWT.getSubject();
-            /*List<String> */roles = decodeJWT.getClaims().get("roles").asList(String.class);
+            username = decodeJWT.getSubject();
+            roles = decodeJWT.getClaims().get("roles").asList(String.class);
 
             } catch (Exception e) {
                 log.info(e.getMessage());
-//                response.setStatus(HttpServletResponse.SC_PAYMENT_REQUIRED);
-//                response.sendError(308);
-//                response.encodeURL("/logout");
-                /*response.setStatus(403);
-                response.setHeader("Content-Type", "application/json");
-                response.getWriter().write(
-                        "{\"error\": \"Unauthorized\", \"message\": \"Access denied\"}");*/
                 if (e.getMessage().startsWith("The Token has expired on")) {
                     log.info("JWTerror : "+e.getMessage());
                     response.addHeader("JWTerror",e.getMessage());

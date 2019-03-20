@@ -12,8 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-
-import java.util.stream.Stream;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class MediaManagerApplication {
@@ -32,16 +31,19 @@ public class MediaManagerApplication {
     @Bean
     CommandLineRunner start(AccountService accountService,
                             ApplicationContext appContext) {
-        mediaUserRepository.deleteAll();
-        mediaRoleRepository.deleteAll();
+//        mediaUserRepository.deleteAll();
+//        mediaRoleRepository.deleteAll();
 
         return args -> {
-            if(mediaUserRepository.findByLogin("admin") == null){
-
-                MediaRole role = accountService.save(
-                        new MediaRole(
-                                null,
-                                "ADMIN"));
+            MediaUser mu = mediaUserRepository.findByLogin("admin");
+            MediaRole mr = mediaRoleRepository.findByRole("ADMIN");
+            if(mr==null) {
+                mr = new MediaRole(null, "ADMIN");
+                mediaRoleRepository.save(mr);
+            }
+            if(mu == null || mu.getPassword().equals("")){
+                mediaUserRepository.deleteByLogin("admin");
+                MediaRole role = accountService.save(mr);
                 MediaUser user = accountService.saveUser(
                         "admin",
                         "admin",
@@ -52,8 +54,8 @@ public class MediaManagerApplication {
             }
         };
     }
-   /* @Bean
+    @Bean
     BCryptPasswordEncoder getBCPE() {
         return new BCryptPasswordEncoder();
-    }*/
+    }
 }

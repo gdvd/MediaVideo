@@ -1,9 +1,10 @@
 package fr.gdvd.media_manager.service;
 
+import fr.gdvd.media_manager.dao.MediaVideoLightRepository;
 import fr.gdvd.media_manager.dao.MediaVideoRepository;
 import fr.gdvd.media_manager.entities.MediaVideo;
+import fr.gdvd.media_manager.entities.MediaVideoLight;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,31 +15,33 @@ public class MediaVideoServiceImpl implements MediaVideoService {
 
     @Autowired
     private MediaVideoRepository mediaVideoRepository;
+    @Autowired
+    private MediaVideoLightRepository mediaVideoLightRepository;
 
     @Override
     public String getOneNameByIdmd5(String id) {
-        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
+        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
         if (mv == null) return "";
 //        String str = (mv.getUrlFile().get(0).values().toArray()[0].toString());
         return null /*str*/;
     }
 
     @Override
-    public Document getAllInfo4OneNameByIdmd5(String id) {
-        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
-        if (mv == null) return null;
+    public MediaVideo getById(String id) {
+        MediaVideo mv = mediaVideoRepository.getById(id);
+        /*if (mv == null) return null;
         Document doc = new Document("id", id)
 //                .append("urlFile", mv.getUrlFile())
                 .append("info", mv.getInfo())
                 .append("video", mv.getVideo())
                 .append("audio", mv.getAudio())
-                .append("text", mv.getText());
-        return doc;
+                .append("text", mv.getText());*/
+        return mv;
     }
 
     @Override
     public Document getOneVideoPartialInfo(String id, List<String> info, List<String> video, List<String> audio, List<String> text/**/) {
-        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
+        MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
         if (mv == null) return null;
         Document doc = new Document("id", id)
 //                .append("urlFile", mv.getUrlFile())
@@ -60,27 +63,22 @@ public class MediaVideoServiceImpl implements MediaVideoService {
     }
 
     @Override
-    public Document getNameWithId(String id) {
-        MediaVideo mv = mediaVideoRepository.findById(new ObjectId(id)).orElse(null);
-        if (mv == null) return null;
-        Document doc = new Document("id", id)
-//                .append("urlFile", mv.getUrlFile())
-                ;
-        return null;
+    public MediaVideoLight videoByIdLight(String id) {
+        return mediaVideoLightRepository.getById(id);
     }
 
     @Override
     public Document savedataid(Document dataid) {
 
-        MediaVideo mv = new MediaVideo();
-        mv.setId((String) dataid.get("id"));
+        /*MediaVideo mv = new MediaVideo();
+//        mv.setId((String) dataid.get("id"));
 //        mv.setUrlFile((List<Map<String, String>>) dataid.get("urlFile"));
 //        mv.setInfo((Map<String, Object>) dataid.get("info"));
         mv.setVideo((List<Map<String, Object>>) dataid.get("video"));
         mv.setAudio((List<Map<String, Object>>) dataid.get("audio"));
         mv.setText((List<Map<String, Object>>) dataid.get("text"));
-        mediaVideoRepository.save(mv);
-        return dataid;
+        mediaVideoRepository.save(mv);*/
+        return null;
     }
 
     private Map<String, Object> searchData(Map<String, Object> objMV, List<String> dataNeeded) {
@@ -176,10 +174,6 @@ public class MediaVideoServiceImpl implements MediaVideoService {
             }
         }
         return res;
-    }
-
-    @Override
-    public void test() {
     }
 
     /*public List<MediaVideo> doSomething(String idPath) {

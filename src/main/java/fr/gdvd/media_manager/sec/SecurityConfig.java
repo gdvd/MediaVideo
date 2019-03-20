@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -15,12 +16,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
-/*    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;*/
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)/*.passwordEncoder(bCryptPasswordEncoder)*/;
+        auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
 
     }
 
@@ -29,8 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //        http.formLogin();
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().antMatchers("/login/**", "/register/**").permitAll();
-        http.authorizeRequests().antMatchers("/path/**", "/video/**", "/config/**").hasAuthority("USER");
+        http.authorizeRequests().antMatchers("/login/**").permitAll();
+        http.authorizeRequests().antMatchers( "/video/**", "/path/**", "/config/**").hasAuthority("ADMIN");
         http.authorizeRequests().antMatchers("/admin/**").hasAuthority("ADMIN");
         http.authorizeRequests().anyRequest().authenticated();
 

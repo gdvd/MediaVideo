@@ -10,5 +10,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface MediaUserRepository extends
         CrudRepository<MediaUser, ObjectId> {
     MediaUser findByLogin(String login);
+    void deleteByLogin(String id);
 
 }

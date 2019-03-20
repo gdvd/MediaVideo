@@ -4,7 +4,8 @@ import fr.gdvd.media_manager.dao.MediaRoleRepository;
 import fr.gdvd.media_manager.dao.MediaUserRepository;
 import fr.gdvd.media_manager.entities.MediaRole;
 import fr.gdvd.media_manager.entities.MediaUser;
-import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,8 @@ public class AccountServiceImpl implements AccountService {
 //    @Autowired
     private MediaUserRepository mediaUserRepository;
     private MediaRoleRepository mediaRoleRepository;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public AccountServiceImpl(MediaUserRepository mediaUserRepository,
                               MediaRoleRepository mediaRoleRepository){
@@ -33,9 +36,9 @@ public class AccountServiceImpl implements AccountService {
         MediaUser mediaUser = new MediaUser();
         mediaUser.setLogin(login);
         mediaUser.setActive(true);
-        mediaUser.setPassword(password);
+        mediaUser.setPassword(bCryptPasswordEncoder.encode(password));
         mediaUser.setDateModif(new Date());
-        addRoleToUser(mediaUser, "USER");
+        addRoleToUser(mediaUser, "USER");/**/
         mediaUserRepository.save(mediaUser);
         return mediaUser;
     }
@@ -46,8 +49,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public MediaUser loadUserByUserName(String userName) {
-        return mediaUserRepository.findByLogin(userName);
+    public MediaUser loadUserByUserName(String login) {
+        return mediaUserRepository.findByLogin(login);
     }
 
     @Override

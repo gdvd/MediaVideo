@@ -20,9 +20,9 @@ public class MediaVideoLight {
     @Id
     private String id;
     private List<Map<String, String>> title;
-    private List<Map<String, Object>> info;
-    private List<Map<String, Object>> video;
-    private List<Map<String, Object>> audio;
-    private List<Map<String, Object>> text;
+    private Map<String, Object> info;
+    private Map<String, Object> video;
+    private Map<String, Object> audio;
+    private Map<String, Object> text;
 
 }

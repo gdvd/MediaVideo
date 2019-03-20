@@ -1,8 +1,5 @@
 package fr.gdvd.media_manager.sec;
 
-
-import fr.gdvd.media_manager.dao.MediaRoleRepository;
-import fr.gdvd.media_manager.entities.MediaRole;
 import fr.gdvd.media_manager.entities.MediaUser;
 import fr.gdvd.media_manager.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +20,6 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
 
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private MediaRoleRepository mediaRoleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
@@ -32,8 +27,7 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
         if(mediaUser==null) throw new UsernameNotFoundException("invalid user");
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         mediaUser.getRoles().forEach(r->{
-//            MediaRole mr = mediaRoleRepository.findById(r.getId()).orElse(null);
-            authorities.add(new SimpleGrantedAuthority(r.getRole() /*mr.getRole()*/));
+            authorities.add(new SimpleGrantedAuthority(r.getRole()));
         });
         return new User(mediaUser.getLogin(), mediaUser.getPassword(), authorities);
     }

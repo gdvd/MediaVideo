@@ -1,9 +1,13 @@
 package fr.gdvd.media_manager.controller;
 
+import fr.gdvd.media_manager.entities.MediaVideo;
+import fr.gdvd.media_manager.entities.MediaVideoLight;
 import fr.gdvd.media_manager.service.MediaVideoServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +34,15 @@ public class MediaVideoController {
         return str;
     }*/
 
-    @GetMapping(value = {"/videoByIdToInfo/{id}", "/videoByIdToInfo/{id}/all"})
-    public Document getOneVideoAllInfo(@PathVariable String id){
-        Document doc = mediaVideoService.getAllInfo4OneNameByIdmd5(id);
-        return doc;
+    @GetMapping(value = {"/getById/{id}", "/getById/{id}/all"},
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public MediaVideo getById(@PathVariable String id){
+        MediaVideo mv = mediaVideoService.getById(id);
+        return mv;
     }
 
     @GetMapping(value = "/videoByIdToInfo/{id}/default")
-    public Document getOneVideoPartialInfoDefault(@PathVariable String id){
+    public Document getByIdDefault(@PathVariable String id){
         Document doc = mediaVideoService.getOneVideoPartialInfo(
                 id,
                 Arrays.asList("Format", "Duration", "FileSize", "Format_Version", "File_Modified_Date"), // To info
@@ -47,16 +52,23 @@ public class MediaVideoController {
         return doc;
     }
 
-    @GetMapping(value = "/videoByIdToInfo/{id}/light")
-    public Document getOneVideoPartialInfoLight(@PathVariable String id){
-        Document doc = mediaVideoService.getOneVideoPartialInfo(
-                id,
-                Arrays.asList("Duration", "FileSize", "File_Modified_Date"), // To inf0
-                Arrays.asList("Format", "CodecID", "BitRate_Nominal"), // To video
-                Arrays.asList(), // To  audio
-                Arrays.asList()); // To text
+    @GetMapping(value = "/videoByIdLight/{id}")
+    public MediaVideoLight getOneVideoPartialInfoLight(@PathVariable String id){
+        return mediaVideoService.videoByIdLight(id);
+    }
+
+    @GetMapping(value = "/videoByIdLightToDoc/{id}")
+    public Document videoByIdLightToDoc(@PathVariable String id){
+        MediaVideoLight mvl = mediaVideoService.videoByIdLight(id);
+        Document doc = new Document("id", mvl.getId())
+                .append("info", Arrays.asList(mvl.getInfo()))
+                .append("video", Arrays.asList(mvl.getVideo()))
+                .append("audio", Arrays.asList(mvl.getAudio()))
+                .append("text", Arrays.asList(mvl.getText()))
+                .append("title", Arrays.asList(mvl.getTitle()));
         return doc;
     }
+
     @GetMapping(value = "/videoByIdToInfo/{id}/name")
     public Document getOneVideoPartialInfoName(@PathVariable String id){
         Document doc = mediaVideoService.getOneVideoPartialInfo(
@@ -111,6 +123,7 @@ public class MediaVideoController {
 
     @PostMapping(value="/saveid")
     public Document saveid(@RequestBody @NotNull Document dataid){
+
         return mediaVideoService.savedataid(dataid);
     }
 

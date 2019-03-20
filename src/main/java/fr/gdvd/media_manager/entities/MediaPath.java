@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,9 +17,13 @@ import java.util.*;
 public class MediaPath {
 
     @Id
-    private String id;
+    private ObjectId id;
     private boolean active;
     private String pathGeneral;
     private String nameExport;
     private List<String> videoids;
+    private Date dateModif;
+    private String type;
+    private String owner;
+    private List<Map<String, String>> users;
 }
