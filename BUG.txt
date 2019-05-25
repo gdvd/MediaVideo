@@ -1,0 +1,1 @@
+Bug sometimes while it's acces to mongodb, see in VideoAdminServiceImpl.java class line 155

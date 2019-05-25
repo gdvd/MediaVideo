@@ -1,6 +1,8 @@
 package fr.gdvd.media_manager.service;
 
 
+import fr.gdvd.media_manager.entities.MediaPath;
+
 import java.util.List;
 import java.util.Map;
 

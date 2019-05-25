@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -45,16 +46,17 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             List<String> roles = new ArrayList<>();
             String username = "";
             try {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SecurityParams.PRIVATE_SECRET)).build();
-            DecodedJWT decodeJWT = verifier.verify(jwt.substring(SecurityParams.TOKEN_PREFIX.length()));
-            username = decodeJWT.getSubject();
-            roles = decodeJWT.getClaims().get("roles").asList(String.class);
+                JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SecurityParams.PRIVATE_SECRET)).build();
+                DecodedJWT decodeJWT = verifier.verify(jwt.substring(SecurityParams.TOKEN_PREFIX.length()));
+                username = decodeJWT.getSubject();
+                roles = decodeJWT.getClaims().get("roles").asList(String.class);
 
             } catch (Exception e) {
                 log.info(e.getMessage());
-                if (e.getMessage().startsWith("The Token has expired on")) {
+                if (e.getMessage().contains("The Token has expired on")) {
                     log.info("JWTerror : "+e.getMessage());
                     response.addHeader("JWTerror",e.getMessage());
+//                    response.sendRedirect("/logout");
                     filterChain.doFilter(request, response);
                     return;
                 }

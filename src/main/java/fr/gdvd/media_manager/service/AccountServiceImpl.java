@@ -29,7 +29,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public MediaUser saveUser(String login, String password, String confirmedPassword) {
-        MediaUser user = mediaUserRepository.findByLogin(login);
+        MediaUser user = mediaUserRepository.findByLogin(login).orElse(null);
         if(user!=null) throw new RuntimeException("User already exist");
         if(!password.equals(confirmedPassword))
             throw new RuntimeException("You must confirm your password");
@@ -50,7 +50,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public MediaUser loadUserByUserName(String login) {
-        return mediaUserRepository.findByLogin(login);
+        return mediaUserRepository.findByLogin(login).orElse(null);
     }
 
     @Override

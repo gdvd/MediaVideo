@@ -31,4 +31,5 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
         });
         return new User(mediaUser.getLogin(), mediaUser.getPassword(), authorities);
     }
+
 }

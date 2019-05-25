@@ -1,0 +1,20 @@
+@media all and (max-width: 50em){
+    div.principal{
+        width:90%;
+    }
+}
+@media all and (min-width: 50.0625em){
+    div.principal{
+        width:80%;
+    }
+}
+div.principal{
+    margin: 10px auto;
+}
+#urlids{
+    width: 50%;
+}
+.message{
+    margin: 20px 0px;
+    color: darkred;
+}
