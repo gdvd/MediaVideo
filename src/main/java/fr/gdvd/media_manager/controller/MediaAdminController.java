@@ -1,24 +1,29 @@
 package fr.gdvd.media_manager.controller;
 
-import fr.gdvd.media_manager.entities.MediaRole;
-import fr.gdvd.media_manager.entities.MediaUser;
-import fr.gdvd.media_manager.entities.Usr;
-import fr.gdvd.media_manager.entities.Usrnewpassword;
+import fr.gdvd.media_manager.entitiesMysql.Preferences;
+import fr.gdvd.media_manager.entitiesNoDb.StateImport;
+import fr.gdvd.media_manager.entitiesNoDb.Usr;
+import fr.gdvd.media_manager.entitiesNoDb.Usrnewpassword;
+import fr.gdvd.media_manager.entitiesMysql.MyRole;
+import fr.gdvd.media_manager.entitiesMysql.MyUser;
+import fr.gdvd.media_manager.service.AdminPreferences;
 import fr.gdvd.media_manager.service.MediaAdminServiceImpl;
 import fr.gdvd.media_manager.service.VideoAdminService;
 import lombok.extern.log4j.Log4j2;
-import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Base64;
 import java.util.List;
 
+@Secured("ADMIN")
 @Log4j2
 @RestController
 @RequestMapping(value = "admin")
@@ -30,12 +35,14 @@ public class MediaAdminController {
     private VideoAdminService videoAdminService;
     @Autowired
     private HttpServletRequest request;
+    @Autowired
+    private AdminPreferences adminPreferences;
     //////////////////////// GetMapping
-    ////// mediaUser
+    ////// MyUser
 
-    @GetMapping(value = "/info",
+    @GetMapping(value = "/info2",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> info(){
+    public ResponseEntity<String> info2(){
 //        log.info(request.getHeader("Authorization"));
         /*return new ResponseEntity<>(
                 request.getRemoteUser(),
@@ -46,109 +53,112 @@ public class MediaAdminController {
 
     @GetMapping(value = "/findAllUser",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public List<MediaUser> getAllUser(){
+    public List<MyUser> getAllUser(){
         return mediaAdminService.getAllUser();
     }
 
     @GetMapping(value = "/findAllUserActive",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public List<MediaUser> getAllUserActive(){
+    public List<MyUser> getAllUserActive(){
         return mediaAdminService.getAllUserActive();
     }
 
     @GetMapping(value = "/getOne",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaUser getOne(String login){
+    public MyUser getOne(String login){
         return mediaAdminService.getOne(login);
     }
 
     @GetMapping(value = "/getOneById",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaUser getOneById(String id){
+    public MyUser getOneById(String id){
         return mediaAdminService.getOneById(id);
     }
 
     @GetMapping(value = "/udateUserToActive/{login}",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaUser udateUserToActive(@PathVariable String login){
+    public MyUser udateUserToActive(@PathVariable String login){
         return mediaAdminService.udateUserToActive(login);
     }
 
     @GetMapping(value = "/udateUserToInactive/{login}",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaUser udateUserToInactive(@PathVariable String login){
+    public MyUser udateUserToInactive(@PathVariable String login){
         return mediaAdminService.udateUserToInactive(login);
     }
-    ////// mediaRole
+    ////// MyRole
     @GetMapping(value = "/findAllRoles",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public List<MediaRole> findAllRoles(){
+    public List<MyRole> findAllRoles(){
         return mediaAdminService.findAllRoles();
     }
     @GetMapping(value = "/findOneRole/{role}",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaRole findOneRole(@PathVariable String role){
+    public MyRole findOneRole(@PathVariable String role){
         return mediaAdminService.findOneRole(role);
     }
 
-    @GetMapping(value = "/changestatus/{id}")
-    public void changestatus(@PathVariable String id){
-        mediaAdminService.changestatus(id);
+    @GetMapping(value = "/changestatus/{login}")
+    public MyUser changestatus(@PathVariable String login){
+        return mediaAdminService.changestatus(login);
+    }
+
+    @GetMapping(value = "/getpref")
+    public Preferences getpref(){
+        return adminPreferences.getpref();
     }
 
     ///////////////////////////////////// PostMapping
-    ////// mediaUser
+    ////// MyUser
 
     @PostMapping(value = "/updateUser")
-    public MediaUser updateUser(@RequestBody MediaUser mediaUser){
-        return mediaAdminService.updateUser(mediaUser);
+    public MyUser updateUser(@RequestBody MyUser MyUser){
+        return mediaAdminService.updateUser(MyUser);
     }
 
     @PostMapping(value="/saveUser",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaUser saveUser(@RequestBody MediaUser mediaUser,
+    public MyUser saveUser(@RequestBody MyUser MyUser,
                               @RequestBody String[] roles){
-        return mediaAdminService.saveNewUser(mediaUser, roles);
+        return mediaAdminService.saveNewUser(MyUser, roles);
     }
-    ////// mediaRole
+    ////// MyRole
     @PostMapping(value="/saveRole",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaRole saveRole(@RequestBody MediaRole mediaRole){
-        return mediaAdminService.saveRole(mediaRole);
+    public MyRole saveRole(@RequestBody MyRole MyRole){
+        return mediaAdminService.saveRole(MyRole);
     }
 
     @PostMapping(value="/addnewrole",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MediaRole addnewrole(@RequestBody String role){
+    public MyRole addnewrole(@RequestBody String role){
         return mediaAdminService.addnewrole(role);
     }
 
-    @PostMapping("/uploadFile")
+    @PostMapping(value="/uploadFile",
+            produces={MediaType.APPLICATION_JSON_VALUE})
     public void uploadfile(@RequestBody MultipartFile[] uploads){
         int i = 0;
         for(MultipartFile mp: uploads){
             log.info("File received(uploadfile" + ++i + ") "+mp.getSize()+" name : "+mp.getName());
         }
     }
-    @PostMapping("/uploadFileWithName")
-    public int uploadfileWithName(@RequestBody MultipartFile[] uploads, @RequestParam String names){
-        /*int i = 0;
-        for(MultipartFile mp: uploads){
-            log.info("File received(uploadfile" + ++i + ") "+mp.getSize()+" name : "+mp.getName());
-        }*/
-        return videoAdminService.saveData(names, uploads);
-    }
+    /*@PostMapping("/uploadFileWithPathdir/{pahtdirids}")
+    public StateImport uploadfileWithName(@RequestBody MultipartFile[] uploads, @PathVariable String pahtdirids){
+        String pahtdiridsdecode = new String(Base64.getDecoder().decode(pahtdirids));
+        return videoAdminService.saveData(pahtdiridsdecode, uploads, request.getRemoteUser());
+    }*/
     @PostMapping("/savenewuser")
-    public MediaUser savenewuser(@RequestBody Usr user){
+    public MyUser savenewuser(@RequestBody Usr user){
         return mediaAdminService.saveNewUser(user);
     }
 
     @PostMapping("/changepassworduser")
-    public MediaUser updateuserandpassword(@RequestBody Usrnewpassword user){
+    public MyUser updateuserandpassword(@RequestBody Usrnewpassword user){
         return mediaAdminService.updateuserandpassword(user);
     }
     @PostMapping("/changedatauser")
-    public MediaUser updateuser(@RequestBody Usr user){
+    public MyUser updateuser(@RequestBody Usr user){
         return mediaAdminService.updateuser(user);
     }
 

@@ -1,12 +1,15 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.dao.MediaRoleRepository;
-import fr.gdvd.media_manager.dao.MediaUserRepository;
-import fr.gdvd.media_manager.entities.MediaRole;
-import fr.gdvd.media_manager.entities.MediaUser;
-import fr.gdvd.media_manager.entities.Usr;
-import fr.gdvd.media_manager.entities.Usrnewpassword;
+import fr.gdvd.media_manager.daoMysql.MyRoleRepository;
+import fr.gdvd.media_manager.daoMysql.MyUserRepository;
+import fr.gdvd.media_manager.entitiesNoDb.Usr;
+import fr.gdvd.media_manager.entitiesNoDb.Usrnewpassword;
+import fr.gdvd.media_manager.entitiesMysql.MyRole;
+import fr.gdvd.media_manager.entitiesMysql.MyUser;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,132 +17,141 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
+@Log4j2
 @Transactional
 @Service
 public class MediaAdminServiceImpl implements MediaAdminService {
 
     @Autowired
-    private MediaUserRepository mediaUserRepository;
+    private MyUserRepository myUserRepository;
     @Autowired
-    private MediaRoleRepository mediaRoleRepository;
+    private MyRoleRepository myRoleRepository;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public List<MediaUser> getAllUser() {
-        return mediaUserRepository.findAllByLoginNotNull();
+    public List<MyUser> getAllUser() {
+        return myUserRepository.findAllByLoginNotNull();
     }
 
     @Override
-    public List<MediaUser> getAllUserActive() {
-        return mediaUserRepository.findByActive();
+    public List<MyUser> getAllUserActive() {
+        return myUserRepository.findAllByActiveIsTrue();
     }
 
     @Override
-    public MediaUser getOne(String login) {
-        return mediaUserRepository.findByLogin(login).orElse(null);
+    public MyUser getOne(String login) {
+        return myUserRepository.findByLogin(login);
     }
 
     @Override
-    public MediaUser getOneById(String id) {
-        return mediaUserRepository.findByLogin(id).orElse(null);
+    public MyUser getOneById(String id) {
+        return myUserRepository.findByLogin(id);
     }
 
     @Override
-    public MediaUser updateUser(MediaUser mediaUser) {
-        return mediaUserRepository.save(mediaUser);
+    public MyUser updateUser(MyUser MyUser) {
+        return myUserRepository.save(MyUser);
     }
 
     @Override
-    public MediaUser updateUserById(MediaUser mediaUser) {
-        return mediaUserRepository.save(mediaUser);
+    public MyUser updateUserById(MyUser MyUser) {
+        return myUserRepository.save(MyUser);
     }
 
     @Override
-    public MediaUser saveNewUser(MediaUser mediaUser, String[] roles) {
+    public MyUser saveNewUser(MyUser MyUser, String[] roles) {
         if (roles == null) throw new UsernameNotFoundException("invalid role");
-        List<MediaRole> lmr = new ArrayList<>();
+        List<MyRole> lmr = new ArrayList<>();
         for (String role : roles) {
             if (role == "") continue;
-            MediaRole mediaRole = mediaRoleRepository.findByRole(role);
+            MyRole mediaRole = myRoleRepository.findByRole(role);
             if (mediaRole == null) {
-                mediaRole = new MediaRole(null, role);
-                MediaRole nmr = mediaRoleRepository.save(mediaRole);
+                mediaRole = new MyRole(null, role);
+                MyRole nmr = myRoleRepository.save(mediaRole);
                 lmr.add(nmr);
             } else {
                 lmr.add(mediaRole);
             }
         }
         if (lmr.size() == 0) {
-            MediaRole mediaRole = mediaRoleRepository.save(new MediaRole(null, "USER"));
+            MyRole mediaRole = myRoleRepository.save(new MyRole(null, "USER"));
             lmr.add(mediaRole);
         }
-        mediaUser.setRoles(lmr);
-        return mediaUserRepository.save(mediaUser);
+//        MyUser.setRoles(lmr);
+        return myUserRepository.save(MyUser);
     }
 
     @Override
-    public MediaUser udateUserToActive(String login) {
-        MediaUser mediaUser = mediaUserRepository.findByLogin(login).orElse(null);
-        if (mediaUser == null) throw new UsernameNotFoundException("invalid login");
-        mediaUser.setActive(true);
-        return mediaUserRepository.save(mediaUser);
+    public String info() {
+        log.info("mediaadminservice.info OK");
+        return "Tres bien recu";
     }
 
     @Override
-    public MediaUser udateUserToInactive(String login) {
-        MediaUser mediaUser = mediaUserRepository.findByLogin(login).orElse(null);
-        if (mediaUser == null) throw new UsernameNotFoundException("invalid login");
-        mediaUser.setActive(false);
-        return mediaUserRepository.save(mediaUser);
+    public MyUser udateUserToActive(String login) {
+        MyUser MyUser = myUserRepository.findByLogin(login);
+        if (MyUser == null) throw new UsernameNotFoundException("invalid login");
+        MyUser.setActive(true);
+        return myUserRepository.save(MyUser);
     }
 
     @Override
-    public List<MediaRole> findAllRoles() {
-        return mediaRoleRepository.findAll();
+    public MyUser udateUserToInactive(String login) {
+        MyUser MyUser = myUserRepository.findByLogin(login);
+        if (MyUser == null) throw new UsernameNotFoundException("invalid login");
+        MyUser.setActive(false);
+        return myUserRepository.save(MyUser);
     }
 
     @Override
-    public MediaRole saveRole(MediaRole mediaRole) {
-        return mediaRoleRepository.save(mediaRole);
+    public List<MyRole> findAllRoles() {
+        return myRoleRepository.findAll();
     }
 
     @Override
-    public MediaRole findOneRole(String role) {
-        return mediaRoleRepository.findByRole(role);
+    public MyRole saveRole(MyRole mediaRole) {
+        return myRoleRepository.save(mediaRole);
     }
 
     @Override
-    public MediaUser saveNewUser(Usr user) {
+    public MyRole findOneRole(String role) {
+        return myRoleRepository.findByRole(role);
+    }
+
+    @Override
+    public MyUser saveNewUser(Usr user) {
         if (!policyUser(user)) throw new UsernameNotFoundException("invalid user");
-        MediaUser mediaUser = new MediaUser();
-        mediaUser.setId(null);
-        mediaUser.setLogin(user.getLogin());
-        mediaUser.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        mediaUser.setActive(true);
-        mediaUser.setDateModif(new Date());
-
-        mediaUser.setRoles(checkRoles(user.getRoles()));
-
-        mediaUserRepository.save(mediaUser);
-        return mediaUser;
+        MyUser myUser = new MyUser();
+        myUser.setLogin(user.getLogin());
+        myUser.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        myUser.setActive(true);
+        myUser.setDateModif(new Date());
+        user.getRoles().forEach(r->{
+            MyRole role = myRoleRepository.findByRole(r);
+            if(role==null)myRoleRepository.save(new MyRole(null, r));
+            myUser.getRoles().add(role);
+        });
+        myUserRepository.save(myUser);
+        return myUser;
     }
 
-    private List<MediaRole> checkRoles(List<String> lstr) {
-        List<MediaRole> lmr = new ArrayList<>();
+    private List<MyRole> checkRoles(List<String> lstr) {
+        List<MyRole> lmr = new ArrayList<>();
         if (lstr.size() == 0) {
-            MediaRole mrguset = mediaRoleRepository.findByRole("GUEST");
-            if (mrguset == null) mediaRoleRepository.save(new MediaRole(null, "GUEST"));
+            MyRole mrguset = myRoleRepository.findByRole("GUEST");
+            if (mrguset == null) myRoleRepository.save(new MyRole(null, "GUEST"));
             lmr.add(mrguset);
         } else {
             for (String r : lstr) {
-                MediaRole mr = mediaRoleRepository.findByRole(r);
+                MyRole mr = myRoleRepository.findByRole(r);
                 //If this role doesn't exist
                 if (mr == null) {
-                    MediaRole mrguset = mediaRoleRepository.findByRole("GUEST");
-                    if (mrguset == null) mediaRoleRepository.save(new MediaRole(null, "GUEST"));
+                    MyRole mrguset = myRoleRepository.findByRole("GUEST");
+                    if (mrguset == null) myRoleRepository.save(new MyRole(null, "GUEST"));
                     lmr.add(mrguset);
                 } else {
                     lmr.add(mr);
@@ -166,55 +178,75 @@ public class MediaAdminServiceImpl implements MediaAdminService {
     }
 
     @Override
-    public void changestatus(String id) {
-        MediaUser mediaUser = mediaUserRepository.findById(id).orElse(null);
-        if (mediaUser == null) throw new UsernameNotFoundException("invalid login");
+    public MyUser changestatus(String login) {
+        MyUser MyUser = myUserRepository.findByLogin(login);
+        if (MyUser == null) throw new UsernameNotFoundException("invalid login");
 
-        mediaUser.setActive(!mediaUser.isActive());
-        mediaUser.setDateModif(new Date());
-        mediaUserRepository.save(mediaUser);
+        MyUser.setActive(!MyUser.isActive());
+        MyUser.setDateModif(new Date());
+        return myUserRepository.save(MyUser);
     }
 
     @Override
-    public MediaUser updateuserandpassword(Usrnewpassword user) {
-        MediaUser mediaUser = mediaUserRepository.findById(user.getId()).orElse(null);
+    public MyUser updateuserandpassword(Usrnewpassword user) {
+        MyUser myUser = myUserRepository.findByLogin(user.getLogin());
 
-        if (mediaUser == null) throw new UsernameNotFoundException("invalid id");
+        if (myUser == null) throw new UsernameNotFoundException("invalid id");
         if (!policyUserNewPassword(user)) throw new UsernameNotFoundException("invalid user");
-        if (!bCryptPasswordEncoder.matches(user.getPasswordold(), mediaUser.getPassword()))
+        if (!bCryptPasswordEncoder.matches(user.getPasswordold(), myUser.getPassword()))
             throw new UsernameNotFoundException("invalid password");
 
-        mediaUser.setRoles(checkRoles(user.getRoles()));
-        mediaUser.setLogin(user.getLogin());
-        mediaUser.setPassword(bCryptPasswordEncoder.encode(user.getPasswordnew()));
-        mediaUser.setDateModif(new Date());
-        mediaUserRepository.save(mediaUser);
-        return mediaUser;
+//        MyUser.setRoles(checkRoles(user.getRoles()));
+        myUser.setRoles(new ArrayList<>());
+
+        List<String> rolesclear = new ArrayList<>(
+                new HashSet<>(user.getRoles()));
+
+        rolesclear.forEach(r->{
+            MyRole role = myRoleRepository.findByRole(r);
+            if(role==null)myRoleRepository.save(new MyRole(null, r));
+            myUser.getRoles().add(role);
+        });
+
+        myUser.setLogin(user.getLogin());
+        myUser.setPassword(bCryptPasswordEncoder.encode(user.getPasswordnew()));
+        myUser.setDateModif(new Date());
+        myUserRepository.save(myUser);
+        return myUser;
     }
 
     @Override
-    public MediaUser updateuser(Usr user) {
-        MediaUser mediaUser = mediaUserRepository.findById(user.getId()).orElse(null);
-        if (mediaUser == null) throw new UsernameNotFoundException("invalid id");
-        if (!bCryptPasswordEncoder.matches(user.getPassword(), mediaUser.getPassword()))
+    public MyUser updateuser(Usr user) {
+        MyUser myUser = myUserRepository.findByLogin(user.getLogin());
+        if (myUser == null) throw new UsernameNotFoundException("invalid id");
+        if (!bCryptPasswordEncoder.matches(user.getPassword(), myUser.getPassword()))
             throw new UsernameNotFoundException("invalid password");
 
-        mediaUser.setRoles(checkRoles(user.getRoles()));
-        mediaUser.setLogin(user.getLogin());
-        mediaUser.setDateModif(new Date());
-        mediaUserRepository.save(mediaUser);
-        return mediaUser;
+//        MyUser.setRoles(checkRoles(user.getRoles()));
+        myUser.setRoles(new ArrayList<>());
+        List<String> rolesclear = new ArrayList<>(
+                new HashSet<>(user.getRoles()));
+
+        rolesclear.forEach(r->{
+            MyRole role = myRoleRepository.findByRole(r);
+            if(role==null)myRoleRepository.save(new MyRole(null, r));
+            myUser.getRoles().add(role);
+        });
+
+        myUser.setLogin(user.getLogin());
+        myUser.setDateModif(new Date());
+        return myUserRepository.save(myUser);
     }
 
     @Override
-    public MediaRole addnewrole(String role) {
+    public MyRole addnewrole(String role) {
         if (role == "") throw new UsernameNotFoundException("roleName null");
-        MediaRole mediaRole = mediaRoleRepository.findByRole(role);
-        if (mediaRole == null) {
-            mediaRole = new MediaRole(null, role);
-            mediaRole = mediaRoleRepository.save(mediaRole);
+        MyRole myRole = myRoleRepository.findByRole(role);
+        if (myRole == null) {
+            myRole = new MyRole(null, role);
+            myRole = myRoleRepository.save(myRole);
         }
-        return mediaRole;
+        return myRole;
     }
 
 }

@@ -1,12 +1,6 @@
 package fr.gdvd.media_manager.controller;
 
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import fr.gdvd.media_manager.entities.MediaPath;
-import fr.gdvd.media_manager.sec.SecurityParams;
 import fr.gdvd.media_manager.service.MediaPathServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @RequestMapping("path")
@@ -28,25 +20,25 @@ public class MediaPathController /*extends BaseController*/ {
     @Autowired
     private HttpServletRequest request;
 
-    @GetMapping(value = "/getOnePath/{path}",
-            produces={MediaType.APPLICATION_JSON_VALUE})
+//    @GetMapping(value = "/getOnePath/{path}",
+           /* produces={MediaType.APPLICATION_JSON_VALUE})
     public MediaPath getOnePath(@PathVariable String path){
         return mediaPathServiceImpl.getOnePath(path);
-    }
+    }*/
 
-    @GetMapping(value = "/getAllPath",
+   /*@GetMapping(value = "/getAllPath",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public List<MediaPath> getAllPath(){
         return mediaPathServiceImpl.getAllPath();
-    }
+    }*/
 
-    @GetMapping(value = "/getAllPathActive",
-            produces={MediaType.APPLICATION_JSON_VALUE})
+//    @GetMapping(value = "/getAllPathActive",
+            /*produces={MediaType.APPLICATION_JSON_VALUE})
     public List<MediaPath> getAllPathActive(){
         return mediaPathServiceImpl.getAllPathActive();
-    }
+    }*/
 
-    @GetMapping(value = "/desactivation/{id}")
+    /*@GetMapping(value = "/desactivation/{id}")
     public void idDesactivation(@PathVariable String id){
         mediaPathServiceImpl.idDesactivation(id);
     }
@@ -56,15 +48,15 @@ public class MediaPathController /*extends BaseController*/ {
         mediaPathServiceImpl.idActivation(id);
     }
 
-    @PostMapping(value = "/beforetosave/{i}")
-    public int beforetosave(@PathVariable int i,
+//    @PostMapping(value = "/beforetosave/{i}")
+    *//*public int beforetosave(@PathVariable int i,
                             @RequestBody MediaPath mediaPath){
         return mediaPathServiceImpl.beforetosave(i, mediaPath, request.getRemoteUser());
-    }
+    }*//*
 
     @PutMapping(value = "/updatePath/{id}")
     public void updatePath(@PathVariable String id, @RequestBody int state){
         mediaPathServiceImpl.updatePath(id, state);
-    }
+    }*/
 
 }

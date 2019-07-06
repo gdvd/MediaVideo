@@ -1,11 +1,8 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.dao.MediaVideoLightRepository;
-import fr.gdvd.media_manager.dao.MediaVideoRepository;
-import fr.gdvd.media_manager.entities.MediaVideo;
-import fr.gdvd.media_manager.entities.MediaVideoLight;
+
 import lombok.extern.log4j.Log4j2;
-import org.bson.Document;
+//import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +14,7 @@ import java.util.*;
 @Service
 public class MediaVideoServiceImpl implements MediaVideoService {
 
-    @Autowired
+   /* @Autowired
     private MediaVideoRepository mediaVideoRepository;
     @Autowired
     private MediaVideoLightRepository mediaVideoLightRepository;
@@ -27,7 +24,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
         if (mv == null) return "";
 //        String str = (mv.getUrlFile().get(0).values().toArray()[0].toString());
-        return null /*str*/;
+        return null *//*str*//*;
     }
 
     @Override
@@ -42,7 +39,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
     }
 
     @Override
-    public Document getOneVideoPartialInfo(String id, List<String> info, List<String> video, List<String> audio, List<String> text/**/) {
+    public Document getOneVideoPartialInfo(String id, List<String> info, List<String> video, List<String> audio, List<String> text*//**//*) {
         MediaVideo mv = mediaVideoRepository.findById(id).orElse(null);
         if (mv == null) return null;
         Document doc = new Document("id", id)
@@ -72,14 +69,14 @@ public class MediaVideoServiceImpl implements MediaVideoService {
     @Override
     public Document savedataid(Document dataid) {
 
-        /*MediaVideo mv = new MediaVideo();
+        *//*MediaVideo mv = new MediaVideo();
 //        mv.setId((String) dataid.get("id"));
 //        mv.setUrlFile((List<Map<String, String>>) dataid.get("urlFile"));
 //        mv.setInfo((Map<String, Object>) dataid.get("info"));
         mv.setVideo((List<Map<String, Object>>) dataid.get("video"));
         mv.setAudio((List<Map<String, Object>>) dataid.get("audio"));
         mv.setText((List<Map<String, Object>>) dataid.get("text"));
-        mediaVideoRepository.save(mv);*/
+        mediaVideoRepository.save(mv);*//*
         return null;
     }
 
@@ -119,7 +116,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         byte[] decodedBytes = Base64.getDecoder().decode(req);
         String request = new String(decodedBytes);
 
-        /*Map<String, Map<String, List<String>>> res = new HashMap<>();
+        *//*Map<String, Map<String, List<String>>> res = new HashMap<>();
         List<MediaVideo> lmv = mediaVideoRepository.findAll();
         for (MediaVideo mv : lmv) {
             List<Map<String, String>> ls = mv.getUrlFile();
@@ -131,9 +128,9 @@ public class MediaVideoServiceImpl implements MediaVideoService {
                     }
                 }
             }
-        }*/
+        }*//*
 
-        return null /*res*/;
+        return null *//*res*//*;
     }
 
     @Override
@@ -172,7 +169,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
     @Override
     public void saveVideo(MediaVideo mediaVideo, String nameExport) {
 
-        /*List<String> oldTitles = mediaVideo.getTitle();
+        *//*List<String> oldTitles = mediaVideo.getTitle();
 
         if(oldTitles.size()>1){
             for(List<String> m: oldTitles){
@@ -200,7 +197,7 @@ public class MediaVideoServiceImpl implements MediaVideoService {
             mediaVideo.setTitle(oldTitles);
         }
 
-        mediaVideoRepository.save(mediaVideo);*/
+        mediaVideoRepository.save(mediaVideo);*//*
     }
 
     @Override
@@ -243,10 +240,10 @@ public class MediaVideoServiceImpl implements MediaVideoService {
         return normalized.replaceAll("[\u0300-\u036F]", "");
     }
 
-    /*public static String sansAccents(String s) { //With ICU4J on https://mvnrepository.com/artifact/com.ibm.icu/icu4j
+    *//*public static String sansAccents(String s) { //With ICU4J on https://mvnrepository.com/artifact/com.ibm.icu/icu4j
         Transliterator accentsconverter = Transliterator.getInstance("NFD; [:M:] Remove; NFC; ");
         return accentsconverter.transliterate(s);
-    }*/
+    }*//*
 
     private Map<String, Map<String, List<String>>> addElementToMap(
             Map<String, Map<String, List<String>>> res, String titleFound, String idStr, String pathid) {
@@ -277,18 +274,18 @@ public class MediaVideoServiceImpl implements MediaVideoService {
                     msl.put(idStr, lf);
                     res.replace(pathid, res.get(pathid), msl);
                     return res;
-                }/*else{
+                }*//*else{
                     Map<String, List<String>> re = new HashMap<>();
                     List<String> l = new ArrayList<>();
                     l.add(titleFound);
                     re.put(idStr, l);
                     res.put(pathid, re);
                     return res;
-                }*/
+                }*//*
             }
         }
         return res;
-    }
+    }*/
 
     /*public List<MediaVideo> doSomething(String idPath) {
         mediaVideoRepository.findAll(eq("_id", "iDs_by_path"), addToSet("path", eq("", "")));

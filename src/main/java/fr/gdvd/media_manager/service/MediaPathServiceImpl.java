@@ -1,9 +1,5 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.dao.MediaPathRepository;
-import fr.gdvd.media_manager.dao.MediaVideoLightRepository;
-import fr.gdvd.media_manager.dao.MediaVideoRepository;
-import fr.gdvd.media_manager.entities.MediaPath;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +10,7 @@ import java.util.*;
 @Service
 public class MediaPathServiceImpl implements MediaPathService {
 
-    @Autowired
+    /*@Autowired
     private MediaPathRepository mediaPathRepository;
 
     @Override
@@ -53,11 +49,11 @@ public class MediaPathServiceImpl implements MediaPathService {
             if(mediaIdLocal.getPathGeneral().equals(mediaPathRemote.getPathGeneral()))j=j|2;
             if(mediaIdLocal.getDateModif().equals(mediaPathRemote.getDateModif()))j=j|4;
             if(mediaIdLocal.isActive() == mediaPathRemote.isActive())j=j|8;
-           /* if(Arrays.equals(mediaIdLocal.getVideoids().toArray(),
-                    mediaPathRemote.getVideoids().toArray()))j=j|16;*/
+           *//* if(Arrays.equals(mediaIdLocal.getVideoids().toArray(),
+                    mediaPathRemote.getVideoids().toArray()))j=j|16;*//*
             if(mediaIdLocal.getId().equals(mediaPathRemote.getId()))j=j|32;
 
-            /*if((i&1)==1){//must we forced, if one mediaPath.nameExport is same, in fct of i
+            *//*if((i&1)==1){//must we forced, if one mediaPath.nameExport is same, in fct of i
                 if(mediaNameLocal.getPathGeneral().equals(mediaPathRemote.getPathGeneral())){
                     //pathGeneral is same (nameExport too)
                     if((i&2)==2){//must we forced?
@@ -81,7 +77,7 @@ public class MediaPathServiceImpl implements MediaPathService {
             }else{
                 i= i|1;//response: suggest to force
                 return i;
-            }*/
+            }*//*
             //Test si pathGeneral exist si oui quit avec i=2 ou 3 sauf si i=2 ou 3
             // Si ok i=4, recupperer le nom de login->mediapath.owner
 
@@ -129,5 +125,5 @@ public class MediaPathServiceImpl implements MediaPathService {
         if(mediaPath==null)return;
         mediaPath.setActive(state);
         mediaPathRepository.save(mediaPath);
-    }
+    }*/
 }

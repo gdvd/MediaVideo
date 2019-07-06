@@ -1,61 +1,59 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.dao.MediaRoleRepository;
-import fr.gdvd.media_manager.dao.MediaUserRepository;
-import fr.gdvd.media_manager.entities.MediaRole;
-import fr.gdvd.media_manager.entities.MediaUser;
+import fr.gdvd.media_manager.daoMysql.MyRoleRepository;
+import fr.gdvd.media_manager.daoMysql.MyUserRepository;
+import fr.gdvd.media_manager.entitiesMysql.MyRole;
+import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class AccountServiceImpl implements AccountService {
 
-//    @Autowired
-    private MediaUserRepository mediaUserRepository;
-    private MediaRoleRepository mediaRoleRepository;
+    @Autowired
+    private MyUserRepository myUserRepository;
+    @Autowired
+    private MyRoleRepository myRoleRepository;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public AccountServiceImpl(MediaUserRepository mediaUserRepository,
-                              MediaRoleRepository mediaRoleRepository){
-        this.mediaUserRepository = mediaUserRepository;
-        this.mediaRoleRepository = mediaRoleRepository;
-    }
+    public AccountServiceImpl(){}
 
     @Override
-    public MediaUser saveUser(String login, String password, String confirmedPassword) {
-        MediaUser user = mediaUserRepository.findByLogin(login).orElse(null);
+    public MyUser saveUser(String login, String password, String confirmedPassword) {
+        MyUser user = myUserRepository.findByLogin(login);
         if(user!=null) throw new RuntimeException("User already exist");
         if(!password.equals(confirmedPassword))
             throw new RuntimeException("You must confirm your password");
-        MediaUser mediaUser = new MediaUser();
-        mediaUser.setLogin(login);
-        mediaUser.setActive(true);
-        mediaUser.setPassword(bCryptPasswordEncoder.encode(password));
-        mediaUser.setDateModif(new Date());
-        addRoleToUser(mediaUser, "USER");/**/
-        mediaUserRepository.save(mediaUser);
-        return mediaUser;
+        MyUser myUser = new MyUser();
+        myUser.setLogin(login);
+        myUser.setActive(true);
+        myUser.setPassword(bCryptPasswordEncoder.encode(password));
+        myUser.setDateModif(new Date());
+        addRoleToUser(myUser, "USER");/**/
+        myUserRepository.save(myUser);
+        return myUser;
     }
 
     @Override
-    public MediaRole save(MediaRole role) {
-        return mediaRoleRepository.save(role);
+    public MyRole save(MyRole role) {
+        return myRoleRepository.save(role);
     }
 
     @Override
-    public MediaUser loadUserByUserName(String login) {
-        return mediaUserRepository.findByLogin(login).orElse(null);
+    public MyUser loadUserByUserName(String login) {
+        return myUserRepository.findByLogin(login);
     }
 
     @Override
-    public void addRoleToUser(MediaUser mediaUser, String roleName) {
-        MediaRole mediaRole = mediaRoleRepository.findByRole(roleName);
-        mediaUser.getRoles().add(mediaRole);
+    public void addRoleToUser(MyUser myUser, String roleName) {
+        MyRole myRole = myRoleRepository.findByRole(roleName);
+        myUser.getRoles().add(myRole);
     }
 }

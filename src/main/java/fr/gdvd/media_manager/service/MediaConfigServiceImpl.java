@@ -1,6 +1,5 @@
 package fr.gdvd.media_manager.service;
 
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +10,10 @@ import java.util.Map;
 
 
 
-@Service
+//@Service
 public class MediaConfigServiceImpl implements MediaConfigService {
 
-/*    @Autowired
+    /*@Autowired
     private MediaConfigRepository mediaConfigRepository;
     @Autowired
     private MediaVideoRepository mediaVideoRepository;

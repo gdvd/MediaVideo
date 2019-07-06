@@ -3,7 +3,7 @@ package fr.gdvd.media_manager.sec;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.gdvd.media_manager.entities.MediaUser;
+import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,10 +32,10 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
-            MediaUser mediaUser = new ObjectMapper().readValue(request.getInputStream(), MediaUser.class);
+            MyUser myUser = new ObjectMapper().readValue(request.getInputStream(), MyUser.class);
             return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    mediaUser.getLogin(),
-                    mediaUser.getPassword()));
+                    myUser.getLogin(),
+                    myUser.getPassword()));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

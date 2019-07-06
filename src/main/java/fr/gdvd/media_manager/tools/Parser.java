@@ -1,19 +1,35 @@
 package fr.gdvd.media_manager.tools;
 
-import org.bson.Document;
+import fr.gdvd.media_manager.daoMysql.*;
+import fr.gdvd.media_manager.entitiesMysql.*;
+import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.Double.parseDouble;
 
 @Service
+@Log4j2
 public class Parser {
+
+    @Autowired
+    private MyMediaInfoRepository myMediaInfoRepository;
+    @Autowired
+    private MyMediaLanguageRepository myMediaLanguageRepository;
+    @Autowired
+    private MyMediaAudioRepository myMediaAudioRepository;
+    @Autowired
+    private MyMediaTextRepository myMediaTextRepository;
 
     //############################## Parser #######################################
     public String findTagInString(String mcd, String mcf, String toParserA, boolean withTag) {
@@ -414,86 +430,7 @@ public class Parser {
         }
         return map;
     }
-    /*private Document convertXmlToDocumentInt(String topars, Document doc) {
-        // Variables
-        String keywordBegin = "";
-        String keywordEnd = "";
-        char cardeb = '<';
-        char carfin = '>';
-        char echap = '/';
-        int pos = -1;
-        int posDebut = 0;
-        String toparser = topars;
-        int lengthToPars = toparser.length();
-        int keywordEndLength = 0;
-        boolean tagfound;
-        boolean ifOneTagIsFound = false;
 
-        //while it's not the end of the stringToPars
-        while (pos < (lengthToPars - 3)) {
-            tagfound = false;
-            pos++;
-            // If's the beginning of a tag
-            if (toparser.charAt(pos) == cardeb &&
-                    toparser.charAt(pos + 1) != echap &&
-                    toparser.charAt(pos + 1) != carfin) {
-                // Memorize the beginning
-                posDebut = pos++;
-                //while it's not the end of the stringToPars
-                while (pos < lengthToPars - 2) {
-                    pos++;
-                    // If the end of tag is found
-                    if (toparser.charAt(pos) == carfin) {
-                        keywordBegin = toparser.substring(++posDebut, pos);
-                        keywordBegin = keywordBegin
-                                .replaceAll("\\n", "")
-                                .replaceAll("[\\.]", "-")
-                                .replaceAll("\\s+", " ");
-                        int keywordBeginLength = keywordBegin.length();
-                        String keywordBeginTest[] = keywordBegin.split(" ");
-                        keywordEnd = keywordBeginTest[0];
-                        keywordEndLength = keywordEnd.length();
-                        while (pos + keywordEndLength + 3 <= lengthToPars - 1) {
-                            pos++;
-                            // If the tag's end is found
-                            if (toparser.charAt(pos) == cardeb &&
-                                    toparser.charAt(pos + 1) == echap &&
-                                    toparser.substring(pos + 2, pos + 2 + keywordEndLength)
-                                            .equals(keywordEnd) &&
-                                    toparser.charAt(pos + 2 + keywordEndLength) == carfin
-                            ) {
-                                String toparserTmp = toparser.substring(posDebut + keywordBeginLength + 1, pos);
-                                pos = pos + 1 + keywordEndLength;
-                                Document docTmpOut = new Document();
-                                Document docTmpIn = new Document();
-                                if (toparserTmp.length() >= 7) {
-                                    docTmpIn = convertXmlToDocumentInt(toparserTmp, docTmpOut);
-                                    if (docTmpIn.size() == 0) {
-                                        doc = doc.append(keywordBegin, dataType(toparserTmp));
-                                    } else {
-                                        doc = doc.append(keywordBegin, docTmpIn);
-                                    }
-                                } else {
-                                    doc = doc.append(keywordBegin, dataType(toparserTmp));
-                                }
-                                tagfound = true;
-                                ifOneTagIsFound = true;
-                                break;
-                            } else {
-                                if (pos + keywordEndLength + 2 == lengthToPars - 1) {
-                                    pos = posDebut + keywordBeginLength + 1;
-                                    tagfound = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (tagfound) break;
-                    }
-                }
-            }
-        }
-        return doc;
-    }*/
     private Object dataType(String keyword) {
         Object ob = null;
 
@@ -503,7 +440,7 @@ public class Parser {
         if (matcher.find()) {
             ob = (Double) parseDouble(keyword);
         } else {
-            // Identify Date UTC
+            // Identify Date UTC BUT Create sometimes bugs
             /*pattern = Pattern
                     .compile("UTC\\s[0-9]{4}-[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}$");
             matcher = pattern.matcher(keyword);
@@ -535,22 +472,7 @@ public class Parser {
 
         return ob;
     }
-    /*public List<Document> xmlToDoc(String mcNbItem, String domain, String mediaInfo) {
-        Document doc = new Document();
-        List<String> vid = findInfoByDomain(mcNbItem, domain, mediaInfo);
-        List<Document> listF = new ArrayList<>();
-        if (vid != null) {
-            List<String> list0 = vid;
-            for (int i = 1; i <= list0.size(); i++) {
-                listF.add(convertXmlToDocument(list0.get(i - 1)));
-            }
-            return listF;// If there's one or some track(s)
-        } else {
-            listF.add(doc);
-        }
-        return listF;//If there's no track
-    }*/
-    //
+
     public List<Map<String, Object>> xmlToList(String mcNbItem, String domain, String mediaInfo) {
         Map map = new HashMap();
         List<String> vid = findInfoByDomain(mcNbItem, domain, mediaInfo);
@@ -587,5 +509,215 @@ public class Parser {
             res.add("");
         }
         return res;
+    }
+    /************ Good ************/
+    public List<String> listAllDirectories(ScanMessage sm) {
+        List<String> files = new ArrayList<>();
+        listDirectory(sm.getPathVideo(), sm);
+        return files;
+    }
+
+    private void listDirectory(String dirTmp, ScanMessage sm) {
+        File file = new File(dirTmp);
+        File[] fs = file.listFiles();
+        if (fs != null) {
+            for (File f : fs) {
+                if (f.length() > sm.getMinSizeOfVideoFile() && !f.isDirectory()) {
+                    String ext = FilenameUtils.getExtension(f.getName());
+                    if (sm.getExtentionsRead().contains(ext.toLowerCase())) {
+                        List<String> ls = (sm.getFilesRead());
+                        ls.add(f.getAbsolutePath());
+                        sm.setFilesRead(ls);
+                    } else {
+                        if(!sm.getExtentionsNotRead().contains(ext.toLowerCase())){
+                            List<String> ls = sm.getExtentionsNotRead();
+                            ls.add(ext);
+                            sm.setExtentionsNotRead(ls);
+//                            log.info("***** Extension " + ext + " non lue !");
+                        }
+                    }
+                }
+                if (f.isDirectory()) {
+                    String newDir = f.getAbsolutePath();
+                    listDirectory(newDir, sm);
+                }
+            }
+        }
+    }
+    public String readMediaInfo(String url) {
+        Process p;
+        String resulta = "";
+        StringBuffer output = new StringBuffer();
+        String[] commande = {"mediainfo", "--Output=XML", url};
+        try {
+            p = Runtime.getRuntime().exec(commande);
+//            p.waitFor();
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                output.append(line + "\n");
+            }
+            resulta = output.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resulta;
+    }
+
+    public MyMediaInfo createMyMediaInfo(MyMediaInfo mmi, String mediaInfo) {
+        if (mediaInfo.length() != 0) {
+            // Parse File.md5
+            String general = findTagInString("<track type=\"General\">", "</track>", mediaInfo, false);
+            Map<String, Object> listGeneral = convertXmlToMap(general);
+            List<Map<String, Object>> listvideo = xmlToList("VideoCount", "Video", mediaInfo);
+            List<Map<String, Object>> listaudio = xmlToList("AudioCount", "Audio", mediaInfo);
+            List<Map<String, Object>> listtext = xmlToList("TextCount", "Text", mediaInfo);
+
+            // Informed general
+            /*Double ac = (Double) listGeneral.get("AudioCount");
+            if (ac == null) ac = 0.0;
+            mmi.setAudioCount(ac.intValue());*/
+            /*Double vc = (Double) listGeneral.get("VideoCount");
+            if (vc == null) vc = 1.0;
+            mmi.setVideoCount(vc.intValue());*/
+
+            Double tc = (Double) listGeneral.get("TextCount");
+            if (tc == null) tc = 0.0;
+            mmi.setTextCount(tc.intValue());
+            Double dr = (Double) listGeneral.get("Duration");
+            mmi.setDuration(dr);
+            Double fs = (Double) listGeneral.get("FileSize");
+            mmi.setFileSize(fs);
+            String ft = (String) listGeneral.get("Format");
+            mmi.setFormat(ft);
+            mmi = myMediaInfoRepository.save(mmi);
+
+            /* Without TableVideo */
+            Map<String, Object> mmv = listvideo.get(0);
+            if(mmv.get("CodecID").getClass().getName().contains("Double")){
+                Double dbl = (Double) mmv.get("CodecID");
+                mmi.setCodecId(dbl.toString());
+            }else{
+                String cd = (String) mmv.get("CodecID");
+                if (cd == null) cd = "";
+                if (cd.length() > 16) cd = cd.substring(0, 15);
+                mmi.setCodecId(cd);
+            }
+            Double bt = (Double) mmv.get("BitRate");
+            if (bt == null) bt = (Double) mmv.get("OverallBitRate");
+            if (bt == null) bt = (Double) listGeneral.get("OverallBitRate");
+            if (bt == null) bt = (Double) listGeneral.get("BitRate");
+            if (bt == null) bt = 0.0;
+            mmi.setBitrate(bt);
+            Double wi = (Double) mmv.get("Width");
+            if (wi == null) wi = 0.0;
+            mmi.setWidth(wi.intValue());
+            Double he = (Double) mmv.get("Height");
+            if (he == null) he = 0.0;
+            mmi.setHeight(he.intValue());
+
+/*            List<MyMediaVideo> lmmv = new ArrayList<>();
+            for (Map<String, Object> mmv : listvideo) {
+                // Create video
+                MyMediaVideo mv = new MyMediaVideo();
+                Double bt = (Double) mmv.get("BitRate");
+                if (bt == null) bt = (Double) mmv.get("OverallBitRate");
+                if (bt == null) bt = (Double) listGeneral.get("OverallBitRate");
+                if (bt == null) bt = (Double) listGeneral.get("BitRate");
+                if (bt == null) bt = 0.0;
+                mv.setBitrate(bt);
+                String cd = (String) mmv.get("CodecID");
+                if (cd == null) cd = "";
+                if (cd.length() > 16) cd = cd.substring(0, 15);
+                mv.setCodecId(cd);
+                ft = (String) mmv.get("Format");
+                if (ft == null) ft = "";
+                mv.setFormat(ft);
+                Double he = (Double) mmv.get("Height");
+                if (he == null) he = 0.0;
+                mv.setHeight(he.intValue());
+                Double wi = (Double) mmv.get("Width");
+                if (wi == null) wi = 0.0;
+                mv.setWidth(wi.intValue());
+                mv.setMyMediaInfo(mmi);
+
+                mv = myMediaVideoRepository.save(mv);
+                lmmv.add(mv);
+            }*/
+
+            // Create audio
+            List<MyMediaAudio> lmma = new ArrayList<>();
+            for (Map<String, Object> msa : listaudio) {
+                if(msa.size()==0)break;
+                String lg = (String) msa.get("Language");
+                if (lg == null) lg = "?";
+                MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(lg);
+                if (mml == null) {
+                    if (lg.length() > 16) lg = lg.substring(0, 15);
+                    mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, lg, null, null));
+                }
+                MyMediaAudio mma = new MyMediaAudio(mmi, mml);
+                Double br = (Double) msa.get("BitRate");
+                if (br == null) br = (Double) msa.get("OverallBitRate");
+                if (br == null) br = 0.0;
+                mma.setBitrate(br);
+                Double ch = (Double) msa.get("Channels");
+                if (ch == null) ch = 1.0;
+                mma.setChannels(ch.intValue());
+                dr = (Double) msa.get("Duration");
+                if (dr == null) dr = 0.0;
+                mma.setDuration(dr);
+                String fc = (String) msa.get("Forced");
+                if (fc == null) fc = "no";
+                mma.setForced(fc.equals("Yes"));
+                ft = (String) msa.get("Format");
+                if (ft == null) ft = "";
+                mma.setFormat(ft);
+
+                lmma.add(myMediaAudioRepository.save(mma));
+            }
+
+            // create text
+            List<MyMediaText> lmmt = new ArrayList<>();
+            for (Map<String, Object> mmmt : listtext) {
+                if(mmmt.size()==0)break;
+                String lg = (String) mmmt.get("Language");
+                if (lg == null) lg = "?";
+                MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(lg);
+                if (mml == null) {
+                    if (lg.length() > 16) lg = lg.substring(0, 15);
+                    mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, lg, null, null));
+                }
+                MyMediaText mmt = new MyMediaText(mmi, mml);
+
+                if(mmmt.get("CodecID").getClass().getName().contains("Double")){
+                    Double dbl = (Double) mmmt.get("CodecID");
+                    mmt.setCodecId(dbl.toString());
+                }else{
+                    String cd = (String) mmmt.get("CodecID");
+                    if (cd == null) cd = "";
+                    if (cd.length() > 16) cd = cd.substring(0, 15);
+                    mmt.setCodecId(cd);
+                }
+
+                String fc = (String) mmmt.get("Forced");
+                if (fc == null) fc = "no";
+                mmt.setForced(fc.equals("Yes"));
+                ft = (String) mmmt.get("Format");
+                if (ft == null) ft = "";
+                mmt.setFormat(ft);
+                mmt.setInternal(true);
+
+                lmmt.add(myMediaTextRepository.save(mmt));
+
+            }
+
+//            mmi.setMyMediaVideos(lmmv);
+            mmi = myMediaInfoRepository.save(mmi);
+            return mmi;
+        }
+        log.error("MediaInfo id : " + mmi.getIdMyMediaInfo() + " failed");
+        return null;
     }
 }
