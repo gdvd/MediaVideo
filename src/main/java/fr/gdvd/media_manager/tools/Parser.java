@@ -662,7 +662,15 @@ public class Parser {
                 if (br == null) br = (Double) msa.get("OverallBitRate");
                 if (br == null) br = 0.0;
                 mma.setBitrate(br);
-                Double ch = (Double) msa.get("Channels");
+                Double ch = 0.0;
+                if(msa.get("Channels").getClass().getName().contains("String")){
+                    String c = (String) msa.get("Channels");
+                    c.replace("[\\D]*","");
+                    ch = (Double) Double.parseDouble(c);
+
+                }else {
+                    ch = (Double) msa.get("Channels");
+                }
                 if (ch == null) ch = 1.0;
                 mma.setChannels(ch.intValue());
                 dr = (Double) msa.get("Duration");

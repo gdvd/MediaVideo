@@ -169,12 +169,12 @@ public class ManagmentFilesImpl implements ManagmentFiles {
 
     @Override
     public void addnewext(String ext) {
-        if(ext.length()>1){
+        if(ext.length()>1 && ext.length()<10){
             Preferences pref = preferencesRepository.findById("01").orElse(null);
             if(pref==null) throw new RuntimeException("Preferences doesn't exist");
             pref.getExtset().add(ext);
             preferencesRepository.save(pref);
-        }
+        }else throw new RuntimeException("Extension must be : 1 < extension < 10");
     }
 
     @Override
