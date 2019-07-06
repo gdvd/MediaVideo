@@ -181,6 +181,7 @@ public class Parser {
         }
         return str;
     }
+
     //#######################################################
     public List<String> findAllTagsInString(String mcd, String mcf, String strEntre, boolean withTag) {
         List<char[]> tags = new ArrayList();
@@ -342,6 +343,7 @@ public class Parser {
         }
         return listStr;
     }
+
     /*public Document convertXmlToDocument(String parse) {
         Document doc = new Document();
         return convertXmlToDocumentInt(parse, doc);
@@ -350,6 +352,7 @@ public class Parser {
         Map<String, Object> map = new HashMap();
         return convertXmlToMapInt(parse, map);
     }
+
     public Map<String, Object> convertXmlToMapInt(String topars, Map<String, Object> map) {
         // Variables
         String keywordBegin = "";
@@ -488,6 +491,7 @@ public class Parser {
         }
         return listF;//If there's no track
     }
+
     //############################## Nb of track : video audio and text ################
     private List<String> findInfoByDomain(String mcNbItem, String domain, String infosMediaXml) {
         String nbStr = findTagInString("<" + mcNbItem + ">"
@@ -510,6 +514,7 @@ public class Parser {
         }
         return res;
     }
+
     /************ Good ************/
     public List<String> listAllDirectories(ScanMessage sm) {
         List<String> files = new ArrayList<>();
@@ -529,7 +534,7 @@ public class Parser {
                         ls.add(f.getAbsolutePath());
                         sm.setFilesRead(ls);
                     } else {
-                        if(!sm.getExtentionsNotRead().contains(ext.toLowerCase())){
+                        if (!sm.getExtentionsNotRead().contains(ext.toLowerCase())) {
                             List<String> ls = sm.getExtentionsNotRead();
                             ls.add(ext);
                             sm.setExtentionsNotRead(ls);
@@ -544,6 +549,7 @@ public class Parser {
             }
         }
     }
+
     public String readMediaInfo(String url) {
         Process p;
         String resulta = "";
@@ -595,14 +601,18 @@ public class Parser {
 
             /* Without TableVideo */
             Map<String, Object> mmv = listvideo.get(0);
-            if(mmv.get("CodecID").getClass().getName().contains("Double")){
-                Double dbl = (Double) mmv.get("CodecID");
-                mmi.setCodecId(dbl.toString());
-            }else{
-                String cd = (String) mmv.get("CodecID");
-                if (cd == null) cd = "";
-                if (cd.length() > 16) cd = cd.substring(0, 15);
-                mmi.setCodecId(cd);
+            if (mmv.get("CodecID") != null) {
+                if (mmv.get("CodecID").getClass().getName().contains("Double")) {
+                    Double dbl = (Double) mmv.get("CodecID");
+                    mmi.setCodecId(dbl.toString());
+                } else {
+                    String cd = (String) mmv.get("CodecID");
+                    if (cd == null) cd = "";
+                    if (cd.length() > 16) cd = cd.substring(0, 15);
+                    mmi.setCodecId(cd);
+                }
+            } else {
+                mmi.setCodecId("");
             }
             Double bt = (Double) mmv.get("BitRate");
             if (bt == null) bt = (Double) mmv.get("OverallBitRate");
@@ -610,6 +620,7 @@ public class Parser {
             if (bt == null) bt = (Double) listGeneral.get("BitRate");
             if (bt == null) bt = 0.0;
             mmi.setBitrate(bt);
+
             Double wi = (Double) mmv.get("Width");
             if (wi == null) wi = 0.0;
             mmi.setWidth(wi.intValue());
@@ -649,7 +660,7 @@ public class Parser {
             // Create audio
             List<MyMediaAudio> lmma = new ArrayList<>();
             for (Map<String, Object> msa : listaudio) {
-                if(msa.size()==0)break;
+                if (msa.size() == 0) break;
                 String lg = (String) msa.get("Language");
                 if (lg == null) lg = "?";
                 MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(lg);
@@ -663,15 +674,18 @@ public class Parser {
                 if (br == null) br = 0.0;
                 mma.setBitrate(br);
                 Double ch = 0.0;
-                if(msa.get("Channels").getClass().getName().contains("String")){
-                    String c = (String) msa.get("Channels");
-                    c.replace("[\\D]*","");
-                    ch = (Double) Double.parseDouble(c);
+                if (msa.get("Channels") != null) {
+                    if (msa.get("Channels").getClass().getName().contains("String")) {
+                        String c = (String) msa.get("Channels");
+                        c.replace("[\\D]*", "");
+                        ch = (Double) Double.parseDouble(c);
 
-                }else {
-                    ch = (Double) msa.get("Channels");
+                    } else {
+                        ch = (Double) msa.get("Channels");
+                    }
+                } else {
+                    ch = 1.0;
                 }
-                if (ch == null) ch = 1.0;
                 mma.setChannels(ch.intValue());
                 dr = (Double) msa.get("Duration");
                 if (dr == null) dr = 0.0;
@@ -689,7 +703,7 @@ public class Parser {
             // create text
             List<MyMediaText> lmmt = new ArrayList<>();
             for (Map<String, Object> mmmt : listtext) {
-                if(mmmt.size()==0)break;
+                if (mmmt.size() == 0) break;
                 String lg = (String) mmmt.get("Language");
                 if (lg == null) lg = "?";
                 MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(lg);
@@ -698,17 +712,18 @@ public class Parser {
                     mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, lg, null, null));
                 }
                 MyMediaText mmt = new MyMediaText(mmi, mml);
-
-                if(mmmt.get("CodecID").getClass().getName().contains("Double")){
-                    Double dbl = (Double) mmmt.get("CodecID");
-                    mmt.setCodecId(dbl.toString());
-                }else{
-                    String cd = (String) mmmt.get("CodecID");
-                    if (cd == null) cd = "";
-                    if (cd.length() > 16) cd = cd.substring(0, 15);
-                    mmt.setCodecId(cd);
+                if (mmmt.get("CodecID") != null) {
+                    if (mmmt.get("CodecID").getClass().getName().contains("Double")) {
+                        Double dbl = (Double) mmmt.get("CodecID");
+                        mmt.setCodecId(dbl.toString());
+                    } else {
+                        String cd = (String) mmmt.get("CodecID");
+                        if (cd == null) cd = "";
+                        if (cd.length() > 16) cd = cd.substring(0, 15);
+                        mmt.setCodecId(cd);
+                    }
                 }
-
+                mmt.setCodecId("");
                 String fc = (String) mmmt.get("Forced");
                 if (fc == null) fc = "no";
                 mmt.setForced(fc.equals("Yes"));
