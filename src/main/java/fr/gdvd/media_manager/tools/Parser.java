@@ -669,9 +669,21 @@ public class Parser {
                     mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, lg, null, null));
                 }
                 MyMediaAudio mma = new MyMediaAudio(mmi, mml);
-                Double br = (Double) msa.get("BitRate");
-                if (br == null) br = (Double) msa.get("OverallBitRate");
-                if (br == null) br = 0.0;
+
+                Double br = 0.0;
+                if(msa.get("BitRate") != null){
+                    if (msa.get("BitRate").getClass().getName().contains("String")) {
+                        String c = (String) msa.get("BitRate");
+                        c.replace("[\\D]*", "");
+                        br = (Double) Double.parseDouble(c);
+                    }else{
+                        br = (Double) msa.get("BitRate");
+                        if (br == null) br = (Double) msa.get("OverallBitRate");
+                        if (br == null) br = 0.0;
+                    }
+                }else{
+                    br = 0.0;
+                }
                 mma.setBitrate(br);
                 Double ch = 0.0;
                 if (msa.get("Channels") != null) {
