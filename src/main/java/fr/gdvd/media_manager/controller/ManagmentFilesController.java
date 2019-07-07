@@ -5,6 +5,7 @@ import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
 import fr.gdvd.media_manager.entitiesMysql.VideoNameExport;
 import fr.gdvd.media_manager.entitiesMysql.VideoSupportPath;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
+import fr.gdvd.media_manager.entitiesNoDb.VNELight;
 import fr.gdvd.media_manager.service.ManagmentFilesImpl;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import javax.persistence.Tuple;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.List;
@@ -255,4 +257,10 @@ public class ManagmentFilesController {
         return managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
     }
 
+    @GetMapping(value = "/lVneIdToName",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public List<VNELight> lVneIdToName(){
+        String login = request.getRemoteUser();
+        return managmentFiles.lVneIdToName(login);
+    }
 }

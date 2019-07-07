@@ -86,7 +86,7 @@ public class MediaManagerApplication {
                 pref = new Preferences();
                 pref.setIdPreferences("01");
                 pref.setDateModifPref(new Date());
-                pref.setExtset(Stream.of("avi", "mp4", "mkv", "mov", "ogg", "webm", "divx", "mpg", "m4v", "flv", "rmvb").collect(Collectors.toSet()));
+                pref.setExtset(Stream.of("avi", "mp4", "mkv", "mov", "ogg", "webm", "divx", "mpg", "m4v", "flv", "rmvb", "xvid").collect(Collectors.toSet()));
                 Map<String, String> mp = new HashMap<>();
                 mp.put("pathIdVideo", "~/MediaVideo/md5s");
                 mp.put("minSizeOfVideoFile", "100000000"); // 100Mo min

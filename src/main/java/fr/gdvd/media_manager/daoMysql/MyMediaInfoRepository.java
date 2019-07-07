@@ -28,7 +28,7 @@ public interface MyMediaInfoRepository extends JpaRepository<MyMediaInfo, String
     //########################################################################################
     //############################# Test requete #############################################
     //########################################################################################
-    @Query("select mmi from fr.gdvd.media_manager.entitiesMysql.MyMediaInfo as mmi " +
+    @Query("select distinct mmi from fr.gdvd.media_manager.entitiesMysql.MyMediaInfo as mmi " +
             "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoSupportPath " +
             "AS vsp ON mmi.idMyMediaInfo=vsp.id_my_media_info " +
             "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoNameExport " +

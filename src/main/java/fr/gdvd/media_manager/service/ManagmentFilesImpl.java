@@ -4,6 +4,7 @@ import fr.gdvd.media_manager.daoMysql.*;
 import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.entitiesNoDb.MediaInfoLight;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
+import fr.gdvd.media_manager.entitiesNoDb.VNELight;
 import fr.gdvd.media_manager.tools.Parser;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -12,13 +13,11 @@ import org.springframework.data.domain.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Tuple;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 
@@ -176,6 +175,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
             preferencesRepository.save(pref);
         }else throw new RuntimeException("Extension must be : 1 < extension < 10");
     }
+
 
     @Override
     public List<Object> getObject() {
@@ -493,4 +493,15 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         }
     }
 
+    @Override
+    public List<VNELight> lVneIdToName(String login) {
+        List<Tuple> lmls = videoNameExportRepository.lVneIdToName(login);
+//        Map<Long, String> mls = new HashMap<>();
+        List<VNELight> lvne = new ArrayList<>();
+        for(Tuple t:lmls){
+//            mls.put((Long) t.toArray()[0], (String) t.toArray()[1]);
+            lvne.add(new VNELight((Long) t.toArray()[0], (String) t.toArray()[1]));
+        }
+        return lvne;
+    }
 }

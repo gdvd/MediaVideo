@@ -6,10 +6,13 @@ import fr.gdvd.media_manager.entitiesMysql.VideoSupportPath;
 import fr.gdvd.media_manager.entitiesNoDb.FileVideo;
 import fr.gdvd.media_manager.entitiesNoDb.MediaInfoLight;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
+import fr.gdvd.media_manager.entitiesNoDb.VNELight;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import javax.persistence.Tuple;
 import java.util.List;
+import java.util.Map;
 
 public interface ManagmentFiles {
 
@@ -60,4 +63,6 @@ public interface ManagmentFiles {
     Page<MyMediaInfo> listMmiForLoginPP(String login, int page, int size, String toSort, String filter);
 
     void addnewext(String ext);
+
+    List<VNELight> lVneIdToName(String login);
 }
