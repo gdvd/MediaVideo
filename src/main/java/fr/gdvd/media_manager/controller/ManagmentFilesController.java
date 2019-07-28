@@ -1,22 +1,18 @@
 package fr.gdvd.media_manager.controller;
 
 import fr.gdvd.media_manager.daoMysql.PreferencesRepository;
-import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
-import fr.gdvd.media_manager.entitiesMysql.VideoNameExport;
-import fr.gdvd.media_manager.entitiesMysql.VideoSupportPath;
+import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
 import fr.gdvd.media_manager.entitiesNoDb.VNELight;
 import fr.gdvd.media_manager.service.ManagmentFilesImpl;
+import fr.gdvd.media_manager.service.RequestWeb;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
-import javax.persistence.Tuple;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.List;
@@ -26,6 +22,7 @@ import java.util.Map;
 //@Secured({"ROLE_ADMIN", "ROLE_USER"})
 //@PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
 //@RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
+//@RolesAllowed({"ROLE_USER"})
 @Log4j2
 @RestController
 @RequestMapping(value = "managment")
@@ -45,6 +42,8 @@ public class ManagmentFilesController {
     private HttpServletRequest request;
     @Autowired
     private PreferencesRepository preferencesRepository;
+    @Autowired
+    private RequestWeb requestWeb;
 
 
     @PostMapping(value = "/scanFolderWithPathdir",
@@ -254,7 +253,28 @@ public class ManagmentFilesController {
                                                     @RequestParam(defaultValue = "") String toSort,
                                                     @RequestBody String filter){
         String login = request.getRemoteUser();
-        return managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
+        Page<MyMediaInfo> pmmi = managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
+        return pmmi;
+//        return managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
+    }
+
+
+    @PostMapping(value = "/listMmiForLoginWithNamePP")
+    public Page<MyMediaInfo> listMmiForLoginWithNamePP(@RequestParam int page,
+                                                    @RequestParam int size,
+                                                    @RequestParam(defaultValue = "") String toSort,
+                                                    @RequestBody String filter){
+        String login = request.getRemoteUser();
+        Page<MyMediaInfo> pmmi = managmentFiles.listMmiForLoginWithNamePP(login, page, size, toSort, filter);
+        return pmmi;
+//        return managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
+    }
+
+    @GetMapping(value = "/researchByName/{nm}", produces =
+            {MediaType.APPLICATION_JSON_VALUE})
+    public Page<MyMediaInfo> researchByName(@PathVariable String nm){
+        String login = request.getRemoteUser();
+        return managmentFiles.researchByName(nm, login);
     }
 
     @GetMapping(value = "/lVneIdToName",
@@ -262,5 +282,11 @@ public class ManagmentFilesController {
     public List<VNELight> lVneIdToName(){
         String login = request.getRemoteUser();
         return managmentFiles.lVneIdToName(login);
+    }
+
+    @PostMapping(value = "/getVideoFilm",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public VideoFilm getVideoFilm(@RequestBody String mylink){
+        return requestWeb.getOneVideoFilm(mylink);
     }
 }

@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class VideoKind {
     @Size(max = 64)
     private String kindFr;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "videoKinds")
     private List<VideoFilm> videoFilms = new ArrayList<>();
 

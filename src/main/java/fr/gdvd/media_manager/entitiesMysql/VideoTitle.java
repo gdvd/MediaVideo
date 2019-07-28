@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -27,11 +28,13 @@ public class VideoTitle {
     @Size(max = 128)
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ManyToOne
     @JoinColumn(name = "id_country", insertable = false, updatable = false)
     private VideoCountry videoCountry;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ManyToOne/*(fetch = FetchType.LAZY)*/
     @JoinColumn(name = "id_video", columnDefinition="varchar(16)", insertable = false, updatable = false)
     private VideoFilm videoFilm;
 

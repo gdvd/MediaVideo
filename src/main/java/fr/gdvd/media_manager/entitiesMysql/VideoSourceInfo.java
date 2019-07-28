@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,7 @@ public class VideoSourceInfo {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifSource;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "videoSourceInfo")
     private List<VideoFilm> videoFilms = new ArrayList<>();
 

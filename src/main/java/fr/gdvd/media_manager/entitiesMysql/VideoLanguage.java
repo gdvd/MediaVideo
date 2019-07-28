@@ -15,19 +15,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Entity @Table(uniqueConstraints={@UniqueConstraint(columnNames={"keywordEn"}), @UniqueConstraint(columnNames={"keywordFr"})})
-public class VideoKeyword {
+@Entity
+public class VideoLanguage {
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idKeyword;
-    @Size(max = 64)
-    private String keywordEn;
-    @Size(max = 64)
-    private String keywordFr;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idVideoLanguage;
+
+    @Size(max = 32)
+    private String language;
+
+    @Size(max = 32)
+    private String urlLanguage;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "videoKeywordSet")
+    @ManyToMany(mappedBy = "videoLanguages")
     private List<VideoFilm> videoFilms = new ArrayList<>();
+
 
 
 }

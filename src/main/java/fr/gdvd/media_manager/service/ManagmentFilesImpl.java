@@ -49,8 +49,10 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     private MyMediaCommentRepository myMediaCommentRepository;
     @Autowired
     private MyMediaInfoRepositoryPage myMediaInfoRepositoryPage;
-//    @Autowired
-//    private MediaInfoLightRepository mediaInfoLightRepository;
+    @Autowired
+    private TypeMmiRepository typeMmiRepository;
+    @Autowired
+    private VideoArtistRepository videoArtistRepository;
 
 
     @Override
@@ -107,7 +109,6 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     @Override
     public List<MyMediaInfo> getAllVideoByUser() {
         List<MyMediaInfo> lmmi = myMediaInfoRepository.findAll();
-
         return lmmi;
     }
 
@@ -161,9 +162,29 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                                                int size, String toSort,
                                                String filter) {
         Pageable pageable = PageRequest.of(page, size);/*, Sort.by(toSort)*/
-        Page p = myMediaInfoRepository.findMmiPP(login, filter, pageable);
+/*        Page p = myMediaInfoRepository.findMmiPP(login, filter, pageable);
+        List<MyMediaInfo> lmmi = p.getContent();
+        for(MyMediaInfo mmi: lmmi){
+            TypeMmi tm = mmi.getTypeMmi();
+            if(tm!=null){
+                log.info("TM not null : "+mmi.getIdMyMediaInfo());
+            }
+        }*/
+        return myMediaInfoRepository.findMmiPP(login, filter, pageable);
+    }
 
-        return p;
+    @Override
+    public Page<MyMediaInfo> listMmiForLoginWithNamePP(String login, int page, int size,
+                                                       String toSort, String filter) {
+        Pageable pageable = PageRequest.of(page, size);
+        return myMediaInfoRepository.findMmiLIKEfirstLastNamePP(login, filter, pageable);
+    }
+
+    @Override
+    public Page<MyMediaInfo> researchByName(String nm, String login) {
+        Pageable pageable = PageRequest.of(0, 5);
+//        return videoArtistRepository.findMnWithNmPP(login, nm, pageable);
+        return myMediaInfoRepository.findMmiWithNMamePP( nm, pageable);
     }
 
     @Override
@@ -311,6 +332,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
             MyMediaInfo mmi = myMediaInfoRepository.findById(mmiremote.getIdMyMediaInfo()).orElse(null);
             if (mmi == null) {
                 mmi = new MyMediaInfo();
+                mmi.setDateModif(new Date());
                 mmi.setIdMyMediaInfo(mmiremote.getIdMyMediaInfo());
                 mmi.setBitrate(mmiremote.getBitrate());
                 mmi.setCodecId(mmiremote.getCodecId());
@@ -318,9 +340,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                 mmi.setFileSize(mmiremote.getFileSize());
                 mmi.setFormat(mmiremote.getFormat());
                 mmi.setHeight(mmiremote.getHeight());
-                mmi.setTextCount(mmiremote.getTextCount());
                 mmi.setWidth(mmiremote.getWidth());
-                mmi.setVideoFilm(mmiremote.getVideoFilm());
                 mmi = myMediaInfoRepository.save(mmi);
 
                 for(MyMediaComment mmcremote: mmiremote.getMyMediaComments()){
@@ -381,7 +401,6 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                                     title,  pathGen, mmi.getIdMyMediaInfo(), (long) idvne);
                     if (vsp == null) {
                         vsp = new VideoSupportPath(title, pathGen, mmi.getIdMyMediaInfo(), (long) idvne);
-                        vsp.setType(vspremote.getType());
                     }
                     vsp.setActive(true);
                     vsp.setDateModif(new Date());
@@ -449,6 +468,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         MyMediaInfo mmi = myMediaInfoRepository.findById(md5).orElse(null);
         if (mmi == null) {
             mmi = new MyMediaInfo();
+            mmi.setDateModif(new Date());
             mmi.setIdMyMediaInfo(md5);
             String mediaInfoStr = parser.readMediaInfo(pathGeneral);
             parser.createMyMediaInfo(mmi, mediaInfoStr);
@@ -474,7 +494,6 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         if (vsp == null) {
             vsp = new VideoSupportPath(title, pathG, md5, idVideoNameExport);
             vsp.setDateModif(new Date());
-            vsp.setType("Film");
         } else {
             vsp.setDateModif(new Date());
         }
@@ -504,4 +523,5 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         }
         return lvne;
     }
+
 }

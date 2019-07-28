@@ -12,20 +12,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Entity
-public class VideoSerie {
+public class TypeName {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idMyUser;
-    @Size(max = 32)
-    private String serieName;
+    private Long idTypeName;
+
+    @Size(max = 16)
+    private String typeName;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "videoSerie")
-    private List<VideoFilm> videoFilms = new ArrayList<>();
+    @OneToMany(mappedBy = "typeName")
+    List<TypeMmi> typeMmis = new ArrayList<>();
+
 
 }

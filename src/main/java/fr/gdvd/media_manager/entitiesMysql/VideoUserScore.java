@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class VideoUserScore implements Serializable {
     @JoinColumn(name = "id_my_user", insertable = false, updatable = false)
     private MyUser myUser;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_video", insertable = false, updatable = false)
     private VideoFilm videoFilm;

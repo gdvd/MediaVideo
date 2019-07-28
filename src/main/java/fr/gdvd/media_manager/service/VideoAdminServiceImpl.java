@@ -135,7 +135,6 @@ public class VideoAdminServiceImpl implements VideoAdminService {
     private void setVsp(VideoNameExport vne, VideoSupportPath vsp) {
         vsp.setActive(true);
         vsp.setDateModif(new Date());
-        vsp.setType("film");
         vsp = videoSupportPathRepository.save(vsp);
         List<VideoSupportPath> videoSupportPaths = vne.getVideoSupportPaths();
         videoSupportPaths.add(vsp);

@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data @NoArgsConstructor @AllArgsConstructor @ToString
@@ -21,16 +22,12 @@ public class MyMediaInfo implements Serializable {
 
     @Id @Size(max = 32) @NotNull
     private String idMyMediaInfo;
-//    private int audioCount;
-    private int textCount;
+
     @Size(max = 16)
     private String format;
     private Double fileSize;
     private Double duration;
 
-/*    @Nullable
-    @OneToMany(mappedBy="myMediaInfo", cascade = {CascadeType.ALL},fetch = FetchType.EAGER)
-    private List<MyMediaVideo> myMediaVideos = new ArrayList<>();*/
 
     @Nullable
     @OneToMany(mappedBy = "myMediaInfo", cascade = {CascadeType.ALL},fetch = FetchType.LAZY)
@@ -47,12 +44,17 @@ public class MyMediaInfo implements Serializable {
     private int width;
     private int height;
 
+    //#################################################################
+    //#################################################################
+    //#################################################################
+//    @Nullable
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "fk_type_mmi")
+    private TypeMmi typeMmi;
 
-    @JsonIgnore
-    @Nullable
-    @ManyToOne
-    @JoinColumn(name = "idVideoFilm")
-    private VideoFilm videoFilm;
+    @NotNull
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dateModif;
 
     @OneToMany (mappedBy = "myMediaInfo", cascade = {CascadeType.ALL})
     private List<VideoSupportPath> videoSupportPaths = new ArrayList<>();
@@ -60,6 +62,11 @@ public class MyMediaInfo implements Serializable {
     @Nullable
     @OneToMany(mappedBy = "myMediaInfo", cascade = {CascadeType.ALL})
     private List<MyMediaComment> myMediaComments = new ArrayList<>();
+
+    @Nullable
+    @JsonIgnore
+    @OneToMany(mappedBy = "myMediaInfo", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
+    private List<Basket> baskets = new ArrayList<>();
 
     public MyMediaInfo(@Size(max = 32) @NotNull String idMyMediaInfo) {
         this.idMyMediaInfo = idMyMediaInfo;

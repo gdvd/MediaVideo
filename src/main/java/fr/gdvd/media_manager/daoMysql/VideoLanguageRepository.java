@@ -1,13 +1,14 @@
 package fr.gdvd.media_manager.daoMysql;
 
-import fr.gdvd.media_manager.entitiesMysql.VideoKeyword;
+import fr.gdvd.media_manager.entitiesMysql.VideoLanguage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.Optional;
 
 @RepositoryRestResource
-public interface VideoKeywordRepository extends JpaRepository<VideoKeyword, Long> {
+public interface VideoLanguageRepository extends JpaRepository<VideoLanguage, Long> {
 
-    Optional<VideoKeyword> findByKeywordEn(String keywordEn);
+    Optional<VideoLanguage> findByLanguage(String language);
+
 }

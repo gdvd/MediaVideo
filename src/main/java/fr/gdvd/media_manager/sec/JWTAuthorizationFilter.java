@@ -27,17 +27,14 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-//        log.info("Enter in doFilterInternal");
         response.addHeader("Access-Control-Allow-Origin", "*");// CORS policy
         response.addHeader("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, authorization");
         response.addHeader("Access-Control-Expose-Headers", "Access-Control-Allow-Origin, Access-Control-Allow-Credentials, authorization");
         response.addHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH");
-        if (request.getMethod().equals("OPTIONS")
-            /* && !(request.getRequestURI().equals("/login"))*/) {
+        if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(HttpServletResponse.SC_OK);
         } else if (request.getRequestURI().equals("/login")) {
             filterChain.doFilter(request, response);
-//            return;
         } else {
             String jwt = request.getHeader(SecurityParams.JWT_HEADER);
             if (jwt == null || !jwt.startsWith(SecurityParams.TOKEN_PREFIX)) {
@@ -56,7 +53,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 log.info(e.getMessage());
                 if (e.getMessage().contains("The Token has expired on")) {
                     log.info("JWTerror : "+e.getMessage());
-//                    response.addHeader("JWTerror",e.getMessage());
                     filterChain.doFilter(request, response);
                     return;
                 }

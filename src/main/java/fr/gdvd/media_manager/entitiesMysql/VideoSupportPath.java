@@ -41,9 +41,6 @@ public class VideoSupportPath implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModif;
 
-    @Nullable
-    @Size(max = 8)
-    private String type;
 
     @Column(name = "id_video_name_export",insertable = false, updatable = false)
     private Long id_video_name_export;

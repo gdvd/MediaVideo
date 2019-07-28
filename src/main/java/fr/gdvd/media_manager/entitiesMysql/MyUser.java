@@ -55,6 +55,11 @@ public class MyUser implements Serializable {
     @OneToMany(mappedBy = "myUser", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
     private List<UserToNameExport> userToNameExports = new ArrayList<>();
 
+    @Nullable
+    @JsonIgnore
+    @OneToMany(mappedBy = "myUser", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
+    private List<Basket> baskets = new ArrayList<>();
+
 /*    @Nullable
     @JsonIgnore
     @OneToMany(mappedBy = "myUser", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)

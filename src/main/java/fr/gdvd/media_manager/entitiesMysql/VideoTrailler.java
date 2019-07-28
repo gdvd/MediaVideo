@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class VideoTrailler {
     @Size(max = 255)
     private String trailler;
 
+    @JsonIgnore
     @OneToOne
     private VideoFilm videoFilm;
 

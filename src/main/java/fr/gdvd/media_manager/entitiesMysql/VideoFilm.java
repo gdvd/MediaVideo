@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.*;
 @AllArgsConstructor
 @ToString
 @Entity
-public class VideoFilm implements Serializable {
+public class VideoFilm {
 
     @Id @Size(max = 16) // imdb ref, or other
     private String idVideo;
@@ -31,7 +32,7 @@ public class VideoFilm implements Serializable {
     private VideoTrailler videoTrailler;
 
     @Nullable
-    @OneToOne(mappedBy = "videoFilm")
+    @OneToOne(mappedBy = "videoFilm"/*, fetch = FetchType.LAZY*/)
     private VideoMoreInformation videoMoreInformation;
 
     @Nullable
@@ -42,14 +43,20 @@ public class VideoFilm implements Serializable {
     @NotNull
     private int year;
     @NotNull
-    private long duration;
+    private int duration;
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifFilm;
 
+    //#################################################################
+    //#################################################################
+    //#################################################################
+    @JsonIgnore
     @Nullable
-    @OneToMany(mappedBy = "videoFilm")
-    private List<MyMediaInfo> myMediaInfos = new ArrayList<>();
+//    @OneToOne
+//    @JoinColumn(name = "fk_type_mmi")
+    @OneToMany(mappedBy = "videoFilm", cascade = {CascadeType.ALL})
+    private List<TypeMmi> typeMmis = new ArrayList<>();
 
     @Nullable
     @OneToMany(mappedBy = "videoFilm")
@@ -60,20 +67,19 @@ public class VideoFilm implements Serializable {
     @JoinColumn(name = "fk_VideoSerie")
     private VideoSerie videoSerie;
 
+    @JsonIgnore
     @NotNull
     @ManyToOne
     @JoinColumn(name = "fk_videoSourceInfo")
     private VideoSourceInfo videoSourceInfo;
 
-    @NotNull
-    @OneToMany(mappedBy = "videoFilm")
-    private List<VideoScoreImdb> videoScoreImdbs = new ArrayList<>();
+    private int scoreOnHundred;
+    private int nbOfVote;
 
-    @NotNull
-    @OneToMany(mappedBy = "videoFilm")
+    @OneToMany(mappedBy = "videoFilm", fetch = FetchType.LAZY)
     private List<VideoFilmArtist> videoFilmArtists = new ArrayList<>();
 
-    @OneToMany(mappedBy = "videoFilm")
+    @OneToMany(mappedBy = "videoFilm"/*, fetch = FetchType.EAGER*/)
     private List<VideoTitle> videoTitles = new ArrayList<>();
 
     @OneToMany(mappedBy = "videoFilm")
@@ -89,11 +95,21 @@ public class VideoFilm implements Serializable {
 
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
+            name = "video_film2Language",
+            joinColumns = {@JoinColumn(name = "idVideo")},
+            inverseJoinColumns = { @JoinColumn(name = "idVideoLanguage")}
+    )
+    List<VideoLanguage> videoLanguages = new ArrayList<>();
+
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
             name = "video_film2country",
-            joinColumns = {@JoinColumn(name = "idVideo",columnDefinition="varchar(16)")},
+            joinColumns = {@JoinColumn(name = "idVideo")},
             inverseJoinColumns = { @JoinColumn(name = "idCountry")}
     )
     List<VideoCountry> videoCountries = new ArrayList<>();
+
 
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
@@ -107,7 +123,6 @@ public class VideoFilm implements Serializable {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "remake", referencedColumnName = "idVideo", columnDefinition="varchar(16)")
     private VideoFilm remake;
-
     @OneToMany(mappedBy = "remake", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<VideoFilm> children = new HashSet<>();
 

@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class VideoComment {
     @NotNull @Size(max = 1024)
     private String comment;
 
+    @JsonIgnore
     @OneToOne
     @JoinColumn(columnDefinition="varchar(16)")
     private VideoFilm videoFilm;

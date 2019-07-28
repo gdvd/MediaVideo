@@ -7,10 +7,12 @@ import fr.gdvd.media_manager.entitiesMysql.VideoFilmArtist;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.Optional;
+
 @RepositoryRestResource
 public interface VideoFilmArtistRepository extends JpaRepository<VideoFilmArtist, EmbeddedKeyVideoFilmArtist> {
 
-    VideoFilmArtist findByVideoFilmAndVideoArtist(VideoFilm vf, VideoArtist va);
-    VideoFilmArtist findByVideoFilm_IdVideoAndVideoArtist_IdVideoArtist(String idVideoFilm, String idVideoArtist);
+    Optional<VideoFilmArtist> findByVideoFilmAndVideoArtist(VideoFilm vf, VideoArtist va);
+    Optional<VideoFilmArtist> findByVideoFilm_IdVideoAndVideoArtist_IdVideoArtist(String idVideoFilm, String idVideoArtist);
 
 }

@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,13 +19,14 @@ import java.util.Set;
 @AllArgsConstructor
 @ToString
 @Entity
-public class VideoArtist implements Serializable {
+public class VideoArtist/* implements Serializable*/ {
 
     @Id @Size(max = 16)
     private String idVideoArtist;
     @Size(max = 128)
     private String firstLastName;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "videoArtist")
     private List<VideoFilmArtist> videoFilm2Artists =  new ArrayList<>();
 

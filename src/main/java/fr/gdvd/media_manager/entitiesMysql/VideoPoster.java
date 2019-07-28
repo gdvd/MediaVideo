@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,10 +25,15 @@ public class VideoPoster {
     @Size(max = 32)
     private String idMd5Poster;
 
-    @NotNull
+    @Nullable
     @Size(max = 255)
     private String fileName;
 
+    @Nullable
+    @Size(max = 255)
+    private String ulrImg;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "fk_VideoFilm")
     private VideoFilm videoFilm;

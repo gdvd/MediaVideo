@@ -8,20 +8,20 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.Date;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@Entity
+//@Data
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@ToString
+//@Entity
 public class VideoScoreImdb {
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    /*@Id @GeneratedValue(strategy = GenerationType.AUTO)
     private Long idScoreImdb;
     private int scoreOnHundred;
+    private int nbOfVote;
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifScoreImdb;
-    private int nbOfVote;
     @ManyToOne
-    private VideoFilm videoFilm;
+    private VideoFilm videoFilm;*/
 
 }

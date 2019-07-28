@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -12,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @ToString
 @Entity
-public class VideoFilmArtist implements Serializable {
+public class VideoFilmArtist /*implements Serializable*/ {
 
     @EmbeddedId
     @AttributeOverrides({
@@ -36,10 +37,11 @@ public class VideoFilmArtist implements Serializable {
     @Column(nullable=false, columnDefinition="boolean default false")
     private boolean music;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_video_artist", insertable = false, updatable = false, columnDefinition="varchar(16)")
     private VideoArtist videoArtist;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_video_film", insertable = false, updatable = false, columnDefinition="varchar(16)")
     private VideoFilm videoFilm;

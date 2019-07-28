@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,8 @@ public class VideoResume {
     private String textResume;
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifResume;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="fk_videoFilm")
     private VideoFilm videoFilm;

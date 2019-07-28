@@ -1,13 +1,7 @@
 package fr.gdvd.media_manager;
 
-import fr.gdvd.media_manager.daoMysql.ItemToSearchRepository;
-import fr.gdvd.media_manager.daoMysql.MyRoleRepository;
-import fr.gdvd.media_manager.daoMysql.MyUserRepository;
-import fr.gdvd.media_manager.daoMysql.PreferencesRepository;
-import fr.gdvd.media_manager.entitiesMysql.ItemToSearch;
-import fr.gdvd.media_manager.entitiesMysql.MyRole;
-import fr.gdvd.media_manager.entitiesMysql.MyUser;
-import fr.gdvd.media_manager.entitiesMysql.Preferences;
+import fr.gdvd.media_manager.daoMysql.*;
+import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.sec.UserDetailsServiceImpl;
 import fr.gdvd.media_manager.service.AccountService;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +18,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -44,6 +39,8 @@ public class MediaManagerApplication {
     private PreferencesRepository preferencesRepository;
     @Autowired
     private ItemToSearchRepository itemToSearchRepository;
+    @Autowired
+    private TypeNameRepository typeNameRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(MediaManagerApplication.class, args);
@@ -80,18 +77,26 @@ public class MediaManagerApplication {
                 myUserRepository.save(user);
                 userDetailsService.loadUserByUsername("admin");
             }
+            List<TypeName> tns = typeNameRepository.findAll();
+            if(tns == null || tns.size()==0){
+                Stream.of("film", "film court", "film moyen", "tv movie", "theatre", "dessin anime", "doc"
+                        , "docufilm", "serie", "emissionTV")
+                        .forEach(t->typeNameRepository.save(new TypeName(null, t, null)));
+            }
             Preferences pref = preferencesRepository.findByIdPreferences("01");
             if (pref == null) {
 
                 pref = new Preferences();
                 pref.setIdPreferences("01");
                 pref.setDateModifPref(new Date());
-                pref.setExtset(Stream.of("avi", "mp4", "mkv", "mov", "ogg", "webm", "divx", "mpg", "m4v", "flv", "rmvb", "xvid").collect(Collectors.toSet()));
+                pref.setExtset(Stream.of("avi", "mp4", "mkv", "mov", "ogg", "webm", "divx", "mpg",
+                        "m4v", "flv", "rmvb", "xvid", "ogm", "rm").collect(Collectors.toSet()));
                 Map<String, String> mp = new HashMap<>();
                 mp.put("pathIdVideo", "~/MediaVideo/md5s");
                 mp.put("minSizeOfVideoFile", "100000000"); // 100Mo min
                 mp.put("pathAffichiche", "~/pathIdVideo/poster");
                 mp.put("pathFileExport", "~/pathIdVideo/exports");
+                mp.put("pathFileSearch", "~/pathIdVideo/search");
                 mp.put("pathFileVideoToScan", "~/Desktop/");
                 mp.put("domain-1", "://localhost");
                 mp.put("domain-2", "://127.0.0.1");

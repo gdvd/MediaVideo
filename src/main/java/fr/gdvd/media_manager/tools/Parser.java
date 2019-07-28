@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.Double.parseDouble;
 
@@ -30,11 +32,54 @@ public class Parser {
     private MyMediaAudioRepository myMediaAudioRepository;
     @Autowired
     private MyMediaTextRepository myMediaTextRepository;
+    @Autowired
+    private VideoPosterRepository videoPosterRepository;
+    @Autowired
+    private VideoArtistRepository videoArtistRepository;
+    @Autowired
+    private VideoFilmArtistRepository videoFilmArtistRepository;
+    @Autowired
+    private VideoFilmRepository videoFilmRepository;
+    @Autowired
+    private VideoResumeRepository videoResumeRepository;
+    @Autowired
+    private VideoKeywordRepository videoKeywordRepository;
+    @Autowired
+    private VideoKindRepository videoKindRepository;
+    @Autowired
+    private VideoSourceInfoRepository videoSourceInfoRepository;
+    @Autowired
+    private VideoCountryRepository videoCountryRepository;
+    @Autowired
+    private VideoLanguageRepository videoLanguageRepository;
+    @Autowired
+    private VideoTitleRepository videoTitleRepository;
+    @Autowired
+    private TypeNameRepository typeNameRepository;
+    @Autowired
+    private TypeMmiRepository typeMmiRepository;
+    @Autowired
+    private PreferencesRepository preferencesRepository;
+    @Autowired
+    private VideoMoreInformationRepository videoMoreInformationRepository;
+
 
     //############################## Parser #######################################
     public String findTagInString(String mcd, String mcf, String toParserA, boolean withTag) {
+
         List<char[]> tags = new ArrayList();
+        tags.add("<div*>".toCharArray());
+        tags.add("</div>".toCharArray());
+        tags.add("<div>".toCharArray());
+        tags.add("</div>".toCharArray());
+        /*tags.add("<section*>".toCharArray());
+        tags.add("</section>".toCharArray());
+        tags.add("<section>".toCharArray());
+        tags.add("</section>".toCharArray());*/
+
+//        List<char[]> tags = new ArrayList();
         String str = "";
+        // __________________________________________________
         char e = '*';
         char[] motClefDebut = mcd.toCharArray();
         int sizeMotClefDebut = motClefDebut.length;
@@ -70,8 +115,6 @@ public class Parser {
             for (int i = 0; i < tags.size(); i += 2) {
                 if (deep == 0) {
                     i = tags.size() - 2;
-                } else {
-                    posDebut = pos;
                 }
                 charMcd = 0;
                 motClefDebut = tags.get(i);
@@ -92,7 +135,7 @@ public class Parser {
                             }
                         }
                         deep++;
-                        // pos--;
+                        //pos--;
                         i = tags.size();
                         break;
                     }
@@ -119,7 +162,7 @@ public class Parser {
                                     }
                                     pos = posDebut + wclong + 1;//
                                     deep++;
-                                    // pos--;
+                                    //pos--;
                                     i = tags.size();
                                     break;
                                 }
@@ -127,7 +170,6 @@ public class Parser {
                             }
                         }
                     }
-                    // if(posDebut>=sizeToPars)break;
                 }
                 // *** Recherche du motClefFin
                 posFin = pos;
@@ -135,7 +177,6 @@ public class Parser {
                     motClefFin = listMCF.get(listMCF.size() - 1);
                     sizeMotClefFin = motClefFin.length;
                     if (posFin + sizeMotClefFin <= sizeToPars) {
-
                         charMcf = 0;
                         while ((int) toPars[posFin] == (int) motClefFin[charMcf]) {
                             charMcf++;
@@ -166,7 +207,7 @@ public class Parser {
                                         } else {
                                             posEcritureFin = posFin - sizeMotClefFin;
                                         }
-                                        str = toParser.substring(posEcritureDebut, posEcritureFin);
+                                        str = toParser.substring(posEcritureDebut, posEcritureFin);// PB ICI ******************
                                         pos = sizeToPars;
                                         break;
                                     }
@@ -179,11 +220,16 @@ public class Parser {
                 }
             }
         }
+        // __________________________________________________
         return str;
     }
 
-    //#######################################################
+//########################################################################
+//###################### Parser version 2019-07-11 #######################
+//########################################################################
+
     public List<String> findAllTagsInString(String mcd, String mcf, String strEntre, boolean withTag) {
+
         List<char[]> tags = new ArrayList();
         tags.add("<div*>".toCharArray());
         tags.add("</div>".toCharArray());
@@ -212,11 +258,11 @@ public class Parser {
 
         int wclong = 1;
         List<String> listStr = new ArrayList<String>();
-
         int charMcd = 0;
         int charMcf = 0;
         boolean mCInclus = withTag;
         while (pos < (sizeToPars - 1)) {
+
             posEcritureFin = sizeToPars;
             wclong = 0;
 
@@ -247,6 +293,7 @@ public class Parser {
                                 posEcritureDebut = posDebut;
                             }
                         }
+                        // posEcritureFin = sizeToPars;
                         deep++;
                         i = tags.size();
                         break;
@@ -283,8 +330,6 @@ public class Parser {
                             }
                         }
                     }
-                    if (posDebut >= sizeToPars)
-                        break;
                 }
             }
             // *** Recherche du MotClefFin
@@ -319,7 +364,7 @@ public class Parser {
                             if (charMcf >= (sizeMotClefFin)) {
                                 deep--;
                                 listMCF.remove(listMCF.size() - 1);
-                                pos = posFin - 0;
+                                pos = posFin - 1;
 
                                 if (deep == 0) {
                                     if (mCInclus) {
@@ -344,10 +389,7 @@ public class Parser {
         return listStr;
     }
 
-    /*public Document convertXmlToDocument(String parse) {
-        Document doc = new Document();
-        return convertXmlToDocumentInt(parse, doc);
-    }*/
+    //#######################################################################
     public Map<String, Object> convertXmlToMap(String parse) {
         Map<String, Object> map = new HashMap();
         return convertXmlToMapInt(parse, map);
@@ -541,11 +583,13 @@ public class Parser {
 //                            log.info("***** Extension " + ext + " non lue !");
                         }
                     }
+                } else {
+                    if (f.isDirectory()) {
+                        String newDir = f.getAbsolutePath();
+                        listDirectory(newDir, sm);
+                    }
                 }
-                if (f.isDirectory()) {
-                    String newDir = f.getAbsolutePath();
-                    listDirectory(newDir, sm);
-                }
+
             }
         }
     }
@@ -580,23 +624,15 @@ public class Parser {
             List<Map<String, Object>> listaudio = xmlToList("AudioCount", "Audio", mediaInfo);
             List<Map<String, Object>> listtext = xmlToList("TextCount", "Text", mediaInfo);
 
-            // Informed general
-            /*Double ac = (Double) listGeneral.get("AudioCount");
-            if (ac == null) ac = 0.0;
-            mmi.setAudioCount(ac.intValue());*/
-            /*Double vc = (Double) listGeneral.get("VideoCount");
-            if (vc == null) vc = 1.0;
-            mmi.setVideoCount(vc.intValue());*/
-
-            Double tc = (Double) listGeneral.get("TextCount");
-            if (tc == null) tc = 0.0;
-            mmi.setTextCount(tc.intValue());
             Double dr = (Double) listGeneral.get("Duration");
             mmi.setDuration(dr);
             Double fs = (Double) listGeneral.get("FileSize");
             mmi.setFileSize(fs);
             String ft = (String) listGeneral.get("Format");
+            if(ft==null)ft="?";
+            if (ft.length() > 16) ft = ft.substring(0, 16);
             mmi.setFormat(ft);
+            mmi.setDateModif(new Date());
             mmi = myMediaInfoRepository.save(mmi);
 
             /* Without TableVideo */
@@ -628,60 +664,31 @@ public class Parser {
             if (he == null) he = 0.0;
             mmi.setHeight(he.intValue());
 
-/*            List<MyMediaVideo> lmmv = new ArrayList<>();
-            for (Map<String, Object> mmv : listvideo) {
-                // Create video
-                MyMediaVideo mv = new MyMediaVideo();
-                Double bt = (Double) mmv.get("BitRate");
-                if (bt == null) bt = (Double) mmv.get("OverallBitRate");
-                if (bt == null) bt = (Double) listGeneral.get("OverallBitRate");
-                if (bt == null) bt = (Double) listGeneral.get("BitRate");
-                if (bt == null) bt = 0.0;
-                mv.setBitrate(bt);
-                String cd = (String) mmv.get("CodecID");
-                if (cd == null) cd = "";
-                if (cd.length() > 16) cd = cd.substring(0, 15);
-                mv.setCodecId(cd);
-                ft = (String) mmv.get("Format");
-                if (ft == null) ft = "";
-                mv.setFormat(ft);
-                Double he = (Double) mmv.get("Height");
-                if (he == null) he = 0.0;
-                mv.setHeight(he.intValue());
-                Double wi = (Double) mmv.get("Width");
-                if (wi == null) wi = 0.0;
-                mv.setWidth(wi.intValue());
-                mv.setMyMediaInfo(mmi);
-
-                mv = myMediaVideoRepository.save(mv);
-                lmmv.add(mv);
-            }*/
-
             // Create audio
             List<MyMediaAudio> lmma = new ArrayList<>();
             for (Map<String, Object> msa : listaudio) {
                 if (msa.size() == 0) break;
                 String lg = (String) msa.get("Language");
                 if (lg == null) lg = "?";
+                if (lg.length() > 16) lg = lg.substring(0, 15);
                 MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(lg);
                 if (mml == null) {
-                    if (lg.length() > 16) lg = lg.substring(0, 15);
                     mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, lg, null, null));
                 }
                 MyMediaAudio mma = new MyMediaAudio(mmi, mml);
 
                 Double br = 0.0;
-                if(msa.get("BitRate") != null){
+                if (msa.get("BitRate") != null) {
                     if (msa.get("BitRate").getClass().getName().contains("String")) {
                         String c = (String) msa.get("BitRate");
                         c.replace("[\\D]*", "");
                         br = (Double) Double.parseDouble(c);
-                    }else{
+                    } else {
                         br = (Double) msa.get("BitRate");
                         if (br == null) br = (Double) msa.get("OverallBitRate");
                         if (br == null) br = 0.0;
                     }
-                }else{
+                } else {
                     br = 0.0;
                 }
                 mma.setBitrate(br);
@@ -718,9 +725,9 @@ public class Parser {
                 if (mmmt.size() == 0) break;
                 String lg = (String) mmmt.get("Language");
                 if (lg == null) lg = "?";
+                if (lg.length() > 16) lg = lg.substring(0, 15);
                 MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(lg);
                 if (mml == null) {
-                    if (lg.length() > 16) lg = lg.substring(0, 15);
                     mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, lg, null, null));
                 }
                 MyMediaText mmt = new MyMediaText(mmi, mml);
@@ -755,4 +762,498 @@ public class Parser {
         log.error("MediaInfo id : " + mmi.getIdMyMediaInfo() + " failed");
         return null;
     }
+
+    //########################################################################
+    //######################## VideoFilm #####################################
+    //########################################################################
+    private int getYear4VideoFilm(String partHeader1) {
+        String releaseinfo = findTagInString("releaseinfo\">", "</a>", partHeader1, false);
+        String releaseinfotmp = releaseinfo.replaceAll("[^\\s\\d]", "");
+        releaseinfotmp = releaseinfotmp.replaceAll("^[\\s]*", "").trim();
+        int year = 0;
+        for (String part : releaseinfotmp.split(" "))
+            if (Pattern.matches("[\\d]{4}", part)) {
+                year = Integer.parseInt(part);
+            }
+        return year;
+    }
+
+    private void geturlImgIfExist4VideoFilm(VideoFilm vf, String imgitemprop) {
+        String urlImg = findTagInString("src=\"", "\"", imgitemprop, false);
+        if (urlImg.length() != 0) {
+            if (urlImg.length() > 255) urlImg = urlImg.substring(0, 254);
+            VideoPoster vp = new VideoPoster(null, "",
+                    "", urlImg, vf);
+            vp = videoPosterRepository.save(vp);
+            vf.getVideoPosters().add(vp);
+        }
+    }
+
+    private int getDurationInAddDetails(String strDuration) {
+        int duration = 0;
+        for (String du : strDuration.split(" ")) {
+            if (Pattern.matches("[\\d]{1,3}", du)) {
+                duration = Integer.parseInt(du);
+                break;
+            }
+        }
+        return duration;
+    }
+
+    private void getRating4VideoFilm(VideoFilm vf, String ratingfilm) {
+        int rating = 0;
+        int ratingVote = 0;
+        if (ratingfilm.length() != 0) {
+            String ratingstr = findTagInString("<span class=\"ipl-rating-star__rating*>", "</span>", ratingfilm, false);
+            Pattern pattern = Pattern.compile("[0-9]([/.][0-9])?");
+            Matcher match = pattern.matcher(ratingstr);
+            if (match.matches()) {
+                rating = (int) (Float.parseFloat(ratingstr) * 10);
+            }
+            String ratingvotestr = findTagInString("<span class=\"ipl-rating-star__total-votes*>",
+                    "</span>", ratingfilm, false);
+            ratingvotestr = ratingvotestr.replaceAll("^[\\s]*", "").trim();
+            ratingvotestr = ratingvotestr.replace("(", "");
+            ratingvotestr = ratingvotestr.replace(")", "");
+            ratingvotestr = ratingvotestr.replaceAll(",", "");
+            if (Pattern.matches("[0-9]*", ratingvotestr)) {
+                ratingVote = Integer.parseInt(ratingvotestr);
+            }
+        }
+        vf.setScoreOnHundred(rating);
+        vf.setNbOfVote(ratingVote);
+
+    }
+
+    private List<VideoFilmArtist> getAllActors(VideoFilm vf, String castlistActors) {
+        List<VideoFilmArtist> lvfa = new ArrayList<>();
+        List<String> lactors = findAllTagsInString("<tr class*>", "</tr>", castlistActors, false);
+        int nb = 1;
+        for (String act : lactors) {
+            String actortmp = findTagInString("<td class=\"itemprop*>", "</td>", act, false);
+            String idname = getidnamewithurl(findTagInString("<a href=\"", "\"", actortmp, false));
+            if(idname.equals(""))continue;
+            VideoArtist va = videoArtistRepository.findById(idname).orElse(null);
+            if (va == null) {
+                String name = findTagInString("<span class=\"itempro*>", "</span>", actortmp, false);
+                va = new VideoArtist(idname, name, null);
+                va = videoArtistRepository.save(va);
+            }
+            VideoFilmArtist vfa = videoFilmArtistRepository.findByVideoFilmAndVideoArtist(vf, va)
+                    .orElse(null);
+            if (vfa == null) {
+                vfa = new VideoFilmArtist(va, vf);
+            }
+            vfa.setActor(true);
+            vfa.setNumberOrderActor(nb++);
+            videoFilmArtistRepository.save(vfa);
+            lvfa.add(vfa);
+        }
+        return lvfa;
+    }
+
+    private String getidnamewithurl(String url) {
+        String id = "";
+        for (String s : url.split("/")) {
+            Pattern pattern = Pattern.compile("nm[\\d]{6,9}");// 'nm' and 7 digits
+            Matcher match = pattern.matcher(s);
+            if (match.matches()) {
+                id = s;
+                break;
+            }
+        }
+        return id;
+    }
+
+    private List<VideoFilmArtist> getAllPerson(VideoFilm vf, String headerandtable, String domain) {
+        List<VideoFilmArtist> lvfa = new ArrayList<>();
+        List<String> lpers = findAllTagsInString("<tr>", "</tr>", headerandtable, false);
+        for (String per : lpers) {
+            String probablyonepers = findTagInString("<a href=\"/", "\"", per, false);
+            if (probablyonepers.length() != 0) {// IF We have one person
+                // Yse -> verrify if already exist, and make videofilm
+                String idname = getidnamewithurl(probablyonepers);
+                if(idname.equals(""))continue;
+                VideoArtist va = videoArtistRepository.findById(idname).orElse(null);
+                if (va == null) {
+                    String name = findTagInString("<a href=\"/name*>", "</a>", per, false);
+                    va = new VideoArtist(idname, name, null);
+                    va = videoArtistRepository.save(va);
+                }
+                VideoFilmArtist vfa = videoFilmArtistRepository.findByVideoFilmAndVideoArtist(vf, va)
+                        .orElse(null);
+                if (vfa == null) {
+                    vfa = new VideoFilmArtist(va, vf);
+                }
+                if (domain.equals("directors")) {
+                    vfa.setDirector(true);
+                } else {
+                    if (domain.equals("writers")) {
+                        vfa.setWriter(true);
+                    } else {
+                        if (domain.equals("producers")) {
+                            vfa.setProducer(true);
+                        } else {
+                            if (domain.equals("composers")) vfa.setMusic(true);
+                        }
+                    }
+                }
+                lvfa.add(videoFilmArtistRepository.save(vfa));
+            }
+        }
+        return lvfa;
+    }
+
+    private void setOneMoreVideoResumeToVideoFilm(VideoFilm vf, String oneElement) {
+        if (oneElement.length() != 0) {
+            String plotSummary = findTagInString("<p>", "</p>", oneElement, false);
+            VideoResume vr = new VideoResume();
+            vr.setDateModifResume(new Date());
+            if (plotSummary.length() > 2048) plotSummary = plotSummary.substring(0, 2048);
+            vr.setTextResume(plotSummary);
+            vr.setVideoFilm(vf);
+            videoResumeRepository.save(vr);
+
+        }
+    }
+
+    private List<VideoKeyword> getAllKeywordsOfVideoFilm(VideoFilm vf, String oneElement) {
+        List<VideoKeyword> lvk = new ArrayList<>();
+        List<String> lstr = findAllTagsInString("<li class*>", "</li>", oneElement, false);
+        for (String str : lstr) {
+            String keyword = findTagInString("<a href*>", "</a>", str, false);
+            if (keyword.length() != 0) {
+                if(!(keyword.length() > 6 && keyword.substring(0,7).equals("See All"))){
+                    VideoKeyword vk = videoKeywordRepository.findByKeywordEn(keyword).orElse(null);
+                    if (vk == null) {
+                        vk = new VideoKeyword(null, keyword, null, null);
+                        vk = videoKeywordRepository.save(vk);
+                    }
+                    lvk.add(vk);
+                }
+            }
+        }
+        return lvk;
+    }
+
+    private List<VideoKind> getAllKindsOfVideoFilm(VideoFilm vf, String oneElement) {
+        List<VideoKind> lvk = new ArrayList<>();
+        List<String> lstr = findAllTagsInString("<li class*>", "</li>", oneElement, false);
+        for (String str : lstr) {
+            String kind = findTagInString("<a href*>", "</a>", str, false);
+            if (kind.length() != 0) {
+                VideoKind vk = videoKindRepository.findByKindEn(kind).orElse(null);
+                if (vk == null) {
+                    vk = new VideoKind(null, kind, null, null);
+                    vk = videoKindRepository.save(vk);
+                }
+                lvk.add(vk);
+            }
+        }
+        return lvk;
+    }
+
+    private List<VideoCountry> getAllCountries(List<String> lstr) {
+        List<VideoCountry> lvc = new ArrayList<>();
+        for (String str : lstr) {
+            String c = findTagInString("<a href*>", "</a>", str, false);
+            if (c.length() > 0) {
+                VideoCountry vc = videoCountryRepository.findByCountry(c).orElse(null);
+                if (vc == null) {
+                    String u = findTagInString("<a href=\"/", "\"", str, false);
+                    if (u.split("/").length > 1) u = u.split("/")[1];
+                    if (u.length() > 32) u = u.substring(0, 31);
+                    vc = new VideoCountry(null, c, u, null, null);
+                }
+                vc = videoCountryRepository.save(vc);
+                lvc.add(vc);
+            }
+        }
+        return lvc;
+    }
+
+    private List<VideoLanguage> getAllLanguages(List<String> lstr) {
+        List<VideoLanguage> lvl = new ArrayList<>();
+        for (String str : lstr) {
+            String l = findTagInString("<a href*>", "</a>", str, false);
+            if (l.length() > 0) {
+                VideoLanguage vl = videoLanguageRepository.findByLanguage(l).orElse(null);
+                if (vl == null) {
+                    String u = findTagInString("<a href=\"/", "\"", str, false);
+                    if (u.split("/").length > 1) u = u.split("/")[1];
+                    if (u.length() > 32) u = u.substring(0, 31);
+                    vl = new VideoLanguage(null, l, u, null);
+                }
+                vl = videoLanguageRepository.save(vl);
+                lvl.add(vl);
+            }
+        }
+        return lvl;
+    }
+
+    private VideoTitle setTitleAndHisLanguage(VideoFilm vf, String partHeader) {
+        String title = findTagInString("itemprop=\"name*>", "<", partHeader, false);
+        if(title.equals(""))title="?";
+        String country = "";
+        String part1 = findTagInString("/releaseinfo\"", "</a>", partHeader, false);
+        if (part1.split("\\(").length > 1) {
+            String part2 = part1.split("\\(")[1];
+            country = part2.split("\\)")[0];
+        }else{
+            country = vf.getVideoCountries().get(0).getCountry();
+        }
+        if(country.equals(""))country="?";
+        if(country.length()>32)country=country.substring(0, 31);
+        VideoCountry vc = videoCountryRepository.findByCountry(country).orElse(null);
+        if(vc==null){
+            vc = new VideoCountry(null, country, "", null, null);
+            vc = videoCountryRepository.save(vc);
+        }
+
+        VideoTitle vt = videoTitleRepository.findByVideoFilmAndVideoCountry(vf,vc).orElse(null);
+        if(vt==null){
+            vt = new VideoTitle(vc, vf);
+            vt.setTitle(cleanString(title));
+            videoTitleRepository.save(vt);
+        }
+        return vt;
+    }
+    private VideoResume getResume(String resumeandmore, VideoFilm vf){
+        VideoResume vr = null;
+        if (resumeandmore.length() > 10){
+            String res = findTagInString("<div>","</div>",resumeandmore, false);
+            res = cleanString(res);
+            if(res.length()>20148)res=res.substring(0, 2047);
+            vr = new VideoResume(null, res, new Date(), vf);
+            vr = videoResumeRepository.save(vr);
+        }
+        return vr;
+    }
+    private void searchTypeMmi(VideoFilm vf, List<String> lstr){
+        if(lstr.size()!= 0){
+            TypeMmi tm = new TypeMmi();
+            TypeName tn = null;
+            for(String str: lstr){
+                if(str.contains("Documentary")){
+                    tn = typeNameRepository.findByTypeName("documentaire").orElse(null);
+                    if(tn==null)tn=typeNameRepository.save(
+                            new TypeName(null,"documentaire",null));
+                    break;
+                }else{
+                    if(str.contains("Serie")){
+                        tn = typeNameRepository.findByTypeName("serie").orElse(null);
+                        if(tn==null)tn=typeNameRepository.save(
+                                new TypeName(null,"serie",null));
+                        break;
+                    }else{
+                        if(str.contains("Animation")){
+                            tn = typeNameRepository.findByTypeName("dessin anime").orElse(null);
+                            if(tn==null)tn=typeNameRepository.save(
+                                    new TypeName(null,"dessin anime",null));
+                            break;
+                        }else{
+                            if(str.contains("Short")){
+                                tn = typeNameRepository.findByTypeName("film court").orElse(null);
+                                if(tn==null)tn=typeNameRepository.save(
+                                        new TypeName(null,"film court",null));
+                                break;
+                            }else{
+                                if(str.contains("TV Movie")){
+                                    tn = typeNameRepository.findByTypeName("tv movie").orElse(null);
+                                    if(tn==null)tn=typeNameRepository.save(
+                                            new TypeName(null,"tv movie",null));
+                                    break;
+                                }else{
+                                    if(str.contains("Movie")){
+                                        tn = typeNameRepository.findByTypeName("film").orElse(null);
+                                        if(tn==null)tn=typeNameRepository.save(
+                                                new TypeName(null,"film",null));
+                                        break;
+                                    }//else{
+                                        /*if(str.contains("Animation")){
+
+                                        }else{
+
+                                        }*/
+                                    //}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(tn==null){
+                tn = typeNameRepository.findByTypeName("Autre").orElse(null);
+                if(tn==null)tn=typeNameRepository.save(
+                        new TypeName(null,"Autre",null));
+            }
+            tm.setTypeName(tn);
+            tm.setDateModif(new Date());
+            tm.setVideoFilm(vf);
+            typeMmiRepository.save(tm);
+        }
+    }
+    private String cleanString(String strToClean){
+        strToClean = strToClean.replaceAll("[\\s\\n]+", " ");
+        strToClean = strToClean.replaceAll("^[\\s]*", "").trim();
+        return strToClean;
+    }
+
+    public VideoFilm createOneVideoFilm(VideoFilm vf, String toParse) {
+        if (vf == null || toParse.equals("")) throw new RuntimeException("Data no valide to create one videoFilm");
+
+        vf.setDateModifFilm(new Date());
+        VideoSourceInfo vsi = videoSourceInfoRepository.findByName("imdb").orElse(null);
+        if (vsi == null) {
+            vsi = new VideoSourceInfo("tt", "http://www.imdb.com", "imdb",
+                    new Date(), null);
+            vsi = videoSourceInfoRepository.save(vsi);
+        }
+        vf.setVideoSourceInfo(vsi);
+        vf = videoFilmRepository.save(vf);
+
+        // First bloc of webPage : VideoPoster, Year, Rating
+        String partHeader = findTagInString("<div class=\"titlereference-header*>",
+                "</div>", toParse, false);
+        geturlImgIfExist4VideoFilm(vf, findTagInString("<img", "\">", partHeader, true));
+        vf.setYear(getYear4VideoFilm(findTagInString("<ul class=\"ipl-inline-list*>",
+                "</ul>", partHeader, false)));
+        // ipl-rating-widget
+        getRating4VideoFilm(vf, findTagInString("<div class=\"ipl-rating-star*>", "</div>",
+                partHeader, false));
+        // Search TypeMmi
+        searchTypeMmi(vf, findAllTagsInString("<li class=\"ipl-inline-list__item", "</li>",
+                partHeader, false));
+
+        // Get VideoResume
+        vf.getVideoResumes().add(getResume(findTagInString("<section class=\"titlereference-section-overview*>",
+                "</div>",toParse, true), vf));
+
+
+        // Section credits : Actors(cast), Directors, "writers", "producers", "composers"
+        String partCredits = findTagInString("<section class=\"titlereference-section-credits*>",
+                "</section>", toParse, false);
+        List<String> ltable = findAllTagsInString("<header", "</table>", partCredits, true);
+        List<String> lsearch = Stream.of("cast", "directors", "writers", "producers", "composers")
+                .collect(Collectors.toList());
+        List<VideoFilmArtist> lvfa = new ArrayList<>();
+        for (String headerandtable : ltable) {
+            String sdomain = findTagInString("<h4", "</h4>", headerandtable, true);
+            String namedomain = findTagInString("id=\"", "\"", sdomain, false);
+            if (namedomain.contains("cast")) {
+                lvfa.addAll(getAllActors(vf, headerandtable));
+            } else {
+                lvfa.addAll(getAllPerson(vf, headerandtable, namedomain));
+            }
+            lsearch.remove(namedomain);
+            if (lsearch.size() == 0) break;
+        }
+        vf.getVideoFilmArtists().addAll(lvfa);
+        vf = videoFilmRepository.save(vf);
+        partCredits = null;
+
+        // Section Plot summary, keyword, and kind
+        String storyline = findTagInString("<section class=\"titlereference-section-storyline*>",
+                "</section>", toParse, false);
+        List<String> storyElements = findAllTagsInString("<tr class*>", "</tr>", storyline, false);
+        for (String oneElement : storyElements) {
+            String element = findTagInString("<td class=*>", "</td>", oneElement, false);
+            element = element.replace("^[\\s]*", "").trim();
+            if (element.contains("Plot Summary")) {
+                setOneMoreVideoResumeToVideoFilm(vf, oneElement);
+            }
+            if (element.contains("Plot Keywords")) {
+                List<VideoKeyword> lvk = getAllKeywordsOfVideoFilm(vf, oneElement);
+                //Save vf with keywords
+                if (lvk.size() != 0) {
+                    vf.getVideoKeywordSet().addAll(lvk);
+                    vf = videoFilmRepository.save(vf);
+                }
+            }
+            if (element.contains("Genres")) {
+                List<VideoKind> lvk = getAllKindsOfVideoFilm(vf, oneElement);
+                if (lvk.size() != 0) {
+                    vf.setVideoKinds(lvk);
+                    vf = videoFilmRepository.save(vf);
+                }
+            }
+        }
+        storyline = null;
+        storyElements = null;
+
+        // get Runtime, Country, Language, and Filming Locations
+        String addDetails = findTagInString("<section class=\"titlereference-section-additional-details*>"
+                , "</section>", toParse, false);
+        List<String> addAllDetails = findAllTagsInString("<tr class=*>", "</tr>", addDetails, false);
+
+        for (String detail : addAllDetails) {
+            String titleDetail = findTagInString("<td class*>", "</td>", detail, false);
+            if (titleDetail.contains("Runtime")) {
+                vf.setDuration(getDurationInAddDetails(findTagInString("<li class*>", "</li>", detail, false)));
+            } else {
+                if (titleDetail.contains("Country")) {
+                    vf.getVideoCountries()
+                            .addAll(getAllCountries(findAllTagsInString("<li class*>",
+                                    "</li>", detail, false)));
+                } else {
+                    if (titleDetail.contains("Language")) {
+                        vf.getVideoLanguages()
+                                .addAll(getAllLanguages(findAllTagsInString("<li class*>",
+                                        "</li>", detail, false)));
+                    } /*else {
+                        if (titleDetail.contains("Filming Locations")) {
+                        }
+                    }*/
+                }
+            }
+        }
+        vf.getVideoTitles().add(setTitleAndHisLanguage(vf, partHeader));
+        videoFilmRepository.save(vf);
+        addDetails = null;
+        addAllDetails = null;
+
+
+        Preferences pr = preferencesRepository.findById("01").orElse(null);
+        if (pr!=null){
+            List<ItemToSearch> itss = pr.getItemToSearches();
+
+            for(ItemToSearch its: itss){
+                String item = its.getItemImdb();
+                if(item.equals("Box Office")){
+                    String boxOffice = findTagInString("<section class=\"titlereference-section-box-office*>"
+                            , "</section>", toParse, false);
+                    if(boxOffice.length()!=0){
+                        List<String> eachItemBoxOffice = findAllTagsInString("<tr class=*>", "</tr>"
+                                , boxOffice,  false);
+                        for (String detail : eachItemBoxOffice) {
+                            String key = findTagInString("<td class=*>","</td>", detail, false);
+                            for(String it: its.getKeyset())
+                                if(key.equals(it)){
+                                    String value = findTagInString("<td>","</td>", detail, false);
+                                    Map<String, String> mp = new HashMap<>();
+                                    mp.put(key, cleanString(value));
+                                    VideoMoreInformation vmi = new VideoMoreInformation(null,mp, vf);
+                                    //save
+                                    vmi =videoMoreInformationRepository.save(vmi);
+                                    vf.setVideoMoreInformation(vmi);
+                                }
+                        }
+                    }
+
+                }
+                /*if(item.equals("Did You Know?")){
+                    String didYouKnow = findTagInString("<section class=\"titlereference-section-did-you-know*>"
+                            , "</section>", toParse, false);
+                    List<String> eachDidYouKnow = findAllTagsInString("<tr class=*>", "</tr>", didYouKnow, false);
+                    for (String detail : eachDidYouKnow) {
+                        //TODO Make trivia and goofs
+                    }
+                }*/
+            }
+        }
+
+        return videoFilmRepository.save(vf);
+    }
+
+
 }
