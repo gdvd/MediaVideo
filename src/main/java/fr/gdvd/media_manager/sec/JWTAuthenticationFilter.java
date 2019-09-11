@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.gdvd.media_manager.entitiesMysql.MyUser;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
+@Log4j2
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
@@ -59,5 +60,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withExpiresAt(new Date(System.currentTimeMillis()+SecurityParams.EXPIRATION))
                 .sign(Algorithm.HMAC256(SecurityParams.PRIVATE_SECRET));
         response.addHeader(SecurityParams.JWT_HEADER, jwt);
+        log.warn("===> user : "+user.getUsername()+" is authenticated");
     }
 }

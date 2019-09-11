@@ -27,8 +27,4 @@ public class MyRole  {
     @Size(min = 2, max = 16)
     private String role;
 
-    /*@JsonIgnore
-    @ManyToMany(mappedBy = "roles")
-    private List<MyUser> myUsers = new ArrayList<>();*/
-
 }

@@ -2,6 +2,7 @@ package fr.gdvd.media_manager.sec;
 
 import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import fr.gdvd.media_manager.service.AccountService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
+@Log4j2
 @Service
 public class UserDetailsServiceImpl  implements UserDetailsService {
 
@@ -30,6 +31,7 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
         myUser.getRoles().forEach(r->{
             authorities.add(new SimpleGrantedAuthority(r.getRole()));
         });
+        log.info("loadUserByUsername : "+ login);
         return new User(myUser.getLogin(), myUser.getPassword(), authorities);
     }
 

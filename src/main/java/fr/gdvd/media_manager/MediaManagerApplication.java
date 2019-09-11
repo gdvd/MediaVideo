@@ -79,8 +79,8 @@ public class MediaManagerApplication {
             }
             List<TypeName> tns = typeNameRepository.findAll();
             if(tns == null || tns.size()==0){
-                Stream.of("film", "film court", "film moyen", "tv movie", "theatre", "dessin anime", "doc"
-                        , "docufilm", "serie", "emissionTV")
+                Stream.of("film", "court", "moyen", "tv movie", "theatre", "anime", "doc"
+                        , "docufilm", "serie", "emissionTV", "spectacle", "autre")
                         .forEach(t->typeNameRepository.save(new TypeName(null, t, null)));
             }
             Preferences pref = preferencesRepository.findByIdPreferences("01");
@@ -92,12 +92,16 @@ public class MediaManagerApplication {
                 pref.setExtset(Stream.of("avi", "mp4", "mkv", "mov", "ogg", "webm", "divx", "mpg",
                         "m4v", "flv", "rmvb", "xvid", "ogm", "rm").collect(Collectors.toSet()));
                 Map<String, String> mp = new HashMap<>();
-                mp.put("pathIdVideo", "~/MediaVideo/md5s");
+                mp.put("pathIdVideo", "~/MediaVideo/");
                 mp.put("minSizeOfVideoFile", "100000000"); // 100Mo min
                 mp.put("pathAffichiche", "~/pathIdVideo/poster");
                 mp.put("pathFileExport", "~/pathIdVideo/exports");
                 mp.put("pathFileSearch", "~/pathIdVideo/search");
+                mp.put("pathFileTitles", "~/pathIdVideo/titles/");
+                mp.put("pathFileIdtt", "~/pathIdVideo/idtt");
+                mp.put("pathFileKeywords", "~/pathIdVideo/keywords");
                 mp.put("pathFileVideoToScan", "~/Desktop/");
+                mp.put("limitekeywods", "20");
                 mp.put("domain-1", "://localhost");
                 mp.put("domain-2", "://127.0.0.1");
                 mp.put("domain-3", "://gdvd.ddns.net");
@@ -126,7 +130,7 @@ public class MediaManagerApplication {
                 addr = InetAddress.getLocalHost();
                 hostname = addr.getHostName();
                 Map<String, String> mp = preferencesRepository.findByIdPreferences("01").getPrefmap();
-                if (hostname != "") {
+                if (!hostname.equals("")) {
                     mp.put("domain-0", "://" + hostname);
                     pref.setPrefmap(mp);
                     String homes[] = hostname.split("\\.");
@@ -138,11 +142,19 @@ public class MediaManagerApplication {
                             pref.setPrefmap(mp);
                         }
                     }
-
                     preferencesRepository.save(pref);
                 }
             } catch (UnknownHostException ex) {
                 log.info("Hostname can not be resolved");
+            }
+            Preferences pref2 = preferencesRepository.findByIdPreferences("c2title");
+            if (pref2 == null) {
+                pref2 = new Preferences();
+                pref2.setIdPreferences("c2title");
+                pref2.setDateModifPref(new Date());
+                pref2.setExtset(Stream.of("original title", "France", "French title",
+                        "UK", "English title" , "USA"/*, "Italy", "Spain", "Germany"*/).collect(Collectors.toSet()));
+                preferencesRepository.save(pref2);
             }
 
         };

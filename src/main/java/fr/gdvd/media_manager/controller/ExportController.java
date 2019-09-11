@@ -31,19 +31,21 @@ public class ExportController {
     // Example : request.getServletPath()           -> /path/infos
     // Example : request.getHeader("authorization") -> token ("Baerer xxx…")
 
-/*    @GetMapping(value = "/getAllExport",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<VideoNameExport> getAllVideoNameExport(){
-        return exportService.getAllVideoNameExport();
-    }*/
 
     @GetMapping(value = "/desactivationExport/{id}")
     public void desactivationExport(@PathVariable Long id){
+        log.info("DesactivationExport id : "+id);
         exportService.toggleActivationExport(id);
     }
     @GetMapping(value = "/activationExport/{id}")
     public void activationExport(@PathVariable Long id){
+        log.info("ActivationExport id : "+id);
         exportService.toggleActivationExport(id);
+    }
+    @GetMapping(value = "/deleteExport/{id}")
+    public void deleteExport(@PathVariable Long id){
+        log.info("deleteExport id : "+id);
+        exportService.deleteExport(id);
     }
     @GetMapping(value = "/getOneMmi/{idmmi}")
     public MyMediaInfo getOneMmi(@PathVariable String idmmi){

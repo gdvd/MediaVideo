@@ -1,5 +1,8 @@
 package fr.gdvd.media_manager.service;
 
+import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
+import fr.gdvd.media_manager.entitiesMysql.VideoFilm;
+import fr.gdvd.media_manager.entitiesNoDb.ReqScore;
 import fr.gdvd.media_manager.entitiesNoDb.Usr;
 import fr.gdvd.media_manager.entitiesNoDb.Usrnewpassword;
 import fr.gdvd.media_manager.entitiesMysql.MyRole;
@@ -27,5 +30,5 @@ public interface MediaAdminService {
     public MyUser updateuser(Usr user);
     public MyRole addnewrole(String role);
     public String info();
-
+    public VideoFilm addScoreToUser(ReqScore reqScore, String login);
 }

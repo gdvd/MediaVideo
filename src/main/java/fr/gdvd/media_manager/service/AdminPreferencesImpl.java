@@ -15,4 +15,9 @@ public class AdminPreferencesImpl implements AdminPreferences {
     public Preferences getpref() {
         return preferencesRepository.findByIdPreferences("01");
     }
+
+    @Override
+    public Preferences getpreftitle() {
+        return preferencesRepository.findByIdPreferences("c2title");
+    }
 }

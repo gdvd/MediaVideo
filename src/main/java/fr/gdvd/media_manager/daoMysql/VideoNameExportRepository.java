@@ -10,6 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import javax.persistence.Tuple;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RepositoryRestResource
 public interface VideoNameExportRepository extends JpaRepository<VideoNameExport, EmbeddedKeyVideoSupportPath> {
@@ -28,6 +29,15 @@ public interface VideoNameExportRepository extends JpaRepository<VideoNameExport
             "AS mu ON mu.idMyUser=utne.myUser " +
             "where mu.login= ?1 AND mu.active=1 AND utne.active=1 AND vne.complete=1 " +
             "and vne.active=1 order by vne.nameExport asc")
+    List<VideoNameExport> findMyVneActive(String login);
+
+    @Query("SELECT vne FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.UserToNameExport " +
+            "AS utne ON utne.id_video_name_export=vne.idVideoNameExport " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser " +
+            "AS mu ON mu.idMyUser=utne.myUser " +
+            "where mu.login= ?1 AND mu.active=1 AND utne.active=1 AND vne.complete=1 " +
+            "order by vne.nameExport asc")
     List<VideoNameExport> findMyVne(String login);
 
     @Query("SELECT vne.idVideoNameExport, vne.nameExport FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne "+
@@ -38,26 +48,11 @@ public interface VideoNameExportRepository extends JpaRepository<VideoNameExport
             "where mu.login= ?1 AND mu.active=1 AND utne.active=1 AND vne.complete=1 " +
             "and vne.active=1")
     List<Tuple> lVneIdToName(String login);
-//    List<Map<Long, String>> lVneIdToName(String login);
-//    List<Map<Long, String>> lVneIdToName();
+
+    @Query("SELECT vne.idVideoNameExport " +
+            "FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne " +
+            "WHERE vne.nameExport = :vneName")
+    Optional<Long> findIdWithName(String vneName);
 
 
-    /*@Query("SELECT vsp FROM fr.gdvd.media_manager.entitiesMysql.VideoSupportPath AS vsp " +
-            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoNameExport " +
-            "AS vne ON vsp.id_video_name_export=vne.idVideoNameExport " +
-            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.UserToNameExport " +
-            "AS utne ON utne.id_video_name_export=vne.idVideoNameExport " +
-            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser " +
-            "AS mu ON mu.idMyUser=utne.myUser " +
-            "where mu.login= ?1 AND utne.active=1 AND vne.complete=1 and vne.active=1")
-    List<VideoSupportPath> findMyVsp(String login);*/
-
-    /*
-    SELECT `video_name_export`.`name_export`,`video_name_export`.`id_video_name_export`,
-    `user_to_name_export`.`active`, `my_user`.`login`
-        FROM `video_name_export`
-
-	LEFT JOIN `user_to_name_export` ON `user_to_name_export`.`id_video_name_export` = `video_name_export`.`id_video_name_export`
-	LEFT JOIN `my_user` ON `user_to_name_export`.`id_my_user` = `my_user`.`id_my_user`;
-    */
 }

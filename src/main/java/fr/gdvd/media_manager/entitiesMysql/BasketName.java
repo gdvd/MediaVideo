@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,7 +32,7 @@ public class BasketName {
     @Size(max = 1024)
     private String comment;
 
-    @NotNull
+    @JsonIgnore
     @OneToMany(mappedBy = "id_basket_name", cascade = {CascadeType.ALL})
     private List<Basket> baskets = new ArrayList<>();
 

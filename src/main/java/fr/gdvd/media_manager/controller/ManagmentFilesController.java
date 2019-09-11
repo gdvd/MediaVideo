@@ -3,7 +3,6 @@ package fr.gdvd.media_manager.controller;
 import fr.gdvd.media_manager.daoMysql.PreferencesRepository;
 import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
-import fr.gdvd.media_manager.entitiesNoDb.VNELight;
 import fr.gdvd.media_manager.service.ManagmentFilesImpl;
 import fr.gdvd.media_manager.service.RequestWeb;
 import lombok.extern.log4j.Log4j2;
@@ -11,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.List;
@@ -22,7 +19,7 @@ import java.util.Map;
 //@Secured({"ROLE_ADMIN", "ROLE_USER"})
 //@PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
 //@RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
-//@RolesAllowed({"ROLE_USER"})
+
 @Log4j2
 @RestController
 @RequestMapping(value = "managment")
@@ -71,6 +68,18 @@ public class ManagmentFilesController {
     @PostMapping(value = "/addnewext")
     public void addnewext(@RequestBody String ext){
         managmentFiles.addnewext(ext);
+    }
+
+    // AddNewCountry for titles
+    @PostMapping(value = "/addcountry")
+    public void addcountry(@RequestBody String country){
+        managmentFiles.addcountry(country);
+    }
+
+    // Delete Country for titles
+    @PostMapping(value = "/deletecountry")
+    public void deletecountry(@RequestBody String country){
+        managmentFiles.deletecountry(country);
     }
 
     // ifNameExportExist
@@ -168,11 +177,12 @@ public class ManagmentFilesController {
         return managmentFiles.toggleActivationLogintonameexport(idvne, oldstate, logintoapply, login);
     }
 
-    @PostMapping(value = "/storemmi/{idvne}/{idVneRemote}")
+    @PostMapping(value = "/storemmi/{idvne}/{idVneRemote}/{withUpdate}")
     public VideoNameExport storemmi(@RequestBody List<MyMediaInfo> lmmi,
-                         @PathVariable int idvne,
-                         @PathVariable int idVneRemote){
-        return managmentFiles.storemmi(lmmi, idvne, idVneRemote);
+                                    @PathVariable int idvne,
+                                    @PathVariable int idVneRemote,
+                                    @PathVariable int withUpdate){
+        return managmentFiles.storemmi(lmmi, idvne, idVneRemote, withUpdate);
     }
 
     @GetMapping(value = "/GetAllVideoByUser")
@@ -247,18 +257,20 @@ public class ManagmentFilesController {
         return managmentFiles.listVspForLoginPP(login, page, size, toSort, filter);
     }
 
+/*    //copy to videouser
     @PostMapping(value = "/listMmiForLoginPP")
     public Page<MyMediaInfo> listMmiForLoginPP(@RequestParam int page,
                                                     @RequestParam int size,
                                                     @RequestParam(defaultValue = "") String toSort,
-                                                    @RequestBody String filter){
+                                                    @RequestBody String filter,
+                                               @RequestParam(defaultValue = "") String vneName){
         String login = request.getRemoteUser();
-        Page<MyMediaInfo> pmmi = managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
+        Page<MyMediaInfo> pmmi = managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter, vneName);
         return pmmi;
 //        return managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
     }
 
-
+    //copy to videouser
     @PostMapping(value = "/listMmiForLoginWithNamePP")
     public Page<MyMediaInfo> listMmiForLoginWithNamePP(@RequestParam int page,
                                                     @RequestParam int size,
@@ -268,25 +280,35 @@ public class ManagmentFilesController {
         Page<MyMediaInfo> pmmi = managmentFiles.listMmiForLoginWithNamePP(login, page, size, toSort, filter);
         return pmmi;
 //        return managmentFiles.listMmiForLoginPP(login, page, size, toSort, filter);
-    }
+    }*/
 
     @GetMapping(value = "/researchByName/{nm}", produces =
             {MediaType.APPLICATION_JSON_VALUE})
     public Page<MyMediaInfo> researchByName(@PathVariable String nm){
         String login = request.getRemoteUser();
+        log.info("ResearchByName nm : "+ nm + " By : "+login);
         return managmentFiles.researchByName(nm, login);
     }
 
+/*    //copy to videouser
     @GetMapping(value = "/lVneIdToName",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public List<VNELight> lVneIdToName(){
         String login = request.getRemoteUser();
         return managmentFiles.lVneIdToName(login);
+    }*/
+
+    @PostMapping(value = "/getVideoFilm/{idMyMediaInfo}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public VideoFilm getVideoFilm(@RequestBody String mylink,
+                                    @PathVariable String idMyMediaInfo){
+        log.info("GetVideoFilm mylink : "+ mylink + " idMyMediaInfo : "+idMyMediaInfo);
+        return requestWeb.getOneVideoFilm(mylink, idMyMediaInfo);
     }
 
-    @PostMapping(value = "/getVideoFilm",
-            produces={MediaType.APPLICATION_JSON_VALUE})
-    public VideoFilm getVideoFilm(@RequestBody String mylink){
-        return requestWeb.getOneVideoFilm(mylink);
+    @GetMapping(value = "/updatealltitles")
+    public void updatealltitles(){
+        log.info("Updatealltitles");
+        managmentFiles.updatealltitles();
     }
 }

@@ -1,11 +1,10 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.daoMysql.MyRoleRepository;
-import fr.gdvd.media_manager.daoMysql.MyUserRepository;
+import fr.gdvd.media_manager.daoMysql.*;
+import fr.gdvd.media_manager.entitiesMysql.*;
+import fr.gdvd.media_manager.entitiesNoDb.ReqScore;
 import fr.gdvd.media_manager.entitiesNoDb.Usr;
 import fr.gdvd.media_manager.entitiesNoDb.Usrnewpassword;
-import fr.gdvd.media_manager.entitiesMysql.MyRole;
-import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +30,14 @@ public class MediaAdminServiceImpl implements MediaAdminService {
     private MyRoleRepository myRoleRepository;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private VideoFilmRepository videoFilmRepository;
+    @Autowired
+    private CommentScoreUserRepository commentScoreUserRepository;
+    @Autowired
+    private VideoUserScoreRepository videoUserScoreRepository;
+    @Autowired
+    private MyMediaInfoRepository myMediaInfoRepository;
 
     @Override
     public List<MyUser> getAllUser() {
@@ -89,6 +96,24 @@ public class MediaAdminServiceImpl implements MediaAdminService {
     public String info() {
         log.info("mediaadminservice.info OK");
         return "Tres bien recu";
+    }
+
+    @Override
+    public VideoFilm addScoreToUser(ReqScore reqScore, String login) {
+        VideoFilm vf = videoFilmRepository.findById(reqScore.getIdtt()).orElse(null);
+        if(vf==null)throw new RuntimeException("This idVideoFilm doen't exist");
+        CommentScoreUser csu = null;
+        if(reqScore.getComment().length()!=0){
+            csu = new CommentScoreUser(null, reqScore.getComment(), null);
+            csu = commentScoreUserRepository.save(csu);
+        }
+        MyUser mu = myUserRepository.findByLogin(login);
+        VideoUserScore vus = new VideoUserScore(mu, vf);
+        vus.setCommentScoreUser(csu);
+        vus.setDateModifScoreUser(new Date());
+        vus.setNoteOnHundred(reqScore.getScore());
+        videoUserScoreRepository.save(vus);
+        return videoFilmRepository.findById(reqScore.getIdtt()).orElse(null);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,24 +33,32 @@ public class Basket {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModif;
 
-    @Column(name = "id_basket_name",insertable = false, updatable = false)
-    private String id_basket_name;
+//    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_basket_name", insertable = false, updatable = false)
+    private BasketName basketName;
 
+    @JsonIgnore
+    @Column(name = "id_basket_name",insertable = false, updatable = false)
+    private Long id_basket_name;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_my_media_info",insertable = false, updatable = false)
     private MyMediaInfo myMediaInfo;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_my_user",insertable = false, updatable = false)
     private MyUser myUser;
 
 
-    public Basket(MyMediaInfo myMediaInfo, MyUser myUser, Long id_basket_name) {
+    public Basket(MyMediaInfo myMediaInfo, MyUser myUser, BasketName bn) {
         this.myMediaInfo = myMediaInfo;
         this.myUser = myUser;
         this.myMediaInfo = myMediaInfo;
         this.id= new EmbeddedKeyBasket(myMediaInfo.getIdMyMediaInfo(),
-                myUser.getIdMyUser(), id_basket_name);
+                myUser.getIdMyUser(), bn.getIdBasketName());
     }
 
 

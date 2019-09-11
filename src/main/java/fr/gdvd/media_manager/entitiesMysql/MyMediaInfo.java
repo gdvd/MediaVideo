@@ -44,10 +44,6 @@ public class MyMediaInfo implements Serializable {
     private int width;
     private int height;
 
-    //#################################################################
-    //#################################################################
-    //#################################################################
-//    @Nullable
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "fk_type_mmi")
     private TypeMmi typeMmi;

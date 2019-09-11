@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,8 +22,7 @@ public class CommentScoreUser {
     @NotNull
     @Size(max = 1024)
     private String comment;
-
-    @NotNull
+    @JsonIgnore
     @OneToOne(mappedBy = "commentScoreUser")
     private VideoUserScore videoUserScore;
 }

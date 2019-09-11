@@ -37,16 +37,11 @@ public class MediaAdminController {
     private HttpServletRequest request;
     @Autowired
     private AdminPreferences adminPreferences;
-    //////////////////////// GetMapping
-    ////// MyUser
+
 
     @GetMapping(value = "/info2",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> info2(){
-//        log.info(request.getHeader("Authorization"));
-        /*return new ResponseEntity<>(
-                request.getRemoteUser(),
-                HttpStatus.ACCEPTED);*/
         return ResponseEntity.status(HttpStatus.OK)
                 .body(request.getRemoteUser());
     }
@@ -54,111 +49,130 @@ public class MediaAdminController {
     @GetMapping(value = "/findAllUser",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public List<MyUser> getAllUser(){
+        log.info("FindAllUser");
         return mediaAdminService.getAllUser();
     }
 
     @GetMapping(value = "/findAllUserActive",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public List<MyUser> getAllUserActive(){
+        log.info("getAllUserActive");
         return mediaAdminService.getAllUserActive();
     }
 
     @GetMapping(value = "/getOne",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public MyUser getOne(String login){
+        log.info("GetOne by : "+login);
         return mediaAdminService.getOne(login);
     }
 
     @GetMapping(value = "/getOneById",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public MyUser getOneById(String id){
+        log.info("GetOneById id : "+id);
         return mediaAdminService.getOneById(id);
     }
 
     @GetMapping(value = "/udateUserToActive/{login}",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public MyUser udateUserToActive(@PathVariable String login){
+        log.info("UdateUserToActive by : "+login);
         return mediaAdminService.udateUserToActive(login);
     }
 
     @GetMapping(value = "/udateUserToInactive/{login}",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public MyUser udateUserToInactive(@PathVariable String login){
+        log.info("udateUserToInactive by : "+login);
         return mediaAdminService.udateUserToInactive(login);
     }
     ////// MyRole
     @GetMapping(value = "/findAllRoles",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public List<MyRole> findAllRoles(){
+        log.info("FindAllRoles");
         return mediaAdminService.findAllRoles();
     }
+
     @GetMapping(value = "/findOneRole/{role}",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public MyRole findOneRole(@PathVariable String role){
+        log.info("FindOneRole : "+role);
         return mediaAdminService.findOneRole(role);
     }
 
     @GetMapping(value = "/changestatus/{login}")
     public MyUser changestatus(@PathVariable String login){
+        log.info("Change Status by : "+login);
         return mediaAdminService.changestatus(login);
     }
 
     @GetMapping(value = "/getpref")
     public Preferences getpref(){
+        log.info("GetPref");
         return adminPreferences.getpref();
+    }
+
+
+    @GetMapping(value = "/getpreftitle")
+    public Preferences getpreftitle(){
+        log.info("GetPrefTitle");
+        return adminPreferences.getpreftitle();
     }
 
     ///////////////////////////////////// PostMapping
     ////// MyUser
 
     @PostMapping(value = "/updateUser")
-    public MyUser updateUser(@RequestBody MyUser MyUser){
-        return mediaAdminService.updateUser(MyUser);
+    public MyUser updateUser(@RequestBody MyUser myUser){
+        log.info("udateUser by : "+myUser.getLogin());
+        return mediaAdminService.updateUser(myUser);
     }
 
     @PostMapping(value="/saveUser",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MyUser saveUser(@RequestBody MyUser MyUser,
+    public MyUser saveUser(@RequestBody MyUser myUser,
                               @RequestBody String[] roles){
-        return mediaAdminService.saveNewUser(MyUser, roles);
+        log.info("SaveRole by : "+myUser.getLogin());
+        return mediaAdminService.saveNewUser(myUser, roles);
     }
     ////// MyRole
     @PostMapping(value="/saveRole",
             produces={MediaType.APPLICATION_JSON_VALUE})
-    public MyRole saveRole(@RequestBody MyRole MyRole){
-        return mediaAdminService.saveRole(MyRole);
+    public MyRole saveRole(@RequestBody MyRole myRole){
+        log.info("SaveRole : "+myRole.getRole());
+        return mediaAdminService.saveRole(myRole);
     }
 
     @PostMapping(value="/addnewrole",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public MyRole addnewrole(@RequestBody String role){
+        log.info("AddNewRole : "+role);
         return mediaAdminService.addnewrole(role);
     }
-
-    @PostMapping(value="/uploadFile",
+/*    @PostMapping(value="/uploadFile",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public void uploadfile(@RequestBody MultipartFile[] uploads){
         int i = 0;
         for(MultipartFile mp: uploads){
             log.info("File received(uploadfile" + ++i + ") "+mp.getSize()+" name : "+mp.getName());
         }
-    }
-    /*@PostMapping("/uploadFileWithPathdir/{pahtdirids}")
-    public StateImport uploadfileWithName(@RequestBody MultipartFile[] uploads, @PathVariable String pahtdirids){
-        String pahtdiridsdecode = new String(Base64.getDecoder().decode(pahtdirids));
-        return videoAdminService.saveData(pahtdiridsdecode, uploads, request.getRemoteUser());
     }*/
     @PostMapping("/savenewuser")
     public MyUser savenewuser(@RequestBody Usr user){
+        log.info("SaveNewUser by : "+user.getLogin());
         return mediaAdminService.saveNewUser(user);
     }
 
     @PostMapping("/changepassworduser")
     public MyUser updateuserandpassword(@RequestBody Usrnewpassword user){
+        log.info("ChangePasswordUser by : "+user.getLogin());
         return mediaAdminService.updateuserandpassword(user);
     }
     @PostMapping("/changedatauser")
     public MyUser updateuser(@RequestBody Usr user){
+        log.info("ChangeDataUser by : "+user.getLogin());
         return mediaAdminService.updateuser(user);
     }
 

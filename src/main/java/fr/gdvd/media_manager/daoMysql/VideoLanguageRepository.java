@@ -10,5 +10,7 @@ import java.util.Optional;
 public interface VideoLanguageRepository extends JpaRepository<VideoLanguage, Long> {
 
     Optional<VideoLanguage> findByLanguage(String language);
+    Optional<VideoLanguage> findByUrlLanguage(String urlLanguage);
+
 
 }

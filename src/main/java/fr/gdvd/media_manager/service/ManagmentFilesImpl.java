@@ -2,8 +2,8 @@ package fr.gdvd.media_manager.service;
 
 import fr.gdvd.media_manager.daoMysql.*;
 import fr.gdvd.media_manager.entitiesMysql.*;
-import fr.gdvd.media_manager.entitiesNoDb.MediaInfoLight;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
+import fr.gdvd.media_manager.entitiesNoDb.UserLight;
 import fr.gdvd.media_manager.entitiesNoDb.VNELight;
 import fr.gdvd.media_manager.tools.Parser;
 import lombok.extern.log4j.Log4j2;
@@ -14,10 +14,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
@@ -48,11 +51,42 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     @Autowired
     private MyMediaCommentRepository myMediaCommentRepository;
     @Autowired
-    private MyMediaInfoRepositoryPage myMediaInfoRepositoryPage;
-    @Autowired
     private TypeMmiRepository typeMmiRepository;
     @Autowired
     private VideoArtistRepository videoArtistRepository;
+    @Autowired
+    private TypeNameRepository typeNameRepository;
+
+    @Autowired
+    private MyMediaTextRepository myMediaTextRepository;
+    @Autowired
+    private VideoPosterRepository videoPosterRepository;
+    @Autowired
+    private VideoFilmArtistRepository videoFilmArtistRepository;
+    @Autowired
+    private VideoFilmRepository videoFilmRepository;
+    @Autowired
+    private VideoResumeRepository videoResumeRepository;
+    @Autowired
+    private VideoKeywordRepository videoKeywordRepository;
+    @Autowired
+    private VideoKindRepository videoKindRepository;
+    @Autowired
+    private VideoSourceInfoRepository videoSourceInfoRepository;
+    @Autowired
+    private VideoCountryRepository videoCountryRepository;
+    @Autowired
+    private VideoLanguageRepository videoLanguageRepository;
+    @Autowired
+    private VideoTitleRepository videoTitleRepository;
+    @Autowired
+    private VideoMoreInformationRepository videoMoreInformationRepository;
+    @Autowired
+    private VideoCommentRepository videoCommentRepository;
+    @Autowired
+    private VideoTraillerRepository videoTraillerRepository;
+    @Autowired
+    private RequestWebImpl requestWeb;
 
 
     @Override
@@ -116,13 +150,12 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     public Page getAllVideoByUserAndByPage(String login, int pos, int page, int size) {
         List<MyMediaInfo> lmmi = new ArrayList<>();
 
-        Pageable findAll = PageRequest.of(page, pos);
+//        Pageable findAll = PageRequest.of(page, pos);
         Pageable findAll2 = PageRequest.of(page, pos, Sort.by("fileSize"));
-        Page p = myMediaInfoRepositoryPage.findAll(findAll2);
+        Page p = myMediaInfoRepository.findAll(findAll2);
 
         return p;
     }
-
 
 
     @Override
@@ -160,17 +193,53 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     @Override
     public Page<MyMediaInfo> listMmiForLoginPP(String login, int page,
                                                int size, String toSort,
-                                               String filter) {
+                                               String filter, String vneName,
+                                               boolean filename) {
         Pageable pageable = PageRequest.of(page, size);/*, Sort.by(toSort)*/
-/*        Page p = myMediaInfoRepository.findMmiPP(login, filter, pageable);
-        List<MyMediaInfo> lmmi = p.getContent();
-        for(MyMediaInfo mmi: lmmi){
-            TypeMmi tm = mmi.getTypeMmi();
-            if(tm!=null){
-                log.info("TM not null : "+mmi.getIdMyMediaInfo());
+//        log.info(login + " || Filter : " + filter + " || vneName: " + vneName);
+        if(filter.equals("%%")){
+            if(filename){
+                //Filter on filename
+                if (vneName.equals("")) {
+                    return myMediaInfoRepository.findMmiPP(login, filter, pageable);
+                } else {
+                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                    if (idVne == null) throw new RuntimeException("NameExport invalid");
+                    return myMediaInfoRepository.findMmiWithFilterVNEPP(login, idVne, pageable);
+                }
+            }else{
+                //Filter on videofilm
+                if (vneName.equals("")) {
+                    return myMediaInfoRepository.findMmiPPAndTitleVfV6(login, filter, pageable);
+                } else {
+                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                    if (idVne == null) throw new RuntimeException("NameExport invalid");
+                    return myMediaInfoRepository.findMmiPPWithFilterVNEAndTitleVf(login, filter, idVne, pageable);
+                }
             }
-        }*/
-        return myMediaInfoRepository.findMmiPP(login, filter, pageable);
+
+        }else{
+            if(filename){
+                //Filter on filename
+                if (vneName.equals("")) {
+                    return myMediaInfoRepository.findMmiPPAndTitleVf(login, filter, pageable);
+                } else {
+                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                    if (idVne == null) throw new RuntimeException("NameExport invalid");
+                    return myMediaInfoRepository.findMmiWithFilterVNEPPV2(login, idVne, filter, pageable);
+                }
+            }else{
+                //Filter on videofilm
+                if (vneName.equals("")) {
+                    return myMediaInfoRepository.findMmiPPAndTitleVfV6(login, filter, pageable);
+                } else {
+                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                    if (idVne == null) throw new RuntimeException("NameExport invalid");
+                    return myMediaInfoRepository.findMmiPPWithFilterVNEAndTitleVf(login, filter, idVne, pageable);
+                }
+            }
+
+        }
     }
 
     @Override
@@ -181,20 +250,92 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     }
 
     @Override
+    public void addcountry(String country) {
+        if (country.length() < 2) throw new RuntimeException("Size incorect");
+        if (country.length() > 32) country = country.substring(0, 31);
+
+        Preferences pref = preferencesRepository.findByIdPreferences("c2title");
+        if (pref != null) {
+            pref.getExtset().add(country);
+            preferencesRepository.save(pref);
+        }
+    }
+
+    @Override
+    public void deletecountry(String country) {
+        Preferences pref = preferencesRepository.findByIdPreferences("c2title");
+        if (pref != null) {
+            if (pref.getExtset().contains(country)) {
+                pref.getExtset().remove(country);
+                preferencesRepository.save(pref);
+//                preferencesRepository.modif(pref.getExtset() ,pref.getIdPreferences());
+            }
+        }
+    }
+
+    @Override
+    public void updatealltitles() {
+        Preferences pref = preferencesRepository.findByIdPreferences("01");
+        if (pref != null) {
+            Preferences prefTitles = preferencesRepository.findByIdPreferences("c2title");
+            if (prefTitles != null) {
+                List<String> listCountries = new ArrayList<>(prefTitles.getExtset());
+                if(listCountries.size() == 0) throw new RuntimeException("Preference with counties doesn't exist");
+
+                String pathTitles = pref.getPrefmap().get("pathFileTitles");
+                if (pathTitles == null) throw new RuntimeException("pathFileTitles doesn't exist");
+                if (pathTitles.equals("")) throw new RuntimeException("pathFileTitles doesn't exist");
+                if(pathTitles.substring(0, 1).equals("~"))
+                    pathTitles=pathTitles.substring(1);
+                List<File> listfilestitles = parser.getAllFilesTitles(pathTitles);
+                if (listfilestitles.size() != 0) {
+                    List<String> listTitleOfFile = new ArrayList<>();
+                    for(File file: listfilestitles){
+                        String t = file.getName();
+                        if(t.substring(0, 2).equals("tt")){
+                            listTitleOfFile.add(file.getName());
+                        }
+                    }
+                    List<String> listIdVideoFilms = videoFilmRepository.getAllIds();
+                    // listIdtt listfilestitles listCountries listIdVideoFilms
+                    for(String idtt: listIdVideoFilms){
+                        VideoFilm vf = videoFilmRepository.findById(idtt).orElse(null);
+                        if(vf==null)throw new RuntimeException("VideoFilm doesn't exist");
+                        String idVideoFilmWithReleaseinfo = idtt + "-releaseinfo.html";
+                        if(listTitleOfFile.contains(idVideoFilmWithReleaseinfo)){
+                            File f = new File(System.getProperty("user.home") + pathTitles + idVideoFilmWithReleaseinfo);
+                            if (f != null) {
+                                String toParse4title = requestWeb.fileToString(f);
+                                if(toParse4title.length()>0)
+                                    parser.addTitlesToVideoFilm(vf, toParse4title, listCountries);
+                            } else {
+                                log.error("File : " + idtt + "/releaseinfo is empty");
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            throw new RuntimeException("Preferences is not present");
+        }
+    }
+
+
+    @Override // To test
     public Page<MyMediaInfo> researchByName(String nm, String login) {
         Pageable pageable = PageRequest.of(0, 5);
 //        return videoArtistRepository.findMnWithNmPP(login, nm, pageable);
-        return myMediaInfoRepository.findMmiWithNMamePP( nm, pageable);
+        return myMediaInfoRepository.findMmiWithNMamePP(nm, pageable);
     }
 
     @Override
     public void addnewext(String ext) {
-        if(ext.length()>1 && ext.length()<10){
+        if (ext.length() > 1 && ext.length() < 10) {
             Preferences pref = preferencesRepository.findById("01").orElse(null);
-            if(pref==null) throw new RuntimeException("Preferences doesn't exist");
+            if (pref == null) throw new RuntimeException("Preferences doesn't exist");
             pref.getExtset().add(ext);
             preferencesRepository.save(pref);
-        }else throw new RuntimeException("Extension must be : 1 < extension < 10");
+        } else throw new RuntimeException("Extension must be : 1 < extension < 10");
     }
 
 
@@ -300,10 +441,10 @@ public class ManagmentFilesImpl implements ManagmentFiles {
 
             String path[] = oldPath.split("/");
             List<String> lstr = Arrays.asList(path);
-            String title = lstr.get(lstr.size()-1);
+            String title = lstr.get(lstr.size() - 1);
 
             String pathG = "";
-            for(int lsi = 0; lsi < lstr.size()-1; lsi++){
+            for (int lsi = 0; lsi < lstr.size() - 1; lsi++) {
                 pathG = pathG + lstr.get(lsi) + "/";
             }
 
@@ -322,11 +463,12 @@ public class ManagmentFilesImpl implements ManagmentFiles {
 
     @Override
     public List<VideoNameExport> getAllPathRemote(String login) {
-        return videoNameExportRepository.findMyVne(login);
+        return videoNameExportRepository.findMyVneActive(login);
     }
 
     @Override
-    public VideoNameExport storemmi(List<MyMediaInfo> lmmi, int idvne, int idVneRemote) {
+    public VideoNameExport storemmi(List<MyMediaInfo> lmmi, int idvne,
+                                    int idVneRemote, int withUpdate) {
         VideoNameExport vne = videoNameExportRepository.findByIdVideoNameExport((long) idvne);
         for (MyMediaInfo mmiremote : lmmi) {
             MyMediaInfo mmi = myMediaInfoRepository.findById(mmiremote.getIdMyMediaInfo()).orElse(null);
@@ -343,7 +485,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                 mmi.setWidth(mmiremote.getWidth());
                 mmi = myMediaInfoRepository.save(mmi);
 
-                for(MyMediaComment mmcremote: mmiremote.getMyMediaComments()){
+                for (MyMediaComment mmcremote : mmiremote.getMyMediaComments()) {
                     MyMediaComment mmc = new MyMediaComment();
                     mmc.setMediaComment(mmcremote.getMediaComment());
                     mmc.setMyMediaInfo(mmi);
@@ -391,14 +533,52 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                         myMediatextRepository.save(mmt);
                     }
                 }
-            }// MMI ok -> Create VSP if din't exist
+            } else { // MMI exist
+                if (withUpdate == 1) { // if update is selected
+                    // date1.compareTo(date2) > 0 d1 is after d2
+                    if (mmiremote.getDateModif().compareTo(mmi.getDateModif()) > 0) {
+                        // then verify mymediaaudio, mymediatext, or mymediacomment
+                        verifyMmi(mmiremote, mmi);
+                    }
+                    if (mmiremote.getTypeMmi() != null) {
+                        if (mmi.getTypeMmi() != null) {
+                            if (mmiremote.getTypeMmi().getDateModif().compareTo(mmi.getTypeMmi().getDateModif()) > 0) {
+                                //change typemmi with typemmiremote & videofilm
+
+                            }/* else { // IdtypeMmi are same
+                                if (mmiremote.getTypeMmi().getDateModif()
+                                        .compareTo(mmi.getTypeMmi().getDateModif()) > 0) {
+                                    // rebuild mmi.typemmi with mmiremote.typemmi
+                                }
+                                if (mmiremote.getTypeMmi().getVideoFilm() != null) {//if videoFilmremote exist
+                                    if (mmi.getTypeMmi().getVideoFilm() != null &&
+                                            mmiremote.getTypeMmi().getVideoFilm().getIdVideo() !=
+                                                    mmi.getTypeMmi().getVideoFilm().getIdVideo()) {
+                                        // copy videofilmRemote to videofilm
+                                    } else {
+                                        // verrify date videofilm
+                                        if (mmiremote.getTypeMmi().getVideoFilm().getDateModifFilm()
+                                                .compareTo(mmi.getTypeMmi().getVideoFilm().getDateModifFilm()) > 0) {
+                                            //MAJ videoFilm
+                                        }
+                                    }
+                                }
+                            }*/
+                        } else {
+                            //create typemmi with typemmiremote
+                        }
+                    }
+                }
+            }
+
+            // MMI ok -> Create VSP if din't exist
             for (VideoSupportPath vspremote : mmiremote.getVideoSupportPaths()) {
                 if (vspremote.getId().getIdVideoNameExport() == idVneRemote) {
                     String pathGen = vspremote.getId().getPathGeneral();
                     String title = vspremote.getId().getTitle();
                     VideoSupportPath vsp = videoSupportPathRepository
                             .findByTitleAndPathGeneralAndMyMediaInfo_IdMyMediaInfoAndVideoNameExport_IdVideoNameExport(
-                                    title,  pathGen, mmi.getIdMyMediaInfo(), (long) idvne);
+                                    title, pathGen, mmi.getIdMyMediaInfo(), (long) idvne);
                     if (vsp == null) {
                         vsp = new VideoSupportPath(title, pathGen, mmi.getIdMyMediaInfo(), (long) idvne);
                     }
@@ -407,11 +587,361 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                     vsp = videoSupportPathRepository.save(vsp);
                 }
             }
+            if (mmiremote.getTypeMmi() != null) {
+                TypeMmi tmmi = addTypeMmi(mmiremote.getTypeMmi());
+                if (tmmi != null && mmiremote.getTypeMmi().getVideoFilm() != null) {
+                    VideoFilm vf = videoFilmRepository.findById(mmiremote.getTypeMmi()
+                            .getVideoFilm().getIdVideo()).orElse(null);
+                    if (vf == null) {
+                        vf = addVideoFilm(mmiremote.getTypeMmi().getVideoFilm());
+                        if (vf != null) {
+                            tmmi.setVideoFilm(vf);
+                            typeMmiRepository.save(tmmi);
+                        }
+                    } else {
+                        tmmi.setVideoFilm(vf);
+                        typeMmiRepository.save(tmmi);
+                    }
+                    mmi.setTypeMmi(tmmi);
+                    myMediaInfoRepository.save(mmi);
+                }
+            }
         }
         // VSP are created -> active VNE
         vne.setActive(true);
         vne.setComplete(true);
         return videoNameExportRepository.save(vne);
+    }
+
+    private void verifyMmi(MyMediaInfo mmiremote, MyMediaInfo mmi) {
+        boolean setDate = false;
+        //Verify comment
+        if (mmiremote.getMyMediaComments() != null && mmiremote.getMyMediaComments().size() > 0) {
+            if (mmi.getMyMediaComments() != null && mmi.getMyMediaComments().size() > 0) {
+                for (MyMediaComment mmcremote : mmiremote.getMyMediaComments()) {
+                    boolean test = false;
+                    for (MyMediaComment mmc : mmi.getMyMediaComments()) {
+                        if (mmc.getMediaComment().equals(mmcremote.getMediaComment())) test = true;
+                    }
+                    if (!test) {// Only if didn't exist in mmi
+                        MyMediaComment nmmc = new MyMediaComment(null,
+                                mmcremote.getMediaComment(), mmi);
+                        myMediaCommentRepository.save(nmmc);
+                        setDate = true;
+                    }
+                }
+            } else { //Add all
+                for (MyMediaComment mmcremote : mmiremote.getMyMediaComments()) {
+                    MyMediaComment nmmc = new MyMediaComment(null,
+                            mmcremote.getMediaComment(), mmi);
+                    myMediaCommentRepository.save(nmmc);
+                    setDate = true;
+                }
+            }
+        }
+        //Verify audio
+        if (mmiremote.getMyMediaAudios() != null && mmiremote.getMyMediaAudios().size() > 0) {
+            List<MyMediaAudio> mmaRemoteOnly = new ArrayList<>();
+            List<MyMediaAudio> mmaToAdd = new ArrayList<>();
+            List<MyMediaAudio> mmaToDelete = new ArrayList<>();
+            List<MyMediaAudio> mmaStayIn = new ArrayList<>();
+            if (!(mmi.getMyMediaAudios() != null && mmi.getMyMediaAudios().size() > 0)) {
+                //Add all mmaremote to news
+                mmaToAdd.addAll(mmiremote.getMyMediaAudios());
+            } else {
+                for (MyMediaAudio mmaremote : mmiremote.getMyMediaAudios()) {
+                    boolean test = false;
+                    for (MyMediaAudio mma : mmi.getMyMediaAudios()) {
+                        if (mmaremote.getMyMediaLanguage().getLanguage()
+                                .equals(mma.getMyMediaLanguage().getLanguage())) {
+                            test = true;
+                            mmaStayIn.add(mma);
+                        }
+                    }
+                    if (!test) {
+                        mmaRemoteOnly.add(mmaremote);
+                    }
+                }
+                if (mmaRemoteOnly.size() > 0) {
+                    // arbitrary choice -> if each mmaRemoteOnly.getMyMediaLanguage().getLanguage().length()
+                    // is between 2 and 5 ,then we rewrite language.local with language.remote
+                    boolean test = true;
+                    for (MyMediaAudio ma : mmaRemoteOnly) {
+                        int length = ma.getMyMediaLanguage().getLanguage().length();
+                        if (length <= 2 || length >= 5) {
+                            test = false;
+                            break;
+                        }
+                    }
+                    if (test) { //then we rewrite the remote language
+                        //  Save  all in mmaNewToAdd
+                        for (MyMediaAudio mma : mmi.getMyMediaAudios()) {
+                            boolean test2 = false;
+                            for (MyMediaAudio mmastay : mmaStayIn) {
+                                if (mma.getMyMediaLanguage().getLanguage().equals(mmastay.getMyMediaLanguage().getLanguage())) {
+                                    test2 = true;
+                                    break;
+                                }
+                            }
+                            if (!test2) {
+                                mmaToDelete.add(mma);
+                            }
+                        }
+                        mmaToAdd = mmaRemoteOnly;
+                    }
+                }
+                if (mmaToDelete.size() == mmaToAdd.size()) { // If the deal is correct, Erase all in mmaToDelete
+                    for (MyMediaAudio mma : mmaToDelete) {
+                        myMediaAudioRepository.deleteOnelink(mmi.getIdMyMediaInfo(),
+                                mma.getMyMediaLanguage().getIdMyMediaLanguage());
+                    }
+                }
+            }
+            if (mmaToAdd.size() != 0) {// Add mma with mmaToAdd
+                for (MyMediaAudio mma : mmaToAdd) {
+                    String l = mma.getMyMediaLanguage().getLanguage();
+                    MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(l);
+                    if (mml == null) mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, l, null, null));
+                    MyMediaAudio ma = new MyMediaAudio(mmi, mml);
+                    ma.setBitrate(mma.getBitrate());
+                    ma.setChannels(mma.getChannels());
+                    ma.setDuration(mma.getDuration());
+                    ma.setForced(mma.isForced());
+                    myMediaAudioRepository.save(ma);
+                }
+                setDate = true;
+            }
+        }
+        //Verify text
+        if (mmiremote.getMyMediaTexts() != null && mmiremote.getMyMediaTexts().size() > 0) {
+            List<MyMediaText> mmaRemoteOnly = new ArrayList<>();
+            List<MyMediaText> mmaToAdd = new ArrayList<>();
+            List<MyMediaText> mmaToDelete = new ArrayList<>();
+            List<MyMediaText> mmaStayIn = new ArrayList<>();
+            if (!(mmi.getMyMediaTexts() != null && mmi.getMyMediaTexts().size() > 0)) {
+                //Add all mmaremote to news
+                mmaToAdd.addAll(mmiremote.getMyMediaTexts());
+            } else {
+                for (MyMediaText mmaremote : mmiremote.getMyMediaTexts()) {
+                    boolean test = false;
+                    for (MyMediaText mma : mmi.getMyMediaTexts()) {
+                        if (mmaremote.getMyMediaLanguage().getLanguage()
+                                .equals(mma.getMyMediaLanguage().getLanguage())) {
+                            test = true;
+                            mmaStayIn.add(mma);
+                        }
+                    }
+                    if (!test) {
+                        mmaRemoteOnly.add(mmaremote);
+                    }
+                }
+                if (mmaRemoteOnly.size() > 0) {
+                    // arbitrary choice -> between 2 and 5
+                    boolean test = true;
+                    for (MyMediaText ma : mmaRemoteOnly) {
+                        int length = ma.getMyMediaLanguage().getLanguage().length();
+                        if (length <= 2 || length >= 5) {
+                            test = false;
+                            break;
+                        }
+                    }
+                    if (test) { //then we rewrite the remote language
+                        //  Save  all in mmaNewToAdd
+                        for (MyMediaText mma : mmi.getMyMediaTexts()) {
+                            boolean test2 = false;
+                            for (MyMediaText mmastay : mmaStayIn) {
+                                if (mma.getMyMediaLanguage().getLanguage().equals(mmastay.getMyMediaLanguage().getLanguage())) {
+                                    test2 = true;
+                                    break;
+                                }
+                            }
+                            if (!test2) {
+                                mmaToDelete.add(mma);
+                            }
+                        }
+                        mmaToAdd = mmaRemoteOnly;
+                    }
+                }
+                if (mmaToDelete.size() == mmaToAdd.size()) { // If the deal is correct, Erase all in mmaToDelete
+                    for (MyMediaText mma : mmaToDelete) {
+                        myMediaTextRepository.deleteOnelink(mmi.getIdMyMediaInfo(), mma.getMyMediaLanguage().getIdMyMediaLanguage());
+                    }
+                }
+            }
+            if (mmaToAdd.size() != 0) {// Add mma with mmaToAdd
+                for (MyMediaText mma : mmaToAdd) {
+                    String l = mma.getMyMediaLanguage().getLanguage();
+                    MyMediaLanguage mml = myMediaLanguageRepository.findByLanguage(l);
+                    if (mml == null) mml = myMediaLanguageRepository.save(new MyMediaLanguage(null, l, null, null));
+                    MyMediaText ma = new MyMediaText(mmi, mml);
+                    ma.setFormat(mma.getFormat());
+                    ma.setInternal(mma.isInternal());
+                    ma.setCodecId(mma.getCodecId());
+                    ma.setForced(mma.isForced());
+                    myMediaTextRepository.save(ma);
+                }
+                setDate = true;
+            }
+        }
+        if (setDate) {
+            mmi.setDateModif(mmiremote.getDateModif());
+            myMediaInfoRepository.save(mmi);
+        }
+
+    }
+
+    private TypeMmi addTypeMmi(TypeMmi tmmi) {
+        TypeName tn = tmmi.getTypeName();
+        if (tn == null) {
+            tn = new TypeName(null, "autre", null);
+            typeNameRepository.save(tn);
+        }
+        TypeMmi tmmiNew = new TypeMmi(null, tmmi.getSeason(), tmmi.getEpisode(), tmmi.getNameSerie(),
+                tmmi.getNameSerieVO(), true, new Date(), tn, null, null);
+        return typeMmiRepository.save(tmmiNew);
+    }
+
+    private VideoFilm addVideoFilm(VideoFilm vfRemote) {
+        VideoFilm vf = new VideoFilm();
+        vf.setDateModifFilm(vfRemote.getDateModifFilm());
+
+        VideoSourceInfo vsi = videoSourceInfoRepository
+                .findBySourceUrl(vfRemote.getVideoSourceInfo().getSourceUrl()).orElse(null);
+        if (vsi == null) {
+            vsi = new VideoSourceInfo(vfRemote.getVideoSourceInfo().getIdSourceInfo(),
+                    vfRemote.getVideoSourceInfo().getSourceUrl(),
+                    vfRemote.getVideoSourceInfo().getName(),
+                    new Date(), null);
+            vsi = videoSourceInfoRepository.save(vsi);
+        }
+        vf.setVideoSourceInfo(vsi);
+        vf.setYear(vfRemote.getYear());
+        vf.setScoreOnHundred(vfRemote.getScoreOnHundred());
+        vf.setNbOfVote(vfRemote.getNbOfVote());
+        vf.setRemake(vfRemote.getRemake());
+        vf.setIdVideo(vfRemote.getIdVideo());
+        vf = videoFilmRepository.save(vf);
+
+        if (vfRemote.getVideoPosters() != null && vfRemote.getVideoPosters().size() > 0) {
+            for (VideoPoster vp : vfRemote.getVideoPosters()) {
+                VideoPoster vpnew = new VideoPoster(null, vp.getIdMd5Poster(), vp.getFileName(), vp.getUlrImg(), vf);
+                videoPosterRepository.save(vpnew);
+            }
+        }
+        if (vfRemote.getVideoResumes() != null && vfRemote.getVideoResumes().size() > 0) {
+            for (VideoResume vr : vfRemote.getVideoResumes()) {
+                VideoResume vrnew = new VideoResume(null, vr.getTextResume(), new Date(), vf);
+                videoResumeRepository.save(vrnew);
+            }
+        }
+        if (vfRemote.getVideoTrailler() != null) {
+            VideoTrailler vt = new VideoTrailler(null, vfRemote.getVideoTrailler()
+                    .getTrailler(), vf);
+            videoTraillerRepository.save(vt);
+        }
+        if (vfRemote.getVideoComment() != null) {
+            VideoComment vc = new VideoComment(null,
+                    vfRemote.getVideoComment().getComment(), vf);
+            videoCommentRepository.save(vc);
+        }
+        if (vfRemote.getVideoFilmArtists() != null) {
+            for (VideoFilmArtist vfa : vfRemote.getVideoFilmArtists()) {
+                VideoArtist vaNew = videoArtistRepository.findById(vfa.getVideoArtist()
+                        .getIdVideoArtist()).orElse(null);
+                if (vaNew == null)
+                    vaNew = videoArtistRepository.save(new VideoArtist(vfa.getVideoArtist()
+                            .getIdVideoArtist(),
+                            vfa.getVideoArtist().getFirstLastName(), null));
+                VideoFilmArtist vfaNew = videoFilmArtistRepository
+                        .findByVideoFilmAndVideoArtist(vf, vaNew).orElse(null);
+                if (vfaNew == null) {
+                    vfaNew = new VideoFilmArtist(vaNew, vf);
+                }
+                vfaNew.setMusic(vfa.isMusic());
+                vfaNew.setProducer(vfa.isProducer());
+                vfaNew.setDirector(vfa.isDirector());
+                vfaNew.setActor(vfa.isActor());
+                vfaNew.setNumberOrderActor(vfa.getNumberOrderActor());
+                vfaNew.setWriter(vfa.isWriter());
+                videoFilmArtistRepository.save(vfaNew);
+            }
+        }
+        if (vfRemote.getVideoKeywordSet() != null) {
+            List<VideoKeyword> lvk = new ArrayList<>();
+            for (VideoKeyword vk : vfRemote.getVideoKeywordSet()) {
+                VideoKeyword vknew = videoKeywordRepository.findByKeywordEn(vk.getKeywordEn()).orElse(null);
+                if (vknew == null) {
+                    vknew = new VideoKeyword(null, vk.getKeywordEn(),
+                            vk.getKeywordFr(), null);
+                    vknew = videoKeywordRepository.save(vknew);
+                }
+                lvk.add(vknew);
+            }
+            vf.getVideoKeywordSet().addAll(lvk);
+        }
+        if (vfRemote.getVideoKinds() != null) {
+            List<VideoKind> lvk = new ArrayList<>();
+            for (VideoKind vk : vfRemote.getVideoKinds()) {
+                VideoKind vknew = videoKindRepository.findByKindEn(vk.getKindEn()).orElse(null);
+                if (vknew == null) {
+                    vknew = new VideoKind(null, vk.getKindEn(), vk.getKindFr(),
+                            null);
+                    vknew = videoKindRepository.save(vknew);
+                }
+                lvk.add(vknew);
+            }
+            vf.getVideoKinds().addAll(lvk);
+        }
+        if (vfRemote.getVideoLanguages() != null) {
+            List<VideoLanguage> lvl = new ArrayList<>();
+            for (VideoLanguage vl : vfRemote.getVideoLanguages()) {
+                VideoLanguage vlnew = videoLanguageRepository.findByUrlLanguage(vl.getUrlLanguage()).orElse(null);
+                if (vlnew == null) {
+                    vlnew = new VideoLanguage(null, vl.getLanguage(),
+                            vl.getUrlLanguage(), null);
+                    vlnew = videoLanguageRepository.save(vlnew);
+                }
+                lvl.add(vlnew);
+            }
+            vf.getVideoLanguages().addAll(lvl);
+        }
+        if (vfRemote.getVideoMoreInformation() != null) {
+            VideoMoreInformation vmi = new VideoMoreInformation(null,
+                    vfRemote.getVideoMoreInformation().getInformap(), vf);
+            videoMoreInformationRepository.save(vmi);
+        }
+        if (vfRemote.getVideoCountries() != null) {
+            List<VideoCountry> lvc = new ArrayList<>();
+            for (VideoCountry vc : vfRemote.getVideoCountries()) {
+                VideoCountry vcnew = videoCountryRepository.findByCountry(vc.getCountry()).orElse(null);
+                if (vcnew == null) {
+                    vcnew = new VideoCountry(null, vc.getCountry(), vc.getUrlCountry(),
+                            null, null);
+                    vcnew = videoCountryRepository.save(vcnew);
+                }
+                lvc.add(vcnew);
+            }
+            vf.getVideoCountries().addAll(lvc);
+        }
+        if (vfRemote.getVideoTitles() != null) {
+            for (VideoTitle vt : vfRemote.getVideoTitles()) {
+                VideoCountry vcnew = videoCountryRepository.findByCountry(vt.getVideoCountry()
+                        .getCountry()).orElse(null);
+                if (vcnew == null) {
+                    vcnew = new VideoCountry(null, vt.getVideoCountry()
+                            .getCountry(), vt.getVideoCountry().getUrlCountry(),
+                            null, null);
+                    vcnew = videoCountryRepository.save(vcnew);
+                }
+                VideoTitle vtnew = videoTitleRepository.findByVideoFilmAndVideoCountry(vf, vcnew).orElse(null);
+                if (vtnew == null) {
+                    vtnew = new VideoTitle(vcnew, vf);
+                    vtnew.setTitle(vt.getTitle());
+                    videoTitleRepository.save(vtnew);
+                }
+            }
+        }
+        return videoFilmRepository.save(vf);
     }
 
     @Override
@@ -457,10 +987,6 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         return videoNameExportRepository.findMyVne(login);
     }
 
-//    @Override
-//    public List<MediaInfoLight> findAllMediaInfoLight() {
-//        return mediaInfoLightRepository.findAll();
-//    }
 
     @Override
     public MyMediaInfo createMmiAndGetMd5(String pathGeneral) {
@@ -481,10 +1007,10 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     public VideoSupportPath createVSP(Long idVideoNameExport, String md5, String pathGeneral) {
         String path[] = pathGeneral.split("/");
         List<String> lstr = Arrays.asList(path);
-        String title = lstr.get(lstr.size()-1);
+        String title = lstr.get(lstr.size() - 1);
 
         String pathG = "";
-        for(int lsi = 0; lsi < lstr.size()-1; lsi++){
+        for (int lsi = 0; lsi < lstr.size() - 1; lsi++) {
             pathG = pathG + lstr.get(lsi) + "/";
         }
 
@@ -502,9 +1028,6 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     }
 
     public void senddatas(List<String> urls, String nameExportDecode, String login) {
-        /*log.info("***** Receive datas : " + urls.size()
-                + " nameExportDecode : " + nameExportDecode
-                + " login : " + login);*/
         MyUser myUser = myUserRepository.findByLogin(login);
         // VSP & VNE
         for (String url : urls) {
@@ -515,13 +1038,20 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     @Override
     public List<VNELight> lVneIdToName(String login) {
         List<Tuple> lmls = videoNameExportRepository.lVneIdToName(login);
-//        Map<Long, String> mls = new HashMap<>();
         List<VNELight> lvne = new ArrayList<>();
-        for(Tuple t:lmls){
-//            mls.put((Long) t.toArray()[0], (String) t.toArray()[1]);
+        for (Tuple t : lmls) {
             lvne.add(new VNELight((Long) t.toArray()[0], (String) t.toArray()[1]));
         }
         return lvne;
     }
 
+    @Override
+    public List<UserLight> listUserWithId() {
+        List<Tuple> ltul = myUserRepository.lUserWithId();
+        List<UserLight> lul = new ArrayList<>();
+        for(Tuple t : ltul){
+            lul.add(new UserLight((Long) t.toArray()[0], (String) t.toArray()[1]));
+        }
+        return lul;
+    }
 }

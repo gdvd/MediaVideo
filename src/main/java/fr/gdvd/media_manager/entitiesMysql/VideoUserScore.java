@@ -32,6 +32,7 @@ public class VideoUserScore implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifScoreUser;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_my_user", insertable = false, updatable = false)
     private MyUser myUser;

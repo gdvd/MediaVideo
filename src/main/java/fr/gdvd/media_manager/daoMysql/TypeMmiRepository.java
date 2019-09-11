@@ -10,6 +10,6 @@ import java.util.List;
 @RepositoryRestResource
 public interface TypeMmiRepository extends JpaRepository<TypeMmi, Long> {
 
-    TypeMmi findByVideoFilm(VideoFilm videoFilm);
+    List<TypeMmi> findByVideoFilm(VideoFilm videoFilm);
 
 }

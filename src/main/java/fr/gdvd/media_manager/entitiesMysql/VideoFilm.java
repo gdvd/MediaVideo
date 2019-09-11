@@ -48,13 +48,8 @@ public class VideoFilm {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifFilm;
 
-    //#################################################################
-    //#################################################################
-    //#################################################################
     @JsonIgnore
     @Nullable
-//    @OneToOne
-//    @JoinColumn(name = "fk_type_mmi")
     @OneToMany(mappedBy = "videoFilm", cascade = {CascadeType.ALL})
     private List<TypeMmi> typeMmis = new ArrayList<>();
 
@@ -67,7 +62,6 @@ public class VideoFilm {
     @JoinColumn(name = "fk_VideoSerie")
     private VideoSerie videoSerie;
 
-    @JsonIgnore
     @NotNull
     @ManyToOne
     @JoinColumn(name = "fk_videoSourceInfo")

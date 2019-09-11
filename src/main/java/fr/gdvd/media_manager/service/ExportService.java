@@ -10,4 +10,5 @@ public interface ExportService {
     void toggleActivationExport(Long id);
     MyMediaInfo getOneMmi(String idmmi);
     List<String> getListUsers();
+    void deleteExport(Long id);
 }

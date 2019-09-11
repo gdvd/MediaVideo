@@ -41,9 +41,6 @@ public class UserToNameExport {
             updatable = false)
     private VideoNameExport videoNameExport;
 
-/*    @Column(name = "id_fk_my_user",insertable = false, updatable = false)
-    private Long id_fk_my_user;*/
-
     @Column(name = "id_video_name_export",insertable = false, updatable = false)
     private Long id_video_name_export;
 

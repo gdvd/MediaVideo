@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface VideoSourceInfoRepository extends JpaRepository<VideoSourceInfo, String> {
 
     Optional<VideoSourceInfo> findByName(String name);
+    Optional<VideoSourceInfo> findBySourceUrl(String sourceUrl);
 
 }

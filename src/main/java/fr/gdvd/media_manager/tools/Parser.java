@@ -62,13 +62,19 @@ public class Parser {
     private PreferencesRepository preferencesRepository;
     @Autowired
     private VideoMoreInformationRepository videoMoreInformationRepository;
+    @Autowired
+    private VideoSupportPathRepository videoSupportPathRepository;
 
 
-    //############################## Parser #######################################
+
+//############################## Parser ##################################
+//########################################################################
+//###################### Parser version 2019-08-04 #######################
+//########################################################################
     public String findTagInString(String mcd, String mcf, String toParserA, boolean withTag) {
 
         List<char[]> tags = new ArrayList();
-        tags.add("<div*>".toCharArray());
+        tags.add("<div *>".toCharArray());
         tags.add("</div>".toCharArray());
         tags.add("<div>".toCharArray());
         tags.add("</div>".toCharArray());
@@ -141,11 +147,11 @@ public class Parser {
                     }
                     if (charMcd < (sizeMotClefDebut - 1)) {
                         // MCD avec wildcard
-                        if (motClefDebut[charMcd + 1] == e) {
+                        if (motClefDebut[charMcd] == e) {
                             if ((charMcd + 1) < sizeMotClefDebut) {
                                 wclong = 0;
-                                while (toPars[posDebut + wclong] != (int) motClefDebut[charMcd + 2]) {
-                                    if ((charMcd + 1 + wclong) < sizeToPars || wclong > 500) {
+                                while (toPars[posDebut + wclong] != (int) motClefDebut[charMcd + 1]) {
+                                    if ((charMcd + wclong) < sizeToPars || wclong > 500) {
                                         wclong++;
                                     } else {
                                         break;
@@ -225,13 +231,12 @@ public class Parser {
     }
 
 //########################################################################
-//###################### Parser version 2019-07-11 #######################
+//###################### Parser version 2019-08-04 #######################
 //########################################################################
-
     public List<String> findAllTagsInString(String mcd, String mcf, String strEntre, boolean withTag) {
 
         List<char[]> tags = new ArrayList();
-        tags.add("<div*>".toCharArray());
+        tags.add("<div *>".toCharArray());
         tags.add("</div>".toCharArray());
         tags.add("<div>".toCharArray());
         tags.add("</div>".toCharArray());
@@ -300,11 +305,11 @@ public class Parser {
                     }
                     if (charMcd < (sizeMotClefDebut - 1)) {
                         // MCD avec wildcard
-                        if (motClefDebut[charMcd + 1] == e) {
+                        if (motClefDebut[charMcd] == e) {
                             if ((charMcd + 1) < sizeMotClefDebut) {
                                 wclong = 0;
-                                while (toPars[posDebut + wclong] != (int) motClefDebut[charMcd + 2]) {
-                                    if ((charMcd + 1 + wclong) < sizeToPars || wclong > 500) {
+                                while (toPars[posDebut + wclong] != (int) motClefDebut[charMcd + 1]) {
+                                    if ((charMcd + wclong) < sizeToPars || wclong > 500) {
                                         wclong++;
                                     } else {
                                         break;
@@ -485,7 +490,7 @@ public class Parser {
         if (matcher.find()) {
             ob = (Double) parseDouble(keyword);
         } else {
-            // Identify Date UTC BUT Create sometimes bugs
+            // Identify Date UTC BUT Create sometimes some bugs
             /*pattern = Pattern
                     .compile("UTC\\s[0-9]{4}-[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}$");
             matcher = pattern.matcher(keyword);
@@ -557,7 +562,6 @@ public class Parser {
         return res;
     }
 
-    /************ Good ************/
     public List<String> listAllDirectories(ScanMessage sm) {
         List<String> files = new ArrayList<>();
         listDirectory(sm.getPathVideo(), sm);
@@ -580,7 +584,6 @@ public class Parser {
                             List<String> ls = sm.getExtentionsNotRead();
                             ls.add(ext);
                             sm.setExtentionsNotRead(ls);
-//                            log.info("***** Extension " + ext + " non lue !");
                         }
                     }
                 } else {
@@ -592,6 +595,15 @@ public class Parser {
 
             }
         }
+    }
+    public List<File> getAllFilesTitles(String pathTitles){
+        List<File> listFile = new ArrayList<>();
+        File file = new File(System.getProperty("user.home") + pathTitles);
+        File[] fs = file.listFiles();
+        if (fs != null) {
+            listFile.addAll(Arrays.asList(fs));
+        }
+        return listFile;
     }
 
     public String readMediaInfo(String url) {
@@ -629,7 +641,7 @@ public class Parser {
             Double fs = (Double) listGeneral.get("FileSize");
             mmi.setFileSize(fs);
             String ft = (String) listGeneral.get("Format");
-            if(ft==null)ft="?";
+            if (ft == null) ft = "?";
             if (ft.length() > 16) ft = ft.substring(0, 16);
             mmi.setFormat(ft);
             mmi.setDateModif(new Date());
@@ -750,11 +762,8 @@ public class Parser {
                 if (ft == null) ft = "";
                 mmt.setFormat(ft);
                 mmt.setInternal(true);
-
                 lmmt.add(myMediaTextRepository.save(mmt));
-
             }
-
 //            mmi.setMyMediaVideos(lmmv);
             mmi = myMediaInfoRepository.save(mmi);
             return mmi;
@@ -763,9 +772,6 @@ public class Parser {
         return null;
     }
 
-    //########################################################################
-    //######################## VideoFilm #####################################
-    //########################################################################
     private int getYear4VideoFilm(String partHeader1) {
         String releaseinfo = findTagInString("releaseinfo\">", "</a>", partHeader1, false);
         String releaseinfotmp = releaseinfo.replaceAll("[^\\s\\d]", "");
@@ -832,7 +838,7 @@ public class Parser {
         for (String act : lactors) {
             String actortmp = findTagInString("<td class=\"itemprop*>", "</td>", act, false);
             String idname = getidnamewithurl(findTagInString("<a href=\"", "\"", actortmp, false));
-            if(idname.equals(""))continue;
+            if (idname.equals("")) continue;
             VideoArtist va = videoArtistRepository.findById(idname).orElse(null);
             if (va == null) {
                 String name = findTagInString("<span class=\"itempro*>", "</span>", actortmp, false);
@@ -873,7 +879,7 @@ public class Parser {
             if (probablyonepers.length() != 0) {// IF We have one person
                 // Yse -> verrify if already exist, and make videofilm
                 String idname = getidnamewithurl(probablyonepers);
-                if(idname.equals(""))continue;
+                if (idname.equals("")) continue;
                 VideoArtist va = videoArtistRepository.findById(idname).orElse(null);
                 if (va == null) {
                     String name = findTagInString("<a href=\"/name*>", "</a>", per, false);
@@ -923,7 +929,7 @@ public class Parser {
         for (String str : lstr) {
             String keyword = findTagInString("<a href*>", "</a>", str, false);
             if (keyword.length() != 0) {
-                if(!(keyword.length() > 6 && keyword.substring(0,7).equals("See All"))){
+                if (!(keyword.length() > 6 && keyword.substring(0, 7).equals("See All"))) {
                     VideoKeyword vk = videoKeywordRepository.findByKeywordEn(keyword).orElse(null);
                     if (vk == null) {
                         vk = new VideoKeyword(null, keyword, null, null);
@@ -976,12 +982,13 @@ public class Parser {
         List<VideoLanguage> lvl = new ArrayList<>();
         for (String str : lstr) {
             String l = findTagInString("<a href*>", "</a>", str, false);
-            if (l.length() > 0) {
-                VideoLanguage vl = videoLanguageRepository.findByLanguage(l).orElse(null);
+            String u = findTagInString("<a href=\"/", "\"", str, false);
+            if (u.split("/").length > 1) u = u.split("/")[1];
+            if (u.length() > 32) u = u.substring(0, 31);
+            if (l.length() > 32) l = l.substring(0, 31);
+            if (l.length() > 0 && u.length() > 0) {
+                VideoLanguage vl = videoLanguageRepository.findByUrlLanguage(u).orElse(null);
                 if (vl == null) {
-                    String u = findTagInString("<a href=\"/", "\"", str, false);
-                    if (u.split("/").length > 1) u = u.split("/")[1];
-                    if (u.length() > 32) u = u.substring(0, 31);
                     vl = new VideoLanguage(null, l, u, null);
                 }
                 vl = videoLanguageRepository.save(vl);
@@ -993,115 +1000,116 @@ public class Parser {
 
     private VideoTitle setTitleAndHisLanguage(VideoFilm vf, String partHeader) {
         String title = findTagInString("itemprop=\"name*>", "<", partHeader, false);
-        if(title.equals(""))title="?";
+        if (title.equals("")) title = "?";
         String country = "";
         String part1 = findTagInString("/releaseinfo\"", "</a>", partHeader, false);
-        if (part1.split("\\(").length > 1) {
+        String part1Tbl [] = part1.split("\\(");
+        if (part1Tbl.length > 1) {
             String part2 = part1.split("\\(")[1];
             country = part2.split("\\)")[0];
-        }else{
-            country = vf.getVideoCountries().get(0).getCountry();
+        } else {
+            if(part1Tbl.length == 1 && (! part1Tbl[0].equals(""))){
+                country = vf.getVideoCountries().get(0).getCountry();
+            }
         }
-        if(country.equals(""))country="?";
-        if(country.length()>32)country=country.substring(0, 31);
+        if (country.equals("")) country = "?";
+        if (country.length() > 32) country = country.substring(0, 31);
         VideoCountry vc = videoCountryRepository.findByCountry(country).orElse(null);
-        if(vc==null){
+        if (vc == null) {
             vc = new VideoCountry(null, country, "", null, null);
             vc = videoCountryRepository.save(vc);
         }
 
-        VideoTitle vt = videoTitleRepository.findByVideoFilmAndVideoCountry(vf,vc).orElse(null);
-        if(vt==null){
+        VideoTitle vt = videoTitleRepository.findByVideoFilmAndVideoCountry(vf, vc).orElse(null);
+        if (vt == null) {
             vt = new VideoTitle(vc, vf);
             vt.setTitle(cleanString(title));
             videoTitleRepository.save(vt);
         }
         return vt;
     }
-    private VideoResume getResume(String resumeandmore, VideoFilm vf){
+
+    private VideoResume getResume(String resumeandmore, VideoFilm vf) {
         VideoResume vr = null;
-        if (resumeandmore.length() > 10){
-            String res = findTagInString("<div>","</div>",resumeandmore, false);
+        if (resumeandmore.length() > 10) {
+            String res = findTagInString("<div>", "</div>", resumeandmore, false);
             res = cleanString(res);
-            if(res.length()>20148)res=res.substring(0, 2047);
+            if (res.length() > 20148) res = res.substring(0, 2047);
             vr = new VideoResume(null, res, new Date(), vf);
             vr = videoResumeRepository.save(vr);
         }
         return vr;
     }
-    private void searchTypeMmi(VideoFilm vf, List<String> lstr){
-        if(lstr.size()!= 0){
+
+    private void searchTypeMmi(VideoFilm vf, String idMyMediaInfo, List<String> lstr) {
+        if (lstr.size() != 0) {
             TypeMmi tm = new TypeMmi();
             TypeName tn = null;
-            for(String str: lstr){
-                if(str.contains("Documentary")){
-                    tn = typeNameRepository.findByTypeName("documentaire").orElse(null);
-                    if(tn==null)tn=typeNameRepository.save(
-                            new TypeName(null,"documentaire",null));
+            for (String str : lstr) {
+                if (str.contains("Documentary")) {
+                    tn = typeNameRepository.findByTypeName("doc").orElse(null);
+                    if (tn == null) tn = typeNameRepository.save(
+                            new TypeName(null, "doc", null));
                     break;
-                }else{
-                    if(str.contains("Serie")){
+                } else {
+                    if (str.contains("Serie") || str.contains("TV Episode")) {
                         tn = typeNameRepository.findByTypeName("serie").orElse(null);
-                        if(tn==null)tn=typeNameRepository.save(
-                                new TypeName(null,"serie",null));
+                        if (tn == null) tn = typeNameRepository.save(
+                                new TypeName(null, "serie", null));
                         break;
-                    }else{
-                        if(str.contains("Animation")){
-                            tn = typeNameRepository.findByTypeName("dessin anime").orElse(null);
-                            if(tn==null)tn=typeNameRepository.save(
-                                    new TypeName(null,"dessin anime",null));
+                    } else {
+                        if (str.contains("Animation")) {
+                            tn = typeNameRepository.findByTypeName("anime").orElse(null);
+                            if (tn == null) tn = typeNameRepository.save(
+                                    new TypeName(null, "anime", null));
                             break;
-                        }else{
-                            if(str.contains("Short")){
-                                tn = typeNameRepository.findByTypeName("film court").orElse(null);
-                                if(tn==null)tn=typeNameRepository.save(
-                                        new TypeName(null,"film court",null));
+                        } else {
+                            if (str.contains("Short")) {
+                                tn = typeNameRepository.findByTypeName("court").orElse(null);
+                                if (tn == null) tn = typeNameRepository.save(
+                                        new TypeName(null, "court", null));
                                 break;
-                            }else{
-                                if(str.contains("TV Movie")){
+                            } else {
+                                if (str.contains("TV Movie")) {
                                     tn = typeNameRepository.findByTypeName("tv movie").orElse(null);
-                                    if(tn==null)tn=typeNameRepository.save(
-                                            new TypeName(null,"tv movie",null));
+                                    if (tn == null) tn = typeNameRepository.save(
+                                            new TypeName(null, "tv movie", null));
                                     break;
-                                }else{
-                                    if(str.contains("Movie")){
+                                } else {
+                                    if (str.contains("Movie")) {
                                         tn = typeNameRepository.findByTypeName("film").orElse(null);
-                                        if(tn==null)tn=typeNameRepository.save(
-                                                new TypeName(null,"film",null));
+                                        if (tn == null) tn = typeNameRepository.save(
+                                                new TypeName(null, "film", null));
                                         break;
-                                    }//else{
-                                        /*if(str.contains("Animation")){
-
-                                        }else{
-
-                                        }*/
-                                    //}
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            if(tn==null){
-                tn = typeNameRepository.findByTypeName("Autre").orElse(null);
-                if(tn==null)tn=typeNameRepository.save(
-                        new TypeName(null,"Autre",null));
+            if (tn == null) {
+                tn = typeNameRepository.findByTypeName("autre").orElse(null);
+                if (tn == null) tn = typeNameRepository.save(
+                        new TypeName(null, "autre", null));
             }
             tm.setTypeName(tn);
+
             tm.setDateModif(new Date());
             tm.setVideoFilm(vf);
             typeMmiRepository.save(tm);
         }
     }
-    private String cleanString(String strToClean){
-        strToClean = strToClean.replaceAll("[\\s\\n]+", " ");
+
+    private String cleanString(String strToClean) {
+        strToClean = strToClean.replaceAll("\\s+\\n+", " ");
         strToClean = strToClean.replaceAll("^[\\s]*", "").trim();
         return strToClean;
     }
 
-    public VideoFilm createOneVideoFilm(VideoFilm vf, String toParse) {
+    public VideoFilm createOneVideoFilm(VideoFilm vf, String toParse, String idMyMediaInfo) {
         if (vf == null || toParse.equals("")) throw new RuntimeException("Data no valide to create one videoFilm");
-
+        log.warn("===> Add one VideoFilm with idTt : "+vf.getIdVideo()+" and idMmi : "+idMyMediaInfo);
         vf.setDateModifFilm(new Date());
         VideoSourceInfo vsi = videoSourceInfoRepository.findByName("imdb").orElse(null);
         if (vsi == null) {
@@ -1115,25 +1123,30 @@ public class Parser {
         // First bloc of webPage : VideoPoster, Year, Rating
         String partHeader = findTagInString("<div class=\"titlereference-header*>",
                 "</div>", toParse, false);
+        // get titles
+        vf.getVideoTitles().add(setTitleAndHisLanguage(vf, partHeader));
+        // get url img
         geturlImgIfExist4VideoFilm(vf, findTagInString("<img", "\">", partHeader, true));
+        // get year
         vf.setYear(getYear4VideoFilm(findTagInString("<ul class=\"ipl-inline-list*>",
                 "</ul>", partHeader, false)));
-        // ipl-rating-widget
+        // rating
         getRating4VideoFilm(vf, findTagInString("<div class=\"ipl-rating-star*>", "</div>",
                 partHeader, false));
         // Search TypeMmi
-        searchTypeMmi(vf, findAllTagsInString("<li class=\"ipl-inline-list__item", "</li>",
+        searchTypeMmi(vf, idMyMediaInfo, findAllTagsInString("<li class=\"ipl-inline-list__item", "</li>",
                 partHeader, false));
 
         // Get VideoResume
         vf.getVideoResumes().add(getResume(findTagInString("<section class=\"titlereference-section-overview*>",
-                "</div>",toParse, true), vf));
+                "</div>", toParse, true), vf));
 
 
         // Section credits : Actors(cast), Directors, "writers", "producers", "composers"
         String partCredits = findTagInString("<section class=\"titlereference-section-credits*>",
                 "</section>", toParse, false);
         List<String> ltable = findAllTagsInString("<header", "</table>", partCredits, true);
+
         List<String> lsearch = Stream.of("cast", "directors", "writers", "producers", "composers")
                 .collect(Collectors.toList());
         List<VideoFilmArtist> lvfa = new ArrayList<>();
@@ -1151,7 +1164,6 @@ public class Parser {
         vf.getVideoFilmArtists().addAll(lvfa);
         vf = videoFilmRepository.save(vf);
         partCredits = null;
-
         // Section Plot summary, keyword, and kind
         String storyline = findTagInString("<section class=\"titlereference-section-storyline*>",
                 "</section>", toParse, false);
@@ -1200,60 +1212,179 @@ public class Parser {
                         vf.getVideoLanguages()
                                 .addAll(getAllLanguages(findAllTagsInString("<li class*>",
                                         "</li>", detail, false)));
-                    } /*else {
-                        if (titleDetail.contains("Filming Locations")) {
-                        }
-                    }*/
+                    }
                 }
             }
         }
-        vf.getVideoTitles().add(setTitleAndHisLanguage(vf, partHeader));
         videoFilmRepository.save(vf);
         addDetails = null;
         addAllDetails = null;
 
-
         Preferences pr = preferencesRepository.findById("01").orElse(null);
-        if (pr!=null){
+        if (pr != null) {
             List<ItemToSearch> itss = pr.getItemToSearches();
-
-            for(ItemToSearch its: itss){
+            for (ItemToSearch its : itss) {
                 String item = its.getItemImdb();
-                if(item.equals("Box Office")){
+                if (item.equals("Box Office")) {
                     String boxOffice = findTagInString("<section class=\"titlereference-section-box-office*>"
                             , "</section>", toParse, false);
-                    if(boxOffice.length()!=0){
-                        List<String> eachItemBoxOffice = findAllTagsInString("<tr class=*>", "</tr>"
-                                , boxOffice,  false);
-                        for (String detail : eachItemBoxOffice) {
-                            String key = findTagInString("<td class=*>","</td>", detail, false);
-                            for(String it: its.getKeyset())
-                                if(key.equals(it)){
-                                    String value = findTagInString("<td>","</td>", detail, false);
-                                    Map<String, String> mp = new HashMap<>();
-                                    mp.put(key, cleanString(value));
-                                    VideoMoreInformation vmi = new VideoMoreInformation(null,mp, vf);
-                                    //save
-                                    vmi =videoMoreInformationRepository.save(vmi);
-                                    vf.setVideoMoreInformation(vmi);
-                                }
-                        }
+                    if (boxOffice.length() != 0) {
+                        parseGoodies(boxOffice, its, vf);
                     }
-
                 }
-                /*if(item.equals("Did You Know?")){
+                if (item.equals("Did You Know?")) {
                     String didYouKnow = findTagInString("<section class=\"titlereference-section-did-you-know*>"
                             , "</section>", toParse, false);
-                    List<String> eachDidYouKnow = findAllTagsInString("<tr class=*>", "</tr>", didYouKnow, false);
-                    for (String detail : eachDidYouKnow) {
-                        //TODO Make trivia and goofs
+                    if (didYouKnow.length() != 0) {
+                        parseGoodies(didYouKnow, its, vf);
                     }
-                }*/
+                }
             }
         }
-
         return videoFilmRepository.save(vf);
     }
 
+    private void parseGoodies(String toParse, ItemToSearch its, VideoFilm vf) {
+        List<String> eachItemBoxOffice = findAllTagsInString("<tr class=*>", "</tr>"
+                , toParse, false);
+        for (String detail : eachItemBoxOffice) {
+            String key = findTagInString("<td class=*>", "</td>", detail, false);
+            for (String it : its.getKeyset()) {
+                if (key.equals(it)) {
+                    String value = findTagInString("<td>", "</td>", detail, false);
 
+                    value = findTagInStringToDelete("<a*>", value, true);
+                    value = findTagInStringToDelete("<b>", value, true);
+                    value = findTagInStringToDelete("<i>", value, true);
+                    value = findTagInStringToDelete("<u>", value, true);
+                    value = findTagInStringToDelete("</a>", value, true);
+                    value = value.replaceAll("See more &raquo;", "");
+                    if(value.length()>1024)value=value.substring(0, 1024);
+                    Map<String, String> mp = new HashMap<>();
+                    VideoMoreInformation vmi = videoMoreInformationRepository.findByVideoFilm(vf).orElse(null);
+                    if (vmi == null) {
+                        mp.put(key, cleanString(value));
+                        vmi = new VideoMoreInformation(null, mp, vf);
+                        vmi = videoMoreInformationRepository.save(vmi);
+                        vf.setVideoMoreInformation(vmi);
+
+                    } else {
+                        vmi.getInformap().put(key, cleanString(value));
+                        videoMoreInformationRepository.save(vmi);
+                    }
+                }
+            }
+        }
+    }
+
+    public String findTagInStringToDelete(String mc, String toParser, boolean all) {
+        String str = "";
+        char e = '*';
+        boolean trouver = false;
+        char[] motClefDebut = mc.toCharArray();
+        int sizeMotClefDebut = motClefDebut.length;
+        char[] toPars = toParser.toCharArray();
+        int sizeToPars = toParser.length();
+
+        int pos = -1;
+        int posDebut = 0;
+        int wclong = 1;
+        int charMcd = 0;
+
+        // ******* Parcour de la chaine
+        while (pos < (sizeToPars - 1)) {
+            pos++;
+            wclong = 0;
+            posDebut = pos;
+            charMcd = 0;
+            while ((int) toPars[posDebut] == (int) motClefDebut[charMcd] && !trouver) {
+                posDebut++;
+                charMcd++;
+                // MCD Sans wildcard
+                if (charMcd == (sizeMotClefDebut)) {
+                    pos = posDebut;
+                    if(!all)trouver=true;
+                    break;
+                }
+                if (charMcd < (sizeMotClefDebut - 1)) {
+                    // MCD avec wildcard
+                    if (motClefDebut[charMcd] == e) {
+                        if ((charMcd + 1) < sizeMotClefDebut) {
+                            wclong = 0;
+                            while (toPars[posDebut + wclong] != (int) motClefDebut[charMcd + 1]) {
+                                if ((charMcd + wclong) < sizeToPars || wclong > 500) {
+                                    wclong++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            if (wclong < 500) {
+                                pos = posDebut + wclong + 1;
+                                if(!all)trouver=true;
+                            }
+                        }
+                    }
+                }
+                //if(posDebut>=sizeToPars)break;
+            }
+            if(pos<sizeToPars)
+                str += toPars[pos];
+        }
+        return str;
+    }
+
+    public void addTitlesToVideoFilm(VideoFilm vf, String toParse4title, List<String> lcountry2search) {
+        String toParse = findTagInString("class=\"ipl-list-title\">Also Known As", "</table>",toParse4title, false );
+        List<String> listTitlesAndCountries = findAllTagsInString("<tr class=*>", "</tr>", toParse, false);
+
+        // For each titleAndCountry of web page
+//        List<VideoTitle> videoTitlesInDb = (List<VideoTitle>) videoTitleRepository.findByVideoFilm(vf).orElse(null);
+        List<VideoTitle> videoTitlesInDb = new ArrayList<>(videoTitleRepository.findByVideoFilm_IdVideo(vf.getIdVideo()));
+//        if(videoTitlesInDb == null)videoTitlesInDb=new ArrayList<VideoTitle>();
+        for(String tAndC: listTitlesAndCountries){
+            // Get countryRemote
+            String countryRemote = findTagInString("<td class=\"aka-item__name*>","</td>", tAndC, false);
+            // if country is asked
+            for(String country2search: lcountry2search){
+                if(countryRemote.contains(country2search)){
+                    // we found what we were looking for
+                    String titleremote = findTagInString("<td class=\"aka-item__title*>","</td>", tAndC, false);
+                    // if titleRemote is in DB ?
+
+                    countryRemote =countryRemote.replaceFirst("[\\s]*", "").trim();
+                    if(countryRemote.length()>32)countryRemote=countryRemote.substring(0, 31);
+                    VideoCountry vc = videoCountryRepository.findByCountry(countryRemote).orElse(null);
+
+                    if(vc==null){
+                        vc=new VideoCountry(null, countryRemote, null, null, null);
+                        vc = videoCountryRepository.save(vc);
+                    }
+
+                    VideoTitle vt = videoTitleRepository.findByVideoFilmAndVideoCountry(vf, vc).orElse(null);
+//                    VideoTitle vt = videoTitleRepository.findByVideoFilm_IdVideoAndVideoCountry_IdCountry(vf.getIdVideo()
+//                            , vc.getIdCountry()).orElse(null);
+                    if(vt==null){
+                        boolean test = false;
+                        if(videoTitlesInDb.size()>0){
+                            for(VideoTitle videoTitleInDb: videoTitlesInDb){
+                                if(videoTitleInDb.getTitle().equals(titleremote)){
+                                    test = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!test){
+                            vt = new VideoTitle(vc,vf);
+                            vt.setTitle(titleremote);
+                            vt = videoTitleRepository.save(vt);
+                            videoTitlesInDb.add(vt);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public void addKeywordsToVideoFilm(VideoFilm vf, String toParse4title, int limite){
+
+    }
 }

@@ -28,7 +28,6 @@ public class VideoTitle {
     @Size(max = 128)
     private String title;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_country", insertable = false, updatable = false)
     private VideoCountry videoCountry;
