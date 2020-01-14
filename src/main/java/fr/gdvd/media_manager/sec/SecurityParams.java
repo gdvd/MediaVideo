@@ -4,6 +4,6 @@ public interface SecurityParams {
 
     public static final String JWT_HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
-    public static final String PRIVATE_SECRET = "makeYourOwnPassword";
+    public static final String PRIVATE_SECRET = "writeYourOwnPassword";
     public static final long EXPIRATION = 1000 * 60 * 60 * 36;//1000*60*60*12;// millisec-s-mn-h = 18h
 }
