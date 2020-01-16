@@ -38,7 +38,8 @@ public interface MyMediaInfoRepository extends JpaRepository<MyMediaInfo, String
             "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser AS mu " +
             "ON utne.myUser = mu.idMyUser " +
             "where mu.login= :login AND mu.active=1 AND utne.active=1 " +
-            "and vne.complete=1 and vne.active=1 AND (vsp.title LIKE :filter OR vt.title LIKE :filter)")
+            "and vne.complete=1 and vne.active=1 AND (vsp.title LIKE :filter " +
+            "OR vt.title LIKE :filter OR tmmi.nameSerieVO LIKE :filter OR tmmi.nameSerie LIKE :filter)")
     Page<MyMediaInfo> findMmiPPAndTitleVf(String login, String filter, Pageable pageable);
 
     @Query("select distinct mmi from fr.gdvd.media_manager.entitiesMysql.MyMediaInfo as mmi " +
@@ -82,8 +83,8 @@ public interface MyMediaInfoRepository extends JpaRepository<MyMediaInfo, String
             "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser " +
             "AS mu ON mu.idMyUser=utne.myUser " +
             "where mu.login= :login AND mu.active=1 AND utne.active=1 " +
-            "and vne.complete=1 and vne.active=1 AND vsp.title LIKE :filter")
-    Page<MyMediaInfo> findMmiPP(String login, String filter, Pageable pageable);
+            "and vne.complete=1 and vne.active=1 and vsp.active=1 AND vsp.title LIKE :filter")
+    Page<MyMediaInfo> findMmiPPFilterFilename(String login, String filter, Pageable pageable);
 
     //OK
     @Query("select distinct mmi from fr.gdvd.media_manager.entitiesMysql.MyMediaInfo as mmi " +
@@ -285,8 +286,28 @@ public interface MyMediaInfoRepository extends JpaRepository<MyMediaInfo, String
             "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser AS mu " +
             "ON utne.myUser = mu.idMyUser " +
             "where vf is not null and mu.login= :login AND mu.active=1 AND utne.active=1 " +
-            "and vne.active=1 AND vt.title LIKE :filter ")
+            "and vne.active=1 AND (vt.title LIKE :filter " +
+            " OR tmmi.nameSerieVO LIKE :filter OR tmmi.nameSerie LIKE :filter)")
     Page<MyMediaInfo> findMmiPPAndTitleVfV6(String login, String filter, Pageable pageable);
+
+    //
+    @Query("select distinct mmi " +
+            "FROM fr.gdvd.media_manager.entitiesMysql.VideoFilm AS vf " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.TypeMmi AS tmmi " +
+            "ON tmmi.videoFilm = vf.idVideo " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyMediaInfo AS mmi " +
+            "ON mmi.typeMmi = tmmi.idTypeMmi " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoSupportPath AS vsp " +
+            "ON vsp.id_my_media_info = mmi.idMyMediaInfo " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne " +
+            "ON vsp.id_video_name_export = vne.idVideoNameExport " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.UserToNameExport AS utne " +
+            "ON utne.id_video_name_export = vne.idVideoNameExport " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser AS mu " +
+            "ON utne.myUser = mu.idMyUser " +
+            "where vf is not null and mu.login= :login AND mu.active=1 AND utne.active=1 " +
+            "and vne.active=1 AND vf.idVideo LIKE :filtertt ")
+    Page<MyMediaInfo> findMmiPPAndTitleTT(String login, String filtertt, Pageable pageable);
 
     //
     @Query("select distinct mmi FROM fr.gdvd.media_manager.entitiesMysql.VideoTitle AS vt " +
@@ -305,7 +326,8 @@ public interface MyMediaInfoRepository extends JpaRepository<MyMediaInfo, String
             "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser AS mu " +
             "ON utne.myUser = mu.idMyUser " +
             "where vf is not null and mu.login= :login AND mu.active=1 AND utne.active=1 " +
-            "and vne.active=1 and vne.idVideoNameExport = :idVne AND vt.title LIKE :filter")
+            "and vne.active=1 and vne.idVideoNameExport = :idVne AND " +
+            "(vt.title LIKE :filter OR tmmi.nameSerieVO LIKE :filter OR tmmi.nameSerie LIKE :filter)")
     Page<MyMediaInfo> findMmiPPWithFilterVNEAndTitleVf(String login, String filter, Long idVne, Pageable pageable);
 
 // Work with videoTitle only
@@ -441,5 +463,12 @@ public interface MyMediaInfoRepository extends JpaRepository<MyMediaInfo, String
             "WHERE idMyMediaInfo=:idmmi")
     Long findFkTypeMmiWithIdmmi(String idmmi);
 
+    @Query("Select mmi.idMyMediaInfo FROM fr.gdvd.media_manager.entitiesMysql.MyMediaInfo as mmi ")
+    List<String> getAllIdMmi();
 
+    @Query("Select mmi.idMyMediaInfo FROM fr.gdvd.media_manager.entitiesMysql.MyMediaInfo as mmi " +
+            "where mmi.duration =:duration AND mmi.fileSize =:filesize AND mmi.width =:width " +
+            "AND mmi.height =:height AND mmi.bitrate =:bitrate AND mmi.codecId =:codecId")
+    List<String> findMmiWithFeatures(Double duration, Double filesize, int width, int height,
+                                     Double bitrate, String codecId);
 }

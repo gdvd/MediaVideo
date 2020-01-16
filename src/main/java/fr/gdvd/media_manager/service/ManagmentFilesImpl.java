@@ -17,10 +17,10 @@ import javax.persistence.Tuple;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.regex.Pattern;
 
 import static java.lang.Integer.parseInt;
 
@@ -187,6 +187,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                                                     int size, String toSort,
                                                     String filter) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(toSort));
+//        filter = cleanStringToUtf8(filter);
         return videoSupportPathRepository.findMyVspPP(login, filter, pageable);
     }
 
@@ -194,58 +195,83 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     public Page<MyMediaInfo> listMmiForLoginPP(String login, int page,
                                                int size, String toSort,
                                                String filter, String vneName,
-                                               boolean filename) {
+                                               boolean filename, String filtertt) {
         Pageable pageable = PageRequest.of(page, size);/*, Sort.by(toSort)*/
 //        log.info(login + " || Filter : " + filter + " || vneName: " + vneName);
-        if(filter.equals("%%")){
-            if(filename){
-                //Filter on filename
-                if (vneName.equals("")) {
-                    return myMediaInfoRepository.findMmiPP(login, filter, pageable);
-                } else {
-                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
-                    if (idVne == null) throw new RuntimeException("NameExport invalid");
-                    return myMediaInfoRepository.findMmiWithFilterVNEPP(login, idVne, pageable);
+        filter = cleanStringToUtf16V1(filter);
+        if (filtertt.equals("")) {
+            if (filter.equals("%%")) { //Filter All name
+                if (filename) { //filter on filename
+                    if (vneName.equals("")) { //Filter on all VNE
+                        return myMediaInfoRepository.findMmiPPFilterFilename(login, filter, pageable);
+                    } else { //Filter on One VNE
+                        Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                        if (idVne == null) throw new RuntimeException("NameExport invalid");
+                        return myMediaInfoRepository.findMmiWithFilterVNEPP(login, idVne, pageable);
+                    }
+                } else { //Filter on title.videofilm
+                    if (vneName.equals("")) { //Filter on all VNE
+                        // & tmmi.nameserie
+                        return myMediaInfoRepository.findMmiPPAndTitleVfV6(login, filter, pageable);
+                    } else { //Filter on One VNE
+                        Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                        if (idVne == null) throw new RuntimeException("NameExport invalid");
+                        return myMediaInfoRepository.findMmiPPWithFilterVNEAndTitleVf(login, filter, idVne, pageable);
+                    }
                 }
-            }else{
-                //Filter on videofilm
-                if (vneName.equals("")) {
-                    return myMediaInfoRepository.findMmiPPAndTitleVfV6(login, filter, pageable);
-                } else {
-                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
-                    if (idVne == null) throw new RuntimeException("NameExport invalid");
-                    return myMediaInfoRepository.findMmiPPWithFilterVNEAndTitleVf(login, filter, idVne, pageable);
+
+            } else {
+                //Filter with one word
+                if (filename) { //filter on filename
+                    if (vneName.equals("")) { //Filter on all VNE
+                        //Filter with word on filename & no Vne
+                        return myMediaInfoRepository.findMmiPPFilterFilename(login, filter, pageable);
+                    } else { //Filter on One VNE
+                        //Filter with word on filename & with Vne
+                        Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                        if (idVne == null) throw new RuntimeException("NameExport invalid");
+                        return myMediaInfoRepository.findMmiWithFilterVNEPPV2(login, idVne, filter, pageable);
+                    }
+                } else { //Filter on title.videofilm & tmmi.nameserie
+                    if (vneName.equals("")) { //Filter on all VNE
+                        return myMediaInfoRepository.findMmiPPAndTitleVfV6(login, filter, pageable);
+                    } else { //Filter on One VNE
+                        Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
+                        if (idVne == null) throw new RuntimeException("NameExport invalid");
+                        return myMediaInfoRepository.findMmiPPWithFilterVNEAndTitleVf(login, filter, idVne, pageable);
+                    }
                 }
             }
-
-        }else{
-            if(filename){
-                //Filter on filename
-                if (vneName.equals("")) {
-                    return myMediaInfoRepository.findMmiPPAndTitleVf(login, filter, pageable);
-                } else {
-                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
-                    if (idVne == null) throw new RuntimeException("NameExport invalid");
-                    return myMediaInfoRepository.findMmiWithFilterVNEPPV2(login, idVne, filter, pageable);
-                }
-            }else{
-                //Filter on videofilm
-                if (vneName.equals("")) {
-                    return myMediaInfoRepository.findMmiPPAndTitleVfV6(login, filter, pageable);
-                } else {
-                    Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
-                    if (idVne == null) throw new RuntimeException("NameExport invalid");
-                    return myMediaInfoRepository.findMmiPPWithFilterVNEAndTitleVf(login, filter, idVne, pageable);
-                }
-            }
-
+        } else {
+            return myMediaInfoRepository.findMmiPPAndTitleTT(login, filtertt, pageable);
         }
+
+    }
+
+    private String cleanStringToUtf16V1(String str) {
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            if ((int) str.charAt(i) < 255) {
+                res.append(str.charAt(i));
+            } else {
+                log.info("cleanStringToUtf8 -> Char :  " + str.charAt(i) + " is filtered");
+            }
+        }
+        return res.toString();
+    }
+
+    private String cleanStringToUtf16V2(String str) {
+        byte[] bytes = str.getBytes();
+        String res = null;
+        res = new String(bytes, 0, bytes.length, StandardCharsets.UTF_16);
+        return res;
     }
 
     @Override
     public Page<MyMediaInfo> listMmiForLoginWithNamePP(String login, int page, int size,
                                                        String toSort, String filter) {
         Pageable pageable = PageRequest.of(page, size);
+        filter = cleanStringToUtf16V1(filter);
         return myMediaInfoRepository.findMmiLIKEfirstLastNamePP(login, filter, pageable);
     }
 
@@ -280,33 +306,33 @@ public class ManagmentFilesImpl implements ManagmentFiles {
             Preferences prefTitles = preferencesRepository.findByIdPreferences("c2title");
             if (prefTitles != null) {
                 List<String> listCountries = new ArrayList<>(prefTitles.getExtset());
-                if(listCountries.size() == 0) throw new RuntimeException("Preference with counties doesn't exist");
+                if (listCountries.size() == 0) throw new RuntimeException("Preference with counties doesn't exist");
 
                 String pathTitles = pref.getPrefmap().get("pathFileTitles");
                 if (pathTitles == null) throw new RuntimeException("pathFileTitles doesn't exist");
                 if (pathTitles.equals("")) throw new RuntimeException("pathFileTitles doesn't exist");
-                if(pathTitles.substring(0, 1).equals("~"))
-                    pathTitles=pathTitles.substring(1);
+                if (pathTitles.substring(0, 1).equals("~"))
+                    pathTitles = pathTitles.substring(1);
                 List<File> listfilestitles = parser.getAllFilesTitles(pathTitles);
                 if (listfilestitles.size() != 0) {
                     List<String> listTitleOfFile = new ArrayList<>();
-                    for(File file: listfilestitles){
+                    for (File file : listfilestitles) {
                         String t = file.getName();
-                        if(t.substring(0, 2).equals("tt")){
+                        if (t.substring(0, 2).equals("tt")) {
                             listTitleOfFile.add(file.getName());
                         }
                     }
                     List<String> listIdVideoFilms = videoFilmRepository.getAllIds();
                     // listIdtt listfilestitles listCountries listIdVideoFilms
-                    for(String idtt: listIdVideoFilms){
+                    for (String idtt : listIdVideoFilms) {
                         VideoFilm vf = videoFilmRepository.findById(idtt).orElse(null);
-                        if(vf==null)throw new RuntimeException("VideoFilm doesn't exist");
+                        if (vf == null) throw new RuntimeException("VideoFilm doesn't exist");
                         String idVideoFilmWithReleaseinfo = idtt + "-releaseinfo.html";
-                        if(listTitleOfFile.contains(idVideoFilmWithReleaseinfo)){
+                        if (listTitleOfFile.contains(idVideoFilmWithReleaseinfo)) {
                             File f = new File(System.getProperty("user.home") + pathTitles + idVideoFilmWithReleaseinfo);
                             if (f != null) {
                                 String toParse4title = requestWeb.fileToString(f);
-                                if(toParse4title.length()>0)
+                                if (toParse4title.length() > 0)
                                     parser.addTitlesToVideoFilm(vf, toParse4title, listCountries);
                             } else {
                                 log.error("File : " + idtt + "/releaseinfo is empty");
@@ -356,12 +382,13 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     }
 
     @Override
-    public List<VideoSupportPath> getVneToAllPath(String login, String filtre) {
+    public List<VideoSupportPath> getVneToAllPath(String login, String filter) {
         return videoSupportPathRepository.findMyVsp(login);
     }
 
     @Override
     public List<VideoSupportPath> listVspForLoginWithFilter(String login, String filter) {
+//        filter = cleanStringToUtf8(filter);
         return videoSupportPathRepository.findMyVspWithFilter(login, filter);
     }
 
@@ -393,7 +420,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         MyMediaInfo mmi = myMediaInfoRepository.findById(md5).orElse(null);
         if (!md5.equals("")) {
             if (mmi == null) {
-                String mediaInfo = parser.readMediaInfo(url);
+                String mediaInfo = parser.readMediaInfo(url, "--Output=XML");
                 mmi = new MyMediaInfo();
                 mmi.setIdMyMediaInfo(md5);
                 parser.createMyMediaInfo(mmi, mediaInfo);
@@ -990,17 +1017,100 @@ public class ManagmentFilesImpl implements ManagmentFiles {
 
     @Override
     public MyMediaInfo createMmiAndGetMd5(String pathGeneral) {
-        String md5 = setMd5(pathGeneral);
-        MyMediaInfo mmi = myMediaInfoRepository.findById(md5).orElse(null);
+
+        MyMediaInfo mmi = searchMmiWithManyFeatures(pathGeneral);
+//        MyMediaInfo mmi = null;
+        String md5 = "";
+
         if (mmi == null) {
-            mmi = new MyMediaInfo();
-            mmi.setDateModif(new Date());
-            mmi.setIdMyMediaInfo(md5);
-            String mediaInfoStr = parser.readMediaInfo(pathGeneral);
-            parser.createMyMediaInfo(mmi, mediaInfoStr);
+            md5 = setMd5(pathGeneral);
+            if(md5.equals("")) throw new RuntimeException("idMd5 doesn't exist");
+            mmi = myMediaInfoRepository.findById(md5).orElse(null);
+            if (mmi == null) {
+                mmi = new MyMediaInfo();
+                mmi.setDateModif(new Date());
+                mmi.setIdMyMediaInfo(md5);
+                String mediaInfoStr = parser.readMediaInfo(pathGeneral, "--Output=XML");
+                parser.createMyMediaInfo(mmi, mediaInfoStr);
+                mmi = myMediaInfoRepository.findById(md5).orElse(null);
+            }
         }
         // recall mmi to have videoList
-        return myMediaInfoRepository.findById(md5).orElse(null);
+        return mmi;
+    }
+
+    private MyMediaInfo searchMmiWithManyFeatures(String pathGeneral) {
+        MyMediaInfo mmi = null;
+
+        // method to keep the floating point of duration value
+        String[] mediaInfoDurationTbl = parser.readMediaInfo(pathGeneral,
+                "--Inform=General;%Duration/String3%").replace("\n", "").split(":");
+        Collections.reverse(Arrays.asList(mediaInfoDurationTbl));
+        Double duration = 0.0;
+        if (mediaInfoDurationTbl.length != 0) {
+            String secStr = mediaInfoDurationTbl[0];
+            duration = Double.parseDouble(secStr);
+            if (mediaInfoDurationTbl.length > 1) {
+                String minStr = mediaInfoDurationTbl[1];
+                duration = ((Double.parseDouble(minStr)) * 60)+duration;
+                if (mediaInfoDurationTbl.length > 2) {
+                    String hrsStr = mediaInfoDurationTbl[2];
+                    duration = ((Double.parseDouble(hrsStr)) * 3600)+duration;
+                }
+            }
+        } else {
+            return mmi;
+        }
+
+        String mediaInfoFileSizeStr = parser.readMediaInfo(pathGeneral,
+                "--Inform=General;%FileSize%")
+                .replace("\n", "");
+
+        String mediaInfoVideoLightStr = parser.readMediaInfo(pathGeneral,
+                "--Inform=Video;%Width%§%Height%§%BitRate%§%CodecID%")
+                .replace("\n", "");
+
+        String[] mediaInfoVideoLightTbl = mediaInfoVideoLightStr.split("§");
+
+        if (mediaInfoFileSizeStr.length() > 2 && mediaInfoVideoLightTbl.length == 4) {
+
+            Double filesize = 0.0;
+            if (Pattern.matches("[\\d]{2,12}", mediaInfoFileSizeStr)) {
+                int width = 0;
+                String withStr = mediaInfoVideoLightTbl[0];
+                if (Pattern.matches("[\\d]{1,4}", withStr)) {
+                    int height = 0;
+                    String heightStr = mediaInfoVideoLightTbl[1];
+                    if (Pattern.matches("[\\d]{1,4}", heightStr)) {
+                        Double bitrate = 0.0;
+                        String biterateStr = mediaInfoVideoLightTbl[2];
+                        if (Pattern.matches("[\\d]{2,10}", biterateStr)) {
+
+                            String codecidStr = mediaInfoVideoLightTbl[3];
+
+                            filesize = Double.parseDouble(mediaInfoFileSizeStr);
+                            width = Integer.parseInt(withStr);
+                            height = Integer.parseInt(heightStr);
+                            bitrate = Double.parseDouble(biterateStr);
+
+                            List<String> lmmi = myMediaInfoRepository.findMmiWithFeatures(duration,
+                                    filesize, width, height, bitrate, codecidStr);
+
+                            if (lmmi.size() != 0) {
+                                mmi = myMediaInfoRepository.findByIdMyMediaInfo(lmmi.get(0));
+                                if (lmmi.size() > 1) {
+                                    final StringBuilder lid = new StringBuilder();
+                                    lmmi.forEach(lid::append);
+                                    log.error("****** Many idMmi with same features, ListMmi : "
+                                            + lid.toString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return mmi;
     }
 
     @Override
@@ -1049,7 +1159,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     public List<UserLight> listUserWithId() {
         List<Tuple> ltul = myUserRepository.lUserWithId();
         List<UserLight> lul = new ArrayList<>();
-        for(Tuple t : ltul){
+        for (Tuple t : ltul) {
             lul.add(new UserLight((Long) t.toArray()[0], (String) t.toArray()[1]));
         }
         return lul;

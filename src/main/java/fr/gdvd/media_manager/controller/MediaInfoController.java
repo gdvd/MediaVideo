@@ -84,7 +84,7 @@ InetAddress.getCanonicalHostName()  : macmini26.home
             JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SecurityParams.PRIVATE_SECRET)).build();
             DecodedJWT decodeJWT = verifier.verify(tk.substring(SecurityParams.TOKEN_PREFIX.length()));
             username = decodeJWT.getSubject();
-            roles = decodeJWT.getClaims().get("roles").asList(String.class);
+//            roles = decodeJWT.getClaims().get("roles").asList(String.class);
             d = decodeJWT.getExpiresAt();
             msg.setName(username);
             msg.setState("Connected");
@@ -105,43 +105,4 @@ InetAddress.getCanonicalHostName()  : macmini26.home
         log.info("GetInfoUser : "+msg.getName());
         return msg;
     }
-
-    // a verrif : pour avoir l'iP du client
-
-    // oubien String ipAddress = request.getHeader("X-FORWARDED-FOR");
-
-    // request.getRemoteHost()
-
-    // HttpServletRequest request =
-    // ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-
-//        String ip = request.getRemoteAddr();
-
-    /*
-    public class HttpReqRespUtils {
-private static final String[] IP_HEADER_CANDIDATES = {
-        "X-Forwarded-For",
-        "Proxy-Client-IP",
-        "WL-Proxy-Client-IP",
-        "HTTP_X_FORWARDED_FOR",
-        "HTTP_X_FORWARDED",
-        "HTTP_X_CLUSTER_CLIENT_IP",
-        "HTTP_CLIENT_IP",
-        "HTTP_FORWARDED_FOR",
-        "HTTP_FORWARDED",
-        "HTTP_VIA",
-        "REMOTE_ADDR"};
-
-    public static String getClientIpAddressIfServletRequestExist() {
-        if (RequestContextHolder.getRequestAttributes() == null) {
-            return "0.0.0.0";}
-        HttpServletRequest request = ((ServletRequestAttributes)    RequestContextHolder.getRequestAttributes()).getRequest();
-        for (String header : IP_HEADER_CANDIDATES) {
-            String ipList = request.getHeader(header);
-            if (ipList != null && ipList.length() != 0 && !"unknown".equalsIgnoreCase(ipList)) {
-                String ip = ipList.split(",")[0];
-                return ip;}}
-        return request.getRemoteAddr();}
-    */
-
 }

@@ -7,25 +7,26 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Data
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Entity
-public class VideoSerie {
+public class Remake {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idMyUser;
-    @Size(max = 32)
-    private String serieName;
+    private Long idRemake;
+
+    @ElementCollection
+    @OrderColumn(name="information")
+    private Set<String> remakes;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "videoSerie")
+    @OneToMany(mappedBy = "remake")
     private List<VideoFilm> videoFilms = new ArrayList<>();
-
 }

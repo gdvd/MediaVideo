@@ -306,6 +306,13 @@ public class ManagmentFilesController {
         return requestWeb.getOneVideoFilm(mylink, idMyMediaInfo);
     }
 
+    @GetMapping(value = "/getOneVideoFilm/{idTt}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public VideoFilm getOneVideoFilm(@PathVariable String idTt){
+        log.info("getOneVideoFilm idTt : "+ idTt);
+        return requestWeb.getOneVideoFilm(idTt, "");
+    }
+
     @GetMapping(value = "/updatealltitles")
     public void updatealltitles(){
         log.info("Updatealltitles");

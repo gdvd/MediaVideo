@@ -45,7 +45,8 @@ public interface ManagmentFiles {
     List<VideoSupportPath> listVspForLogin(String login);
     Page<VideoSupportPath> listVspForLoginPP(String login, int page, int size, String toSort, String filter);
     Page<MyMediaInfo> listMmiForLoginPP(String login, int page, int size,
-                                        String toSort, String filter, String vneName, boolean filename);
+                                        String toSort, String filter,
+                                        String vneName, boolean filename, String filtertt);
     void addnewext(String ext);
     List<VNELight> lVneIdToName(String login);
     Page<MyMediaInfo> researchByName(String nm, String login);

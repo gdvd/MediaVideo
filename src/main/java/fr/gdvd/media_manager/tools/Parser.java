@@ -69,7 +69,7 @@ public class Parser {
 
 //############################## Parser ##################################
 //########################################################################
-//###################### Parser version 2019-08-04 #######################
+//###################### Parser version 2019-11-06 #######################
 //########################################################################
     public String findTagInString(String mcd, String mcf, String toParserA, boolean withTag) {
 
@@ -161,12 +161,13 @@ public class Parser {
                                     listMCF.add(tags.get(i + 1));
                                     if (deep == 0) {
                                         if (mCInclus) {
-                                            posEcritureDebut = posDebut - sizeMotClefDebut + 3;
+                                            posEcritureDebut = posDebut - sizeMotClefDebut + 2;
                                         } else {
                                             posEcritureDebut = posDebut + wclong + 1;
                                         }
                                     }
-                                    pos = posDebut + wclong + 1;//
+                                    // ************************** Change here
+                                    pos = posDebut + wclong + 0;
                                     deep++;
                                     //pos--;
                                     i = tags.size();
@@ -213,7 +214,7 @@ public class Parser {
                                         } else {
                                             posEcritureFin = posFin - sizeMotClefFin;
                                         }
-                                        str = toParser.substring(posEcritureDebut, posEcritureFin);// PB ICI ******************
+                                        str = toParser.substring(posEcritureDebut, posEcritureFin);
                                         pos = sizeToPars;
                                         break;
                                     }
@@ -231,7 +232,7 @@ public class Parser {
     }
 
 //########################################################################
-//###################### Parser version 2019-08-04 #######################
+//###################### Parser version 2019-11-06 ####################### change in 318
 //########################################################################
     public List<String> findAllTagsInString(String mcd, String mcf, String strEntre, boolean withTag) {
 
@@ -319,12 +320,12 @@ public class Parser {
                                     listMCF.add(tags.get(i + 1));
                                     if (deep == 0) {
                                         if (mCInclus) {
-                                            posEcritureDebut = posDebut - sizeMotClefDebut + 3;
+                                            posEcritureDebut = posDebut - sizeMotClefDebut + 2;
                                         } else {
                                             posEcritureDebut = posDebut + wclong + 1;
                                         }
                                     }
-                                    pos = posDebut + wclong + 1;//
+                                    pos = posDebut + wclong + 0;//
                                     posEcritureFin = sizeToPars;
                                     deep++;
                                     i = tags.size();
@@ -596,6 +597,26 @@ public class Parser {
             }
         }
     }
+
+
+    public List<String> listDirectoryLight(String dirTmp, String extToScan) {
+        File file = new File(System.getProperty("user.home") + dirTmp);
+        File[] fs = file.listFiles();
+        List<String> lstr = new ArrayList<>();
+
+        if (fs != null) {
+            for (File f : fs) {
+                if (!(f.isDirectory()) && f.length() > 50) {
+                    String extRead = FilenameUtils.getExtension(f.getName());
+                    if (extRead.equals(extToScan)) {
+                        lstr.add(f.getName());
+                    }
+                }
+            }
+        }
+        return lstr;
+    }
+
     public List<File> getAllFilesTitles(String pathTitles){
         List<File> listFile = new ArrayList<>();
         File file = new File(System.getProperty("user.home") + pathTitles);
@@ -606,11 +627,11 @@ public class Parser {
         return listFile;
     }
 
-    public String readMediaInfo(String url) {
+    public String readMediaInfo(String url, String option) {
         Process p;
         String resulta = "";
         StringBuffer output = new StringBuffer();
-        String[] commande = {"mediainfo", "--Output=XML", url};
+        String[] commande = {"mediainfo", option, url};
         try {
             p = Runtime.getRuntime().exec(commande);
 //            p.waitFor();
@@ -1008,8 +1029,11 @@ public class Parser {
             String part2 = part1.split("\\(")[1];
             country = part2.split("\\)")[0];
         } else {
-            if(part1Tbl.length == 1 && (! part1Tbl[0].equals(""))){
+//            if(part1Tbl.length == 1 && (! part1Tbl[0].equals(""))){
+            if(part1Tbl.length == 1 && vf.getVideoCountries().size()!=0){
                 country = vf.getVideoCountries().get(0).getCountry();
+            }else{
+                country = "";
             }
         }
         if (country.equals("")) country = "?";
@@ -1041,7 +1065,7 @@ public class Parser {
         return vr;
     }
 
-    private void searchTypeMmi(VideoFilm vf, String idMyMediaInfo, List<String> lstr) {
+    private void searchTypeMmi(VideoFilm vf, List<String> lstr) {
         if (lstr.size() != 0) {
             TypeMmi tm = new TypeMmi();
             TypeName tn = null;
@@ -1134,7 +1158,7 @@ public class Parser {
         getRating4VideoFilm(vf, findTagInString("<div class=\"ipl-rating-star*>", "</div>",
                 partHeader, false));
         // Search TypeMmi
-        searchTypeMmi(vf, idMyMediaInfo, findAllTagsInString("<li class=\"ipl-inline-list__item", "</li>",
+        searchTypeMmi(vf, findAllTagsInString("<li class=\"ipl-inline-list__item", "</li>",
                 partHeader, false));
 
         // Get VideoResume

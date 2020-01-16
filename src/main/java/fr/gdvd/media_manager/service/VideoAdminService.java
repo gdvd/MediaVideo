@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 public interface VideoAdminService {
+    MyMediaInfo toggleactiveidMmi(String idMmi);
 
 //    public StateImport saveData(String pahtdirids, MultipartFile[] file, String loginName);
 //    public MyMediaInfo createMyMediaInfo(MyMediaInfo mmi, String pahtdirids);

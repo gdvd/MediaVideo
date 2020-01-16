@@ -20,4 +20,7 @@ public interface MyUserRepository extends JpaRepository<MyUser, Long> {
     @Query("SELECT usr.idMyUser, usr.login FROM fr.gdvd.media_manager.entitiesMysql.MyUser AS usr")
     List<Tuple> lUserWithId();
 
+    @Query("select login FROM fr.gdvd.media_manager.entitiesMysql.MyUser AS usr where active=1")
+    List<String> findAllLoginActive();
+
 }

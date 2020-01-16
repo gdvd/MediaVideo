@@ -1,9 +1,7 @@
 package fr.gdvd.media_manager.service;
 
 import fr.gdvd.media_manager.entitiesMysql.*;
-import fr.gdvd.media_manager.entitiesNoDb.BasketInfo;
-import fr.gdvd.media_manager.entitiesNoDb.Langtopost;
-import fr.gdvd.media_manager.entitiesNoDb.RequestImdb;
+import fr.gdvd.media_manager.entitiesNoDb.*;
 
 import java.io.File;
 import java.util.List;
@@ -37,4 +35,14 @@ public interface RequestWeb {
     void deletelocalbasketname(String nameBasket, Long idUser);
 
     void deleteOneId(String nameBasket, Long idUser, String idMmi);
+
+    List<OneSimpleScore> getLastScore();
+
+    MyMediaInfo postcommentforuser(String idMmi, String comment);
+
+    VideoFilm postcommentvideo(String idVideo, String comment);
+
+    Remake setremake(String idvf, String idremake);
+
+    TitileWithIdttt getTitleWithId(TitileWithIdttt titileWithIdttt);
 }

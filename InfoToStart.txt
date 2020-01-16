@@ -1,0 +1,71 @@
+TO USE IT
+-----------------------
+1) Installation ->
+
+Install MediaInfo CLI                   :   https://mediaarea.net/fr/MediaInfo/Download
+Install java 11                         :   https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html
+Install apache                          :   (already install on mac os x)
+Install MySQL                           :   https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html
+Install PhpMyAdmin                      :   https://www.javatpoint.com/how-to-install-phpmyadmin-on-mac
+        or MySQLWorkBench               :   https://dev.mysql.com/doc/workbench/en/wb-installing-mac.html
+Install Angular.7                       :   https://www.javatpoint.com/angular-7-installation
+-----------------------
+2) Create DB ->
+
+In PhpMyAdmin create database
+        with format                     :   utf8mb4_general_ci (if some files contain emoticons!)
+        Name (without '')               :   'db_media'
+        with login (admin in local)     :   'appli'
+        and pass(nothing/no characters) :   ''
+
+(You can change the 3 last words in     :   MediaManager/src/main/resources/application.properties )
+
+(Note : The server.port in
+ application.properties is only for
+ MediaVideoFront, and not for the
+ users, don't change it)
+-----------------------
+3) Before the first launch ->
+
+In MediaVideo(java)
+Open it in your IDE (intelliJ by ex)
+Change the                              :   'PRIVATE_SECRET' (in src/main/java/fr.gdvd.media_manager/sec/SecurityParams)
+       and                              :   'EXPIRATION' (in the same file. To set the length of the token)
+----
+In MediaVideoFront(Angular)
+Open it in your IDE (WebStorm by ex)
+Change your Domain Name, in             :   src/environements/dataProject.ts
+(the name of your machine to use
+only on the local network and without
+'.local' , or your DNS for internet,
+without the port)
+-----------------------
+4) Build ->
+
+MediaVideo(Java.11 project)
+In the terminal of the IDE (intelliJ)   :   mvn package
+And copy the new file '[file].java'
+created(in the target's folder)
+----
+MediaVideoFront (Angular.7 project)
+In the terminal of the IDE (WebStorm)   :   ng build
+And copy the new fileS created(in
+the build's folder)
+-----------------------
+5) Launch ->
+
+To launch MediaVideo, the file.java     :   java -jar [file].java
+(in the folder of your choice)
+----
+To launch MediaVideoFront,
+copy the fileS previously created , in  :   /Library/WebServer/Documents/
+
+And in the terminal(restart apache)     :   apachectl -k graceful
+-----------------------
+6) Start ->
+
+Start your navigator, at                :   '[machineName].local' or '[yourDns]' (define in dataProject.ts)
+    login                               :   admin
+    password                            :   admin
+Click on admin's menu
+and change the password.

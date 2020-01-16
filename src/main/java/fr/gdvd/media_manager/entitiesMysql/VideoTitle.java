@@ -32,6 +32,9 @@ public class VideoTitle {
     @JoinColumn(name = "id_country", insertable = false, updatable = false)
     private VideoCountry videoCountry;
 
+    /*Experimental
+    private boolean select;*/
+
     @JsonIgnore
     @ManyToOne/*(fetch = FetchType.LAZY)*/
     @JoinColumn(name = "id_video", columnDefinition="varchar(16)", insertable = false, updatable = false)

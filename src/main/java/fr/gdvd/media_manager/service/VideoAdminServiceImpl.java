@@ -156,4 +156,11 @@ public class VideoAdminServiceImpl implements VideoAdminService {
         }
         return convFile;
     }
+
+    @Override
+    public MyMediaInfo toggleactiveidMmi(String idMmi) {
+        List<Boolean> lb = videoSupportPathRepository.isVspActiveOrNot(idMmi);
+        videoSupportPathRepository.toggleactiveidMmi(idMmi, !lb.get(0));
+        return myMediaInfoRepository.findById(idMmi).orElse(null);
+    }
 }

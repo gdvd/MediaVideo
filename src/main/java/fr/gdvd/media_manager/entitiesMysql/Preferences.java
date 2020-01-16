@@ -18,7 +18,6 @@ public class Preferences {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifPref;
 
-//    @Column(length=64)
     @ElementCollection(fetch = FetchType.EAGER)
     @OrderColumn(name="information")
     Map<String, String> prefmap = new HashMap<>();

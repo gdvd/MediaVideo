@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.controller;
 
+import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
 import fr.gdvd.media_manager.entitiesMysql.Preferences;
 import fr.gdvd.media_manager.entitiesNoDb.StateImport;
 import fr.gdvd.media_manager.entitiesNoDb.Usr;
@@ -23,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 import java.util.List;
 
-@Secured("ADMIN")
+//@Secured("ADMIN")
 @Log4j2
 @RestController
 @RequestMapping(value = "admin")
@@ -39,12 +40,12 @@ public class MediaAdminController {
     private AdminPreferences adminPreferences;
 
 
-    @GetMapping(value = "/info2",
+/*    @GetMapping(value = "/info2",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> info2(){
         return ResponseEntity.status(HttpStatus.OK)
                 .body(request.getRemoteUser());
-    }
+    }*/
 
     @GetMapping(value = "/findAllUser",
             produces={MediaType.APPLICATION_JSON_VALUE})
@@ -121,8 +122,19 @@ public class MediaAdminController {
         return adminPreferences.getpreftitle();
     }
 
-    ///////////////////////////////////// PostMapping
-    ////// MyUser
+
+    @GetMapping(value = "/getprefbackupMo")
+    public Preferences getprefbackupMo(){
+        log.info("GetPrefbackupMo");
+        return adminPreferences.getprefbackupMo();
+    }
+
+
+    @GetMapping(value = "/getprefbackupSc")
+    public Preferences getprefbackupSc(){
+        log.info("GetPrefbackupSc");
+        return adminPreferences.getprefbackupSc();
+    }
 
     @PostMapping(value = "/updateUser")
     public MyUser updateUser(@RequestBody MyUser myUser){
@@ -151,14 +163,7 @@ public class MediaAdminController {
         log.info("AddNewRole : "+role);
         return mediaAdminService.addnewrole(role);
     }
-/*    @PostMapping(value="/uploadFile",
-            produces={MediaType.APPLICATION_JSON_VALUE})
-    public void uploadfile(@RequestBody MultipartFile[] uploads){
-        int i = 0;
-        for(MultipartFile mp: uploads){
-            log.info("File received(uploadfile" + ++i + ") "+mp.getSize()+" name : "+mp.getName());
-        }
-    }*/
+
     @PostMapping("/savenewuser")
     public MyUser savenewuser(@RequestBody Usr user){
         log.info("SaveNewUser by : "+user.getLogin());
@@ -170,10 +175,60 @@ public class MediaAdminController {
         log.info("ChangePasswordUser by : "+user.getLogin());
         return mediaAdminService.updateuserandpassword(user);
     }
+
     @PostMapping("/changedatauser")
     public MyUser updateuser(@RequestBody Usr user){
         log.info("ChangeDataUser by : "+user.getLogin());
         return mediaAdminService.updateuser(user);
     }
 
+    @GetMapping(value="/toggleactiveidMmi/{idMmi}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public MyMediaInfo toggleactiveidMmi(@PathVariable String idMmi){
+        String login = request.getRemoteUser();
+        if(! login.equals("admin")) throw new RuntimeException("You must be logged in admin");
+        log.info(login + " ===> toggleactiveidMmi idMmi : "+idMmi);
+        return videoAdminService.toggleactiveidMmi(idMmi);
+    }
+
+    @GetMapping(value = "/getValuesScheduledTask",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public Preferences getValuesScheduledTask(){
+        return adminPreferences.getValuesScheduledTask();
+    }
+
+    @GetMapping(value = "/postnewfrequencymovie/{frequency}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public Preferences postnewfrequency(@PathVariable int frequency){
+        return adminPreferences.postnewfrequency(frequency);
+    }
+
+    @GetMapping(value = "/postnewfrequencyscore/{frequency}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public Preferences postnewfrequencyscore(@PathVariable int frequency){
+        return adminPreferences.postnewfrequencyscore(frequency);
+    }
+
+    @GetMapping(value = "/getPrefSubscribe",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public Preferences getPrefSubscribe(){
+        return null;
+    }
+
+
+    @GetMapping(value = "/getlisttoexport",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public List<String> getlisttoexport(){
+        return adminPreferences.getlisttoexport();
+    }
+
+    @PostMapping(value = "/executeexport",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public int executeexport(@RequestBody String nameExport){
+        return adminPreferences.executeexport(nameExport);
+    }
+
+
+
 }
+

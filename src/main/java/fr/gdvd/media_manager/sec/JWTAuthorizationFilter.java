@@ -27,10 +27,14 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");// CORS policy
-        response.addHeader("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, authorization");
-        response.addHeader("Access-Control-Expose-Headers", "Access-Control-Allow-Origin, Access-Control-Allow-Credentials, authorization");
-        response.addHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH");
+        response.addHeader("Access-Control-Allow-Origin",
+                "*");// CORS policy
+        response.addHeader("Access-Control-Allow-Headers",
+                "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, authorization");
+        response.addHeader("Access-Control-Expose-Headers",
+                "Access-Control-Allow-Origin, Access-Control-Allow-Credentials, authorization");
+        response.addHeader("Access-Control-Allow-Methods",
+                "GET,POST,PUT,DELETE,PATCH");
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(HttpServletResponse.SC_OK);
         } else if (request.getRequestURI().equals("/login")) {
@@ -48,7 +52,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 DecodedJWT decodeJWT = verifier.verify(jwt.substring(SecurityParams.TOKEN_PREFIX.length()));
                 username = decodeJWT.getSubject();
                 roles = decodeJWT.getClaims().get("roles").asList(String.class);
-
             } catch (Exception e) {
                 log.info(e.getMessage());
                 if (e.getMessage().contains("The Token has expired on")) {

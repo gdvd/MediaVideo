@@ -1,12 +1,7 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
-import fr.gdvd.media_manager.entitiesMysql.VideoFilm;
-import fr.gdvd.media_manager.entitiesNoDb.ReqScore;
-import fr.gdvd.media_manager.entitiesNoDb.Usr;
-import fr.gdvd.media_manager.entitiesNoDb.Usrnewpassword;
-import fr.gdvd.media_manager.entitiesMysql.MyRole;
-import fr.gdvd.media_manager.entitiesMysql.MyUser;
+import fr.gdvd.media_manager.entitiesMysql.*;
+import fr.gdvd.media_manager.entitiesNoDb.*;
 
 import java.util.List;
 
@@ -31,4 +26,10 @@ public interface MediaAdminService {
     public MyRole addnewrole(String role);
     public String info();
     public VideoFilm addScoreToUser(ReqScore reqScore, String login);
+    public List<String> listuserstosub(String login, boolean vf, boolean name);
+    public PreferencesSubscribeWithScore subscribe(String login, PreferencesSubscribe preferencesSubscribeLight);
+    public PreferencesSubscribeWithScore getListOfSub(String login);
+    List<PreferencesSubscribeWithScore> getallsubscribes(String login);
+    PreferencesSubscribeWithScore validationsubscribe(String login, Long id);
+    PreferencesSubscribeWithScore getOneSubscribe(String login, int dateask, Long id);
 }

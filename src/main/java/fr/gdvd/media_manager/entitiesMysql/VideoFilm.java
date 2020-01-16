@@ -1,10 +1,12 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
@@ -12,6 +14,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Data
 @NoArgsConstructor
@@ -56,11 +60,6 @@ public class VideoFilm {
     @Nullable
     @OneToMany(mappedBy = "videoFilm")
     private List<VideoResume> videoResumes = new ArrayList<>();
-
-    @Nullable
-    @ManyToOne
-    @JoinColumn(name = "fk_VideoSerie")
-    private VideoSerie videoSerie;
 
     @NotNull
     @ManyToOne
@@ -113,11 +112,8 @@ public class VideoFilm {
     )
     List<VideoKeyword> videoKeywordSet = new ArrayList<>();
 
-    /* Recursive link to define remake of a videoFilm on an other videoFilm */
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "remake", referencedColumnName = "idVideo", columnDefinition="varchar(16)")
-    private VideoFilm remake;
-    @OneToMany(mappedBy = "remake", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<VideoFilm> children = new HashSet<>();
-
+    @Nullable
+    @ManyToOne
+    @JoinColumn(name = "fk_remake")
+    private Remake remake;
 }

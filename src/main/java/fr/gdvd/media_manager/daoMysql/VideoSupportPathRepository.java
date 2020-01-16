@@ -88,5 +88,15 @@ public interface VideoSupportPathRepository extends JpaRepository<VideoSupportPa
             "where mmi.idMyMediaInfo=:idMmi")
     List<Tuple> findTitlePathAndVneWithidMmi(String idMmi);
 
+    @Query("select vsp.active from fr.gdvd.media_manager.entitiesMysql.VideoSupportPath AS vsp " +
+            "where vsp.id_my_media_info=:idMmi")
+    List<Boolean> isVspActiveOrNot(String idMmi);
+
+    @Transactional
+    @Modifying
+    @Query("update fr.gdvd.media_manager.entitiesMysql.VideoSupportPath AS vsp " +
+            "set vsp.active=:active where vsp.id_my_media_info=:idMmi")
+    void toggleactiveidMmi(String idMmi, boolean active);
+
 }
 

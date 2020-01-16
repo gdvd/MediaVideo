@@ -11,19 +11,19 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@EnableScheduling
 @Log4j2
 @EnableAsync
 @SpringBootApplication
@@ -156,7 +156,73 @@ public class MediaManagerApplication {
                         "UK", "English title" , "USA"/*, "Italy", "Spain", "Germany"*/).collect(Collectors.toSet()));
                 preferencesRepository.save(pref2);
             }
+            Preferences pref3 = preferencesRepository.findByIdPreferences("subcrip");
+            if (pref3 == null) {
+                pref3 = new Preferences();
+                pref3.setIdPreferences("subcrip");
+                pref3.setDateModifPref(new Date());
+                preferencesRepository.save(pref3);
+            }
+//            Date dt = new Date();
+//            dt.setSeconds(dt.getSeconds() + 30);
+            Preferences pref4 = preferencesRepository.findByIdPreferences("backupMo");
+            if (pref4 == null) {
+                pref4 = new Preferences();
+                pref4.setIdPreferences("backupMo");
+                pref4.setDateModifPref(new Date());
+                Map<String, String> mp1 = new HashMap<>();
+                mp1.put("frequency", "24");
+                mp1.put("directory", "/pathIdVideo/backupmovie2id");
+                SimpleDateFormat dateHeureFormat = new SimpleDateFormat("yyyy-MM-dd>HH:mm:ss");
+                String now = dateHeureFormat.format(new Date());
+                mp1.put("last", now);
+                pref4.setPrefmap(mp1);
+                preferencesRepository.save(pref4);
+            }
+            Preferences pref5 = preferencesRepository.findByIdPreferences("backupSc");
+            if (pref5 == null) {
+                pref5 = new Preferences();
+                pref5.setIdPreferences("backupSc");
+                pref5.setDateModifPref(new Date());
+                Map<String, String> mp2 = new HashMap<>();
+                mp2.put("frequency", "24");
+                mp2.put("directory", "/pathIdVideo/backupscore2login");
+                SimpleDateFormat dateHeureFormat = new SimpleDateFormat("yyyy-MM-dd>HH:mm:ss");
+                String now = dateHeureFormat.format(new Date());
+                mp2.put("last", now);
+                pref5.setPrefmap(mp2);
+                preferencesRepository.save(pref5);
+            }
+            Preferences pref6 = preferencesRepository.findByIdPreferences("subscrib");
+            if (pref6 == null) {
+                pref6 = new Preferences();
+                pref6.setIdPreferences("subscrib");
+                pref6.setDateModifPref(new Date());
+                Map<String, String> mp3 = new HashMap<>();
 
+                pref6.setPrefmap(mp3);
+                preferencesRepository.save(pref6);
+
+                ItemToSearch its1 = new ItemToSearch();
+                its1.setItemImdb("admin");
+                its1.setKeyset(Stream.of("all").collect(Collectors.toSet()));
+                its1.setPreferences(pref6);
+                itemToSearchRepository.save(its1);
+
+            }
+            Preferences pref7 = preferencesRepository.findByIdPreferences("idtt2dl");
+            if (pref7 == null) {
+                pref7 = new Preferences();
+                pref7.setIdPreferences("idtt2dl");
+                pref7.setDateModifPref(new Date());
+//                Set<String> set = new HashSet<>();
+//                pref7.setExtset(set);
+                Map<String, String> mp4 = new HashMap<>();
+                // limite nbperbatch interval
+                mp4.put("interval", "3");
+                pref7.setPrefmap(mp4);
+                preferencesRepository.save(pref7);
+            }
         };
     }
 

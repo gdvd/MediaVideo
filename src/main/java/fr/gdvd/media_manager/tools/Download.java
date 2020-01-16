@@ -14,55 +14,6 @@ import java.nio.file.Files;
 @Log4j2
 public class Download {
 
-/*
-
-String urlZtinfo = it.getTitre();
-urlZtinfo = utls.formatToHtml(urlZtinfo);
-
-try {// http://www.imdb.com/find?ref_=nv_sr_fn&q=No+Way+Out+(Collide)&s=tt
-    url = new URL("http://www.imdb.com/find?ref_=nv_sr_fn&q=" + urlZtinfo + "&s=all");
-	test = dl.downloadNow(url, fileParsing);
-	log.info("=== Find Imdb :" + url.toString());
-	} catch (IOException e) {
-	log.error("////// Find Imdb PB :" + urlZtinfo + " " + e.toString());
-	}
-if (!test) continue;
-// ******** extraire les infos ds
-// fileParsing ********
-List<String> corpsi = ft.findAllTagsInFile("</a>Titles</h3>", "</table>",
-	fileParsing, false);
-if (corpsi.size() == 0)continue;
-List<String> corpsii = ft.findAllTagsInString("<tr class=\"findResult*>", "</tr>",
-corpsi.get(0), false);
-for (String st : corpsii) {
-String ttImdb = ft.findTagInString("<a href=\"/title/", "/", st, false);
-String urlImgImdb = ft.findTagInString("<img src=\"", "\"", st, false);
-
-String tmpImdb = ft.findTagInString("<td class=\"result_text\">", "</td>", st, true);
-String titreImdb = ft.findTagInString("<a href=*>", "</a>", tmpImdb, false);
-titreImdb = titreImdb.replaceAll("^\\s+", "").trim();
-
-String typeImdb = ft.findTagInString("</a>", "</td>", tmpImdb, false);
-typeImdb = ft.findTagInStringToDelete("<br>", typeImdb, true);
-typeImdb = ft.findTagInStringToDelete("<small>", typeImdb, true);
-typeImdb = ft.findTagInStringToDelete("</small>", typeImdb, true);
-typeImdb = ft.findTagInStringToDelete("<span*>", typeImdb, true);
-typeImdb = ft.findTagInStringToDelete("</span>", typeImdb, true);
-typeImdb = typeImdb.replaceAll("^\\s+", "").trim();
-
-Itemfindimdb ifimdb = new Itemfindimdb();
-ifimdb.setIdimdbtt(ttImdb);
-										ifimdb.setImgfilm(urlImgImdb);
-										ifimdb.setTitrefilm(titreImdb);
-										ifimdb.setTypefilm(typeImdb);
-										ifimdb.setItemzt(it);
-										itemfindimdbRepository.save(ifimdb);
-
-}
-itemztRepository.updateEtat(it.getIditemzt(), 10);
-}
-
-  */
     public boolean downloadNow(URL url, File localFilename) throws IOException {
         boolean test = false;
         InputStream is = null;
@@ -126,7 +77,7 @@ itemztRepository.updateEtat(it.getIditemzt(), 10);
     }
 
 
-    public String download2String(URL url, String strFiledestination) throws IOException {
+    public String download2String(URL url) throws IOException {
         // Realise la connection a l'URL
         HttpURLConnection urlconn = (HttpURLConnection) url.openConnection();
         urlconn.setRequestProperty("User-Agent", "Mozilla/5.0");

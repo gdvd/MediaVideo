@@ -60,10 +60,10 @@ public class MyUser implements Serializable {
     @OneToMany(mappedBy = "myUser", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
     private List<Basket> baskets = new ArrayList<>();
 
-/*    @Nullable
+    @Nullable
     @JsonIgnore
     @OneToMany(mappedBy = "myUser", cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
-    private List<VideoNameExport> videoNameExports = new ArrayList<>();*/
+    private List<PreferencesSubscribe> preferencesSubscribes = new ArrayList<>();
 
 
 }

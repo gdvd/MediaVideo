@@ -6,7 +6,11 @@ import fr.gdvd.media_manager.entitiesNoDb.*;
 import fr.gdvd.media_manager.tools.Download;
 import fr.gdvd.media_manager.tools.Parser;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
@@ -17,10 +21,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -58,6 +59,14 @@ public class RequestWebImpl implements RequestWeb {
     private BasketNameRepository basketNameRepository;
     @Autowired
     private MyUserRepository myUserRepository;
+    @Autowired
+    private VideoTitleRepository videoTitleRepository;
+    @Autowired
+    private MyMediaCommentRepository myMediaCommentRepository;
+    @Autowired
+    private VideoCommentRepository videoCommentRepository;
+    @Autowired
+    private RemakeRepository remakeRepository;
 
     @Override
     public VideoFilm linkIdttWithIdmmi(String idmmi, String idtt) {
@@ -385,7 +394,7 @@ public class RequestWebImpl implements RequestWeb {
             lri.add(ri);
 
         } else {
-            query1 = query1.replaceAll("[^\\w\\s\\é\\'\\è\\ç\\à\\ë\\ê\\û\\ù\\ô\\ï]+", " ");
+            query1 = query1.replaceAll("[^\\w\\s\\é\\'\\è\\ç\\à\\ë\\ê\\û\\ù\\ô\\ï\\î]+", " ");
             query1 = query1.replace("^[\\s]*", "").trim();
             query1 = query1.replaceAll("[\\s]+", " ");
 
@@ -395,6 +404,21 @@ public class RequestWebImpl implements RequestWeb {
             query2 = query2.replaceAll("\\sL\\s", " l'");
             query2 = query2.replaceAll("^l\\s", " l'");
             query2 = query2.replaceAll("^L\\s", " l'");
+
+            query2 = query1.replaceAll("\\sj\\s", " j'");
+            query2 = query2.replaceAll("\\sJ\\s", " j'");
+            query2 = query2.replaceAll("^j\\s", " j'");
+            query2 = query2.replaceAll("^J\\s", " j'");
+
+            query2 = query1.replaceAll("\\sm\\s", " m'");
+            query2 = query2.replaceAll("\\sM\\s", " m'");
+            query2 = query2.replaceAll("^m\\s", " m'");
+            query2 = query2.replaceAll("^M\\s", " m'");
+
+            query2 = query1.replaceAll("\\ss\\s", " s'");
+            query2 = query2.replaceAll("\\sS\\s", " s'");
+            query2 = query2.replaceAll("^s\\s", " s'");
+            query2 = query2.replaceAll("^S\\s", " s'");
 
             query2 = query2.replaceAll("\\sc\\s", " c'");
             query2 = query2.replaceAll("\\sC\\s", " C'");
@@ -424,14 +448,13 @@ public class RequestWebImpl implements RequestWeb {
                 String encodedQuery = encodeValue(query);
                 completeUrl = "https://www.imdb.com/find?ref_=nv_sr_fn&q=" + encodedQuery + "&s=all";
 
-
                 URL url = null;
                 File f = null;
                 String res = "";
                 try {
                     url = new URL(completeUrl);
                     f = new File(System.getProperty("user.home") + "/pathIdVideo/search/searchtitles.xml");
-                    res = download.download2String(url, f.getAbsolutePath());
+                    res = download.download2String(url);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -617,7 +640,7 @@ public class RequestWebImpl implements RequestWeb {
         String idtt = "";
         for (String str : path) {
             if (str.length() > 0) {
-                if (Pattern.matches("tt[\\d]{7,9}", str)) {
+                if (Pattern.matches("tt[\\d]{7,10}", str)) {
                     idtt = str;
                     break;
                 }
@@ -630,7 +653,7 @@ public class RequestWebImpl implements RequestWeb {
     public String linkToIdTt(String url) {
         String id = "";
         for (String s : url.split("/")) {
-            if (Pattern.matches("tt[\\d]{7,9}", s)) {// 'tt' and 7 digits maybe 8 or 9
+            if (Pattern.matches("tt[\\d]{7,10}", s)) {// 'tt' and 7 digits maybe 8 or 9
                 id = s;
                 break;
             }
@@ -668,9 +691,9 @@ public class RequestWebImpl implements RequestWeb {
     @Override
     public List<Basket> addtobasket(String idMmi, String login, String nameBasket) {
         MyMediaInfo mmi = myMediaInfoRepository.findById(idMmi).orElse(null);
-        if(mmi==null) throw new RuntimeException("idMmi is wrong");
+        if (mmi == null) throw new RuntimeException("idMmi is wrong");
         BasketName bn = basketNameRepository.findByBasketName(nameBasket).orElse(null);
-        if(bn==null)bn = basketNameRepository.save(new BasketName(null, nameBasket, null, null));
+        if (bn == null) bn = basketNameRepository.save(new BasketName(null, nameBasket, null, null));
         MyUser mu = myUserRepository.findByLogin(login);
         Basket b = new Basket(mmi, mu, bn);
         b.setDateModif(new Date());
@@ -685,12 +708,12 @@ public class RequestWebImpl implements RequestWeb {
     public BasketInfo getfilenameofidsbasket(BasketInfo bi) {
         List<Basket> lIdMmi = basketRepository.findAllByMyUser_IdMyUserAndBasketName_BasketName(bi.getUserId(), bi.getBasketName());
         List<BasketInfoElement> lbie = new ArrayList<>();
-        for(Basket basket: lIdMmi){
+        for (Basket basket : lIdMmi) {
             // Foreach idmmi -> get path/title -> BasketInfoElement & List<nameExport> -> BasketInfoPahs -> BasketInfoElement -> BasketInfo
             List<Tuple> lt = videoSupportPathRepository.findTitlePathAndVneWithidMmi(basket.getMyMediaInfo().getIdMyMediaInfo());
             List<BasketInfoPahs> lbip = new ArrayList<>();
             BasketInfoElement bie = new BasketInfoElement(basket.getMyMediaInfo().getIdMyMediaInfo(), lbip);
-            for(Tuple t: lt){
+            for (Tuple t : lt) {
                 BasketInfoPahs bip = new BasketInfoPahs((String) t.toArray()[0], (String) t.toArray()[1], (String) t.toArray()[2]);
                 lbip.add(bip);
             }
@@ -703,16 +726,141 @@ public class RequestWebImpl implements RequestWeb {
     @Override
     public void deletelocalbasketname(String nameBasket, Long idUser) {
         BasketName bn = basketNameRepository.findByBasketName(nameBasket).orElse(null);
-        if(bn==null) throw new RuntimeException("This Basket cannot be delete, because this nameBasket doesn't exist");
+        if (bn == null)
+            throw new RuntimeException("This Basket cannot be delete, because this nameBasket doesn't exist");
         basketRepository.deleteAllByBasketNameAndMyUser_IdMyUser(bn, idUser);
     }
 
     @Override
     public void deleteOneId(String nameBasket, Long idUser, String idMmi) {
         BasketName bn = basketNameRepository.findByBasketName(nameBasket).orElse(null);
-        if(bn==null) throw new RuntimeException("This Basket cannot be delete, because this nameBasket doesn't exist");
+        if (bn == null)
+            throw new RuntimeException("This Basket cannot be delete, because this nameBasket doesn't exist");
         Basket b = basketRepository.findByBasketNameAndMyUser_IdMyUserAndMyMediaInfo_IdMyMediaInfo(bn, idUser, idMmi).orElse(null);
-        if(b==null) throw new RuntimeException("This Basket cannot be delete, because this Basket doesn't exist");
+        if (b == null) throw new RuntimeException("This Basket cannot be delete, because this Basket doesn't exist");
         basketRepository.deleteByBasketNameAndMyUser_IdMyUserAndMyMediaInfo_IdMyMediaInfo(bn, idUser, idMmi);
     }
+
+    @Override
+    public List<OneSimpleScore> getLastScore() {
+        int nb = 5;
+        List<OneSimpleScore> loss = new ArrayList<>();
+
+        Pageable findScore = PageRequest.of(0, nb);
+        Page<VideoFilm> lt = videoFilmRepository.getLastScore(findScore);
+
+        /*if(lt.getContent().size()!=0){
+            for(VideoFilm vf: lt.getContent()){
+                List<VideoTitle> lvt = videoTitleRepository.findFirstByIdVideo(vf);
+                String oneTitle = lvt.get(0).getTitle();
+                OneSimpleScore oss = new OneSimpleScore(vf.getIdVideo(), oneTitle, vf.getScoreOnHundred(),
+                        vf.getNbOfVote(),0, vf.getDateModifFilm(), "", "videofilm");
+                loss.add(oss);
+            }
+        }*/
+        return loss;
+    }
+
+    @Override
+    public MyMediaInfo postcommentforuser(String idMmi, @NotNull String comment) {
+        MyMediaInfo mmi = myMediaInfoRepository.findByIdMyMediaInfo(idMmi);
+        if (comment.length() > 1024) comment = comment.substring(0, 1023);
+        MyMediaComment mmc = new MyMediaComment(null, comment, mmi);
+        myMediaCommentRepository.save(mmc);
+        return myMediaInfoRepository.findByIdMyMediaInfo(idMmi);
+    }
+
+    @Override
+    public VideoFilm postcommentvideo(String idVideo, @NotNull String comment) {
+        if (comment.length() > 1024) comment = comment.substring(0, 1023);
+        VideoFilm vf = videoFilmRepository.findById(idVideo).orElse(null);
+        if (vf == null) throw new RuntimeException("VideoFilm doesn't exist");
+        VideoComment vc = videoCommentRepository.findByVideoFilm(vf);
+        if (vc == null) {
+            vc = new VideoComment(null, comment, vf);
+        } else {
+            vc.setComment(comment);
+        }
+        vc = videoCommentRepository.save(vc);
+        vf.setVideoComment(vc);
+        return vf;
+    }
+
+    @Override
+    public Remake setremake(@NotNull String idvf, @NotNull String idremake) {
+        Remake rm = null;
+        if (Pattern.matches("tt[\\d]{7,10}", idvf)
+                && Pattern.matches("tt[\\d]{7,10}", idremake)
+                && !(idvf.equals(idremake))) {
+            VideoFilm vf1 = videoFilmRepository.findById(idvf).orElse(null);
+            if (vf1 == null) throw new RuntimeException("Wrong IdVideoFilm1");
+            VideoFilm vf2 = videoFilmRepository.findById(idremake).orElse(null);
+            if (vf2 == null) throw new RuntimeException("Wrong IdVideoFilm2");
+            if (vf1.getRemake() == null) {
+                if (vf2.getRemake() == null) {
+                    rm = new Remake(null,
+                            Stream.of(idvf, idremake).collect(Collectors.toSet()),
+                            null);
+                    rm = remakeRepository.save(rm);
+                    vf1.setRemake(rm);
+                    vf1.setDateModifFilm(new Date());
+                    videoFilmRepository.save(vf1);
+                    vf2.setRemake(rm);
+                    vf2.setDateModifFilm(new Date());
+                    videoFilmRepository.save(vf2);
+                } else {
+                    rm = remakeRepository.findById(vf2.getRemake().getIdRemake()).orElse(null);
+                    if (rm==null) throw new RuntimeException("Remarke(remote) is null");
+                    rm.getRemakes().add(vf1.getIdVideo());
+                    rm = remakeRepository.save(rm);
+                    vf1.setRemake(rm);
+                    vf1.setDateModifFilm(new Date());
+                    videoFilmRepository.save(vf1);
+                }
+            } else {
+                if (vf2.getRemake() == null) {
+                    rm = remakeRepository.findById(vf1.getRemake().getIdRemake()).orElse(null);
+                    if (rm==null) throw new RuntimeException("Remarke(first) is null");
+                    rm.getRemakes().add(vf2.getIdVideo());
+                    rm = remakeRepository.save(rm);
+                    vf2.setRemake(rm);
+                    vf2.setDateModifFilm(new Date());
+                    videoFilmRepository.save(vf2);
+                } else {
+                    rm = remakeRepository.findById(vf1.getRemake().getIdRemake()).orElse(null);
+                    Remake rm2 = remakeRepository.findById(vf2.getRemake().getIdRemake()).orElse(null);
+                    if (rm==null) throw new RuntimeException("Remarke(first) is null");
+                    if (rm2==null) throw new RuntimeException("Remarke(remote) is null");
+                    for (String idvideofilm: rm2.getRemakes()) {
+                        VideoFilm vftmp = videoFilmRepository.findById(idvideofilm).orElse(null);
+                        if(vftmp==null)continue;
+                        vftmp.setRemake(rm);
+                        vftmp.setDateModifFilm(new Date());
+                        videoFilmRepository.save(vftmp);
+                    }
+                    rm.getRemakes().addAll(rm2.getRemakes());
+                    rm = remakeRepository.save(rm);
+                    remakeRepository.deleteByIdRemake(rm2.getIdRemake());
+                    vf1.setRemake(rm);
+                    vf1.setDateModifFilm(new Date());
+                    videoFilmRepository.save(vf1);
+                }
+            }
+
+        } else {
+            throw new RuntimeException("Wrong IdVideoFilm format");
+        }
+        return rm;
+    }
+
+    @Override
+    public TitileWithIdttt getTitleWithId(TitileWithIdttt titileWithIdttt) {
+        VideoFilm vf = videoFilmRepository.findById(titileWithIdttt.getIdtt()).orElse(null);
+        if(vf!=null){
+            titileWithIdttt.setTitle(vf.getVideoTitles().get(0).getTitle());
+        }
+        return titileWithIdttt;
+    }
+
+
 }

@@ -1,6 +1,9 @@
 HELP.md
 /target/
 !.mvn/wrapper/maven-wrapper.jar
+LOG_FILE_IS_UNDEFINED*.log
+mediaInfoLog*.log
+BUG.txt
 
 ### STS ###
 .apt_generated

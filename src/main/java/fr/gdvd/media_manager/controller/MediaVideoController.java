@@ -3,6 +3,7 @@ package fr.gdvd.media_manager.controller;
 import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.entitiesNoDb.Langtopost;
 import fr.gdvd.media_manager.entitiesNoDb.RequestImdb;
+import fr.gdvd.media_manager.entitiesNoDb.TitileWithIdttt;
 import fr.gdvd.media_manager.service.RequestWeb;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,20 +122,20 @@ private static final String[] IP_HEADER_CANDIDATES = {
     @GetMapping(value = "/gettypemmiwithidtt/{idtt}", produces =
             {MediaType.APPLICATION_JSON_VALUE})
     public TypeMmi gettypemmiwithidtt(@PathVariable("idtt")String idtt){
-        log.info("gettypemmiwithidtt : "+idtt);
+        log.info("===> Gettypemmiwithidtt : "+idtt);
         return requestWeb.gettypemmiwithidtt(idtt);
     }
 
     @GetMapping(value = "/gettypemmiwithidmmi/{idmmi}", produces =
             {MediaType.APPLICATION_JSON_VALUE})
     public TypeMmi gettypemmiwithidmmi(@PathVariable("idmmi")String idtmmi){
-        log.info("gettypemmiwithidmmi : "+idtmmi);
+        log.info("===> Gettypemmiwithidmmi : "+idtmmi);
         return requestWeb.gettypemmiwithidmmi(idtmmi);
     }
 
     @PostMapping(value = "/updatelanguage")
     public MyMediaAudio updatelanguage(@NotNull @RequestBody Langtopost langtopost){
-        log.info("updatelanguage idmmi : "+langtopost.getIdMd5()
+        log.info("===> Updatelanguage idmmi : "+langtopost.getIdMd5()
                 +" OldLang : "+langtopost.getOldLang()
                 +" NewLlang : "+langtopost.getNewLlang());
         return requestWeb.updatelanguage(langtopost);
@@ -142,11 +143,17 @@ private static final String[] IP_HEADER_CANDIDATES = {
 
     @PostMapping(value = "/updatetext")
     public MyMediaText updatetext(@NotNull @RequestBody Langtopost langtopost){
-        log.info("updatetext idmmi : "+langtopost.getIdMd5()
+        log.info("===> Updatetext idmmi : "+langtopost.getIdMd5()
                 +" OldLang : "+langtopost.getOldLang()
                 +" NewLlang : "+langtopost.getNewLlang());
         return requestWeb.updatetext(langtopost);
     }
 
+    @GetMapping(value = "/setremake/{idvf}/{idremake}", produces =
+            {MediaType.APPLICATION_JSON_VALUE})
+    public Remake setremake(@PathVariable("idvf")String idvf, @PathVariable("idremake")String idremake){
+        log.info("===> Setremake on : " + idvf+" with : " + idremake);
+        return requestWeb.setremake(idvf, idremake);
+    }
 
 }
