@@ -5,6 +5,7 @@ import fr.gdvd.media_manager.entitiesNoDb.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public interface RequestWeb {
 
@@ -26,7 +27,7 @@ public interface RequestWeb {
     MyMediaInfo eraseLinkMmiTmmi(Long idTmmi, String idMmi);
     MyMediaInfo eraseTmmi(Long idTmmi, String idVideo, String idMmi);
 
-    List<Basket> getbaskets(String login);
+    List<Basket> getbaskets(String login, String name);
 
     List<Basket> addtobasket(String idMmi, String login, String nameBasket);
 
@@ -45,4 +46,6 @@ public interface RequestWeb {
     Remake setremake(String idvf, String idremake);
 
     TitileWithIdttt getTitleWithId(TitileWithIdttt titileWithIdttt);
+
+    List<LinkVfTmmi> getVideofilmWithIdtypemmi(List<Long> links);
 }

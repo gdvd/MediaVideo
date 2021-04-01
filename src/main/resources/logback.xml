@@ -1,5 +1,5 @@
 <configuration>
-    <property name="FILE_LOG_PATTERN" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="FILE_LOG_PATTERN" value="%d{YY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <Pattern>${FILE_LOG_PATTERN}</Pattern>

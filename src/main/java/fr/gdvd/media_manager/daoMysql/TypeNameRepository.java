@@ -12,7 +12,10 @@ import java.util.Optional;
 public interface TypeNameRepository extends JpaRepository<TypeName, Long> {
 
     Optional<TypeName> findByTypeName(String typeName);
+    List<TypeName> findAll();
 
     @Query("SELECT tn.typeName FROM fr.gdvd.media_manager.entitiesMysql.TypeName AS tn")
     List<String> findAllTypeName();
+
+
 }

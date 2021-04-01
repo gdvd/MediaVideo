@@ -2,9 +2,7 @@ package fr.gdvd.media_manager.controller;
 
 import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
 import fr.gdvd.media_manager.entitiesMysql.Preferences;
-import fr.gdvd.media_manager.entitiesNoDb.StateImport;
-import fr.gdvd.media_manager.entitiesNoDb.Usr;
-import fr.gdvd.media_manager.entitiesNoDb.Usrnewpassword;
+import fr.gdvd.media_manager.entitiesNoDb.*;
 import fr.gdvd.media_manager.entitiesMysql.MyRole;
 import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import fr.gdvd.media_manager.service.AdminPreferences;
@@ -34,6 +32,7 @@ public class MediaAdminController {
     private MediaAdminServiceImpl mediaAdminService;
     @Autowired
     private VideoAdminService videoAdminService;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -228,6 +227,14 @@ public class MediaAdminController {
         return adminPreferences.executeexport(nameExport);
     }
 
+
+    @GetMapping(value = "/getBasketsOfUserWithInfo/{user}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public List<BasketNameUser> getBasketsOfUserWithInfo(
+            @PathVariable String user){
+        String login = request.getRemoteUser();
+        return adminPreferences.getBasketsOfUserWithInfo(user, login);
+    }
 
 
 }

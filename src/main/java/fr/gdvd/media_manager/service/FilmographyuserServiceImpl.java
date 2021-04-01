@@ -10,22 +10,17 @@ import fr.gdvd.media_manager.entitiesNoDb.OneActor;
 import fr.gdvd.media_manager.entitiesNoDb.OneFilmpgraphy;
 import fr.gdvd.media_manager.entitiesNoDb.VideoFilmLight;
 import fr.gdvd.media_manager.tools.Download;
-import fr.gdvd.media_manager.tools.DownloadListIdtt;
 import fr.gdvd.media_manager.tools.DownloadListIdtt2;
 import fr.gdvd.media_manager.tools.Parser;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Log4j2
 @Service

@@ -22,6 +22,7 @@ import java.util.Set;
 @Entity
 public class VideoSupportPath implements Serializable {
 
+    @SuppressWarnings("JpaModelReferenceInspection")
     @EmbeddedId
     @AttributeOverrides({
             @AttributeOverride(name = "id.myMediaInfo",

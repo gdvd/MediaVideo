@@ -17,6 +17,7 @@ import java.util.Date;
 @Entity
 public class VideoUserScore implements Serializable {
 
+    @SuppressWarnings("JpaModelReferenceInspection")
     @EmbeddedId
     @AttributeOverrides({
             @AttributeOverride(name = "id.video",

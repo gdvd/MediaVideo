@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import javax.persistence.Tuple;
+import java.util.List;
+
 @RepositoryRestResource
 public interface VideoArtistRepository extends JpaRepository<VideoArtist, String> {
 
@@ -42,5 +45,32 @@ public interface VideoArtistRepository extends JpaRepository<VideoArtist, String
             "AS mmi ON mmi.idMyMediaInfo=tmmi.idTypeMmi " +
             "where va.firstLastName LIKE :nm")
     Page<VideoArtist> findMnPP(String nm, Pageable pageable);
+
+    List<VideoArtist> findAllByFirstLastName(String firstLastName);
+
+
+    @Query("select va " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoArtist as va " +
+            "where va.firstLastName LIKE :requestName")
+    List<VideoArtist> findAllLikeFirstLastName(String requestName);
+
+    @Query("select distinct va.idVideoArtist, va.firstLastName " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoArtist as va " +
+
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoFilmArtist "+
+            "AS vfa ON va.idVideoArtist=vfa.videoArtist "+
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.VideoFilm "+
+            "AS vf ON vfa.videoArtist=vf.idVideo "+
+
+            "where va.firstLastName LIKE :requestName")
+            List<Tuple> findNameContentRequest1(String requestName);
+           /* "where (va.firstLastName LIKE :requestName) AND  " +
+            "( vfa.actor = :isActor or vfa.director = :isDirector or " +
+            "vfa.music = :isMusic or vfa.producer = :isProducer or" +
+            "vfa.writer = :isWriter )"*/
+ /*,  List<Tuple> findNameContentRequest(String requestName, boolean isActor,
+      boolean isDirector, boolean isMusic, boolean isProducer, boolean isWriter);
+
+     boolean isDirector, boolean isMusic, boolean isProducer, boolean isWriter*/
 
 }

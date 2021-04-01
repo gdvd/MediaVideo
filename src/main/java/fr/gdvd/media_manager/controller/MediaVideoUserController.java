@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 //@Secured({"ROLE_ADMIN", "ROLE_USER"})
 //@PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
@@ -31,6 +32,7 @@ public class MediaVideoUserController {
 
     @Autowired
     private RequestWeb requestWeb;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -75,6 +77,14 @@ public class MediaVideoUserController {
         return managmentFiles.lVneIdToName(login);
     }
 
+    @GetMapping(value = "/getAllKinds",
+            produces={MediaType.APPLICATION_JSON_VALUE})
+    public List<VideoKind> getAllKinds(){
+        String login = request.getRemoteUser();
+        log.info(login+" || getAllKinds");
+        return managmentFiles.getAllKinds(login);
+    }
+
     @GetMapping(value = "/listUserWithId",
             produces={MediaType.APPLICATION_JSON_VALUE})
     public List<UserLight> listUserWithId(){
@@ -106,11 +116,11 @@ public class MediaVideoUserController {
                 +reqScore.getIdtt()+" with note : "+reqScore.getScore());
         return mediaAdminService.addScoreToUser(reqScore, login);
     }
-    @GetMapping(value = "/getbaskets")
-    public List<Basket> getbaskets(){
+    @GetMapping(value = "/getbaskets/{name}")
+    public List<Basket> getbaskets(@PathVariable("name")String name){
         String login = request.getRemoteUser();
         log.info(login+" || getbaskets");
-        return requestWeb.getbaskets(login);
+        return requestWeb.getbaskets(login, name);
     }
     @PostMapping(value = "/addtobasket/{idMmi}")
     public List<Basket> addtobasket(@PathVariable("idMmi")String idMmi, @RequestBody String nameBasket){
@@ -136,7 +146,8 @@ public class MediaVideoUserController {
         log.warn(login + " || deletelocalbasketname with namebasket : "+nameBasket);
         requestWeb.deletelocalbasketname(nameBasket, idUser);
     }
-    @PostMapping(value = "/deleteOneId/{idMmi}", produces={MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/deleteOneId/{idMmi}",
+            produces={MediaType.APPLICATION_JSON_VALUE})
     public void deleteOneId(@PathVariable("idMmi")String idMmi, @RequestBody String nameBasket){
         String login = request.getRemoteUser();
         Long idUser = myUserRepository.findByLogin(login).getIdMyUser();
@@ -150,35 +161,40 @@ public class MediaVideoUserController {
         return requestWeb.getLastScore();
     }
 
-    @GetMapping(value = "/listuserstosub", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/listuserstosub",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<String> listuserstosub(){
         String login = request.getRemoteUser();
         log.info(login+" || listuserstosub");
         return mediaAdminService.listuserstosub(login, true, true);
     }
 
-    @PostMapping(value = "/subscribe", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/subscribe",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public PreferencesSubscribeWithScore subscribe(@RequestBody PreferencesSubscribe preferencesSubscribe){
         String login = request.getRemoteUser();
         log.info(login+" || subscribe");
         return mediaAdminService.subscribe(login, preferencesSubscribe);
     }
 
-    @GetMapping(value = "/getListOfSub", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/getListOfSub",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public PreferencesSubscribeWithScore getListOfSub(){
         String login = request.getRemoteUser();
         log.info(login+" || getListOfSub");
         return mediaAdminService.getListOfSub(login);
     }
 
-    @GetMapping(value = "/getallsubscribes", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/getallsubscribes",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<PreferencesSubscribeWithScore> getallsubscribes(){
         String login = request.getRemoteUser();
         log.info(login+" || getallsubscribes");
         return mediaAdminService.getallsubscribes(login);
     }
 
-    @GetMapping(value = "/validationsubscribe/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/validationsubscribe/{id}",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public PreferencesSubscribeWithScore validationsubscribe(@PathVariable("id")Long id){
         String login = request.getRemoteUser();
         log.info(login+" || validationsubscribe");
@@ -186,7 +202,8 @@ public class MediaVideoUserController {
     }
 
 
-    @GetMapping(value = "/getOneSubscribe/{dateask}/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/getOneSubscribe/{dateask}/{id}",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public PreferencesSubscribeWithScore getOneSubscribe(
             @PathVariable("dateask")int dateask,
             @PathVariable("id")Long id){
@@ -195,7 +212,8 @@ public class MediaVideoUserController {
         return mediaAdminService.getOneSubscribe(login, dateask, id);
     }
 
-    @PostMapping(value = "/postcommentforuser/{idMmi}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/postcommentforuser/{idMmi}",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public MyMediaInfo postcommentforuser(@RequestBody String comment, @PathVariable String idMmi) {
         if (comment.equals("")) throw new RuntimeException("Request null");
         String login = request.getRemoteUser();
@@ -203,7 +221,8 @@ public class MediaVideoUserController {
         return requestWeb.postcommentforuser(idMmi, comment);
     }
 
-    @PostMapping(value = "/postcommentvideo/{idVideo}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/postcommentvideo/{idVideo}",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public VideoFilm postcommentvideo(@RequestBody String comment, @PathVariable String idVideo) {
         if (comment.equals("")) throw new RuntimeException("Request null");
         String login = request.getRemoteUser();
@@ -217,4 +236,9 @@ public class MediaVideoUserController {
         return requestWeb.getTitleWithId(titileWithIdttt);
     }
 
+    @PostMapping(value = "/getVideoFilmWithMmi",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public List<LinkVfTmmi> getVideofilmWithIdtypemmi(@RequestBody List<Long> links){
+        return requestWeb.getVideofilmWithIdtypemmi(links);
+    }
 }

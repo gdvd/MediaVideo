@@ -111,18 +111,36 @@ public class MediaAdminServiceImpl implements MediaAdminService {
     @Override
     public VideoFilm addScoreToUser(ReqScore reqScore, String login) {
         VideoFilm vf = videoFilmRepository.findById(reqScore.getIdtt()).orElse(null);
-        if (vf == null) throw new RuntimeException("This idVideoFilm doen't exist");
+        if (vf == null) throw new RuntimeException("This idVideoFilm doesn't exist");
         CommentScoreUser csu = null;
         if (reqScore.getComment().length() != 0) {
             csu = new CommentScoreUser(null, reqScore.getComment(), null);
             csu = commentScoreUserRepository.save(csu);
         }
+
         MyUser mu = myUserRepository.findByLogin(login);
-        VideoUserScore vus = new VideoUserScore(mu, vf);
-        vus.setCommentScoreUser(csu);
-        vus.setDateModifScoreUser(new Date());
-        vus.setNoteOnHundred(reqScore.getScore());
-        videoUserScoreRepository.save(vus);
+        if(mu==null) throw new RuntimeException("Invalid user");
+
+        if(reqScore.getUsr()!=null && ! reqScore.getUsr().equals(login)){
+            if(mu.getRoles().stream().anyMatch(r->r.getRole().equals("ADMIN"))){
+                //log.info("test ok, it's an admin");
+                mu = myUserRepository.findByLogin(reqScore.getUsr());
+                if(mu==null || !mu.isActive()) throw new RuntimeException("Invalid user");
+
+                VideoUserScore vus = new VideoUserScore(mu, vf);
+                vus.setCommentScoreUser(csu);
+                vus.setDateModifScoreUser(new Date());
+                vus.setNoteOnHundred(reqScore.getScore());
+                videoUserScoreRepository.save(vus);
+            }
+        } else {
+            VideoUserScore vus = new VideoUserScore(mu, vf);
+            vus.setCommentScoreUser(csu);
+            vus.setDateModifScoreUser(new Date());
+            vus.setNoteOnHundred(reqScore.getScore());
+            videoUserScoreRepository.save(vus);
+        }
+
         return videoFilmRepository.findById(reqScore.getIdtt()).orElse(null);
     }
 

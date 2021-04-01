@@ -52,7 +52,8 @@ public class VideoFilm {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModifFilm;
 
-    @JsonIgnore
+//    @JsonIgnore
+//    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Nullable
     @OneToMany(mappedBy = "videoFilm", cascade = {CascadeType.ALL})
     private List<TypeMmi> typeMmis = new ArrayList<>();

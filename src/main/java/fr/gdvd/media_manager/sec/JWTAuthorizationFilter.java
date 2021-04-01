@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Log4j2
@@ -67,6 +69,18 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            // Update JWT
+            if(request.getRequestURL().indexOf("/infoJWT")>0){
+                log.info("Request on infoJWT");
+                jwt = JWT.create()
+//                        .withIssuer(request.getRequestURI())
+                        .withIssuer("/login")
+                        .withSubject(username)
+                        .withArrayClaim("roles", roles.toArray(new String[roles.size()]))
+                        .withExpiresAt(new Date(System.currentTimeMillis()+SecurityParams.EXPIRATION))
+                        .sign(Algorithm.HMAC256(SecurityParams.PRIVATE_SECRET));
+                response.addHeader(SecurityParams.JWT_HEADER, jwt);
+            }
             filterChain.doFilter(request, response);
         }
 

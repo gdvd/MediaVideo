@@ -15,7 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Entity @Table(uniqueConstraints={@UniqueConstraint(columnNames={"keywordEn"}), @UniqueConstraint(columnNames={"keywordFr"})})
+@Entity @Table(uniqueConstraints={@UniqueConstraint(columnNames={"keywordEn"}),
+        @UniqueConstraint(columnNames={"keywordFr"})})
 public class VideoKeyword {
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)

@@ -17,6 +17,7 @@ import java.util.Date;
 @Entity
 public class Basket {
 
+    @SuppressWarnings("JpaModelReferenceInspection")
     @EmbeddedId
     @AttributeOverrides({
             @AttributeOverride(name = "id.MyMediaInfo",

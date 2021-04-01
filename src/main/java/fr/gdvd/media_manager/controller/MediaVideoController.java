@@ -27,6 +27,7 @@ public class MediaVideoController {
 
     @Autowired
     private RequestWeb requestWeb;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private HttpServletRequest request;
 

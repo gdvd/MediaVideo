@@ -1,6 +1,8 @@
 package fr.gdvd.media_manager.service;
 
 import fr.gdvd.media_manager.entitiesMysql.Preferences;
+import fr.gdvd.media_manager.entitiesNoDb.BasketNameUser;
+import fr.gdvd.media_manager.entitiesNoDb.EleBasket;
 
 import java.util.List;
 
@@ -15,4 +17,6 @@ public interface AdminPreferences {
     Preferences postnewfrequencyscore(int frequency);
     List<String> getlisttoexport();
     int executeexport(String nameExport);
+
+    List<BasketNameUser> getBasketsOfUserWithInfo(String user, String login);
 }

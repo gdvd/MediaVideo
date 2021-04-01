@@ -36,8 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers("/admin/**", "/config/**"
                 , "/managment/**", "/video/**", "/managmentfiles/**", "/managment/**"
                 , "/managmentfiles/**", "/login/**", "/videouser/**"
-                , "/filmographyuser/**", "/video/**").hasAuthority("ADMIN")
-                .antMatchers( "/login/**", "/videouser/**"
+                , "/filmographyuser/**", "/videoid/**", "/videoid").hasAuthority("ADMIN")
+                .antMatchers( "/login/**", "/videouser/**", "/videoid/**"
                 , "/filmographyuser/**").hasAuthority("USER")
                 ;
 

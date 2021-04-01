@@ -89,7 +89,7 @@ public class RequestWebImpl implements RequestWeb {
         if (tmmi == null) {  // No link in mmi
             mmi.setDateModif(new Date());
 
-            if (tmmiVf != null && tmmiVf.size() != 0) {
+            if (tmmiVf.size() != 0) {
 
                 if (makemanytypemmi) {
                     tmmi = initTmmiWithTn(tmmiVf.get(0).getTypeName().getTypeName(), vf);
@@ -124,20 +124,10 @@ public class RequestWebImpl implements RequestWeb {
             }
 
         } else { // tmmi is set
-
-//            if (tmmiVf == null || tmmiVf.size() == 0) {
             tmmi.setVideoFilm(vf);
             tmmi.setDateModif(new Date());
             tmmi.setActive(true);
             typeMmiRepository.save(tmmi);
-            /*} else {
-                if (tmmiVf.get(0).getTypeName().getTypeName().toLowerCase().equals("serie")) {
-                    parseTitleToGetNumberOfSerie(tmmi, mmi.getIdMyMediaInfo());
-                }
-                mmi.setTypeMmi(tmmi);
-                mmi.setDateModif(new Date());
-                myMediaInfoRepository.save(mmi);
-            }*/
         }
         return vf;
     }
@@ -210,21 +200,6 @@ public class RequestWebImpl implements RequestWeb {
         return tmmi;
     }
 
-/*    private void initTypeMmi(MyMediaInfo mmi, TypeMmi tmmi, VideoFilm vf) {
-        TypeName tn = typeNameRepository.findByTypeName("Autre").orElse(null);
-        if (tn == null) {//Add typename 'Autre'
-            tn = new TypeName(null, "Autre", null);
-            tn = typeNameRepository.save(tn);
-        }
-        tmmi = new TypeMmi(null, 0, 0,
-                "", "", true,
-                new Date(),
-                tn, vf, null);
-        tmmi = typeMmiRepository.save(tmmi);
-        mmi.setTypeMmi(tmmi);
-        myMediaInfoRepository.save(mmi);
-    }*/
-
     @Override
     public TypeMmi savetypemmi(TypeMmi typeMmi, String idMmi, String idVideo) {
         TypeName tn = typeNameRepository
@@ -259,7 +234,7 @@ public class RequestWebImpl implements RequestWeb {
         } else {
             throw new RuntimeException("This MMI doesn't exist");
         }
-        return typeMmi != null && mmi != null ? typeMmi : null;
+        return typeMmi;
     }
 
     @Override
@@ -301,7 +276,6 @@ public class RequestWebImpl implements RequestWeb {
         mmtNew.setInternal(mmtOld.isInternal());
         mmtNew.setForced(mmtOld.isForced());
         mmtNew.setFormat(mmtOld.getFormat());
-//        myMediaTextRepository.deleteByMyMediaInfoAndMyMediaLanguage(mmi, mmlold);
         myMediaTextRepository.deleteOnelink(mmi.getIdMyMediaInfo(), mmlold.getIdMyMediaLanguage());
         mmtNew = myMediaTextRepository.save(mmtNew);
         mmi.setDateModif(new Date());
@@ -394,6 +368,7 @@ public class RequestWebImpl implements RequestWeb {
             lri.add(ri);
 
         } else {
+            query1 = query1.replaceAll("[\\œ]+", "oe");
             query1 = query1.replaceAll("[^\\w\\s\\é\\'\\è\\ç\\à\\ë\\ê\\û\\ù\\ô\\ï\\î]+", " ");
             query1 = query1.replace("^[\\s]*", "").trim();
             query1 = query1.replaceAll("[\\s]+", " ");
@@ -509,14 +484,13 @@ public class RequestWebImpl implements RequestWeb {
                                         }
                                     }
                                 }
-//                        boolean bool = videoFilmRepository.ifTtExist(linkToIdTt(linktt));
+
                                 ri.setState(bool);
                                 boolean test = true;
                                 if (lri.size() > 0) for (RequestImdb r : lri) {
                                     if (r.getLink().split("\\?")[0].equals(ri.getLink().split("\\?")[0])) test = false;
                                 }
                                 if (test) lri.add(ri);
-//                                lri.add(ri);
                             }
                             //We keep the 'More title' & 'Exact title'
                             String moreinfo = parser.findTagInString("<div class=\"findMoreMatches*>", "</div>", str, false);
@@ -547,7 +521,6 @@ public class RequestWebImpl implements RequestWeb {
     public List<TypeName> getAllTypeNameWithId() {
         return typeNameRepository.findAll();
     }
-
 
     @Override
     public VideoFilm getOneVideoFilm(String link, String idMyMediaInfo) {
@@ -586,31 +559,8 @@ public class RequestWebImpl implements RequestWeb {
             if (pref != null) {
                 List<String> ltitles2search = new ArrayList<>(pref.getExtset());
                 parser.addTitlesToVideoFilm(vf, toParse4title, ltitles2search);
-//                log.warn("Titles : " + idtt + " is added to the DB");
             }
         }
-
-        //Add Keywords
-        /*File f3 = downloaWebPage(idtt + "/keywords", "/keywords/"
-                + idtt + "-keywords");
-        if (f3 == null) {
-            log.error("File : " + idtt + "/keywords is empty");
-        } else {
-            String toParse4keywords = fileToString(f3);
-            Preferences pref = preferencesRepository.findByIdPreferences("01");
-            if (pref != null) {
-                Map<String, String> mp = pref.getPrefmap();
-                String lim = mp.get("limitekeywods");
-
-                if ( lim.length()>0 && Pattern.matches("[\\d]{1,6}", lim)) {
-                    int limite = Integer.parseInt(lim);
-                    parser.addKeywordsToVideoFilm(vf, toParse4keywords, limite);
-                    log.warn("Keywords : " + idtt + " is added to the DB");
-                }
-
-            }
-
-        }*/
 
         return vf;
     }
@@ -684,8 +634,18 @@ public class RequestWebImpl implements RequestWeb {
     }
 
     @Override
-    public List<Basket> getbaskets(String login) {
-        return basketRepository.findAllByMyUser_Login(login);
+    public List<Basket> getbaskets(String login, String name) {
+        List<Basket> lb = new ArrayList<>();
+        if(! login.equals(name)){
+            MyUser mu = myUserRepository.findByLogin(login);
+            if(mu==null || !mu.isActive()) throw new RuntimeException("Invalid user");
+            if(mu.getRoles().stream().anyMatch(r->r.getRole().equals("ADMIN"))){
+                lb = basketRepository.findAllByMyUser_Login(name);
+            }
+        }else{
+            lb = basketRepository.findAllByMyUser_Login(name);
+        }
+        return lb;
     }
 
     @Override
@@ -749,15 +709,6 @@ public class RequestWebImpl implements RequestWeb {
         Pageable findScore = PageRequest.of(0, nb);
         Page<VideoFilm> lt = videoFilmRepository.getLastScore(findScore);
 
-        /*if(lt.getContent().size()!=0){
-            for(VideoFilm vf: lt.getContent()){
-                List<VideoTitle> lvt = videoTitleRepository.findFirstByIdVideo(vf);
-                String oneTitle = lvt.get(0).getTitle();
-                OneSimpleScore oss = new OneSimpleScore(vf.getIdVideo(), oneTitle, vf.getScoreOnHundred(),
-                        vf.getNbOfVote(),0, vf.getDateModifFilm(), "", "videofilm");
-                loss.add(oss);
-            }
-        }*/
         return loss;
     }
 
@@ -846,7 +797,6 @@ public class RequestWebImpl implements RequestWeb {
                     videoFilmRepository.save(vf1);
                 }
             }
-
         } else {
             throw new RuntimeException("Wrong IdVideoFilm format");
         }
@@ -862,5 +812,18 @@ public class RequestWebImpl implements RequestWeb {
         return titileWithIdttt;
     }
 
-
+    @Override
+    public List<LinkVfTmmi> getVideofilmWithIdtypemmi(List<Long> links) {
+        List<LinkVfTmmi> ll = new ArrayList<>();
+        links.forEach(idTM->{
+            //search idVideofilm in fct of idtypemmi
+            String idVF = typeMmiRepository.getIdVideoFilmWithIdTmmi(idTM).orElse("");
+            VideoFilm vf = null;
+            if (!idVF.equals("")) {
+                vf = videoFilmRepository.findById(idVF).orElse(null);
+            }
+            ll.add(new LinkVfTmmi(idTM, vf));
+        });
+        return ll;
+    }
 }

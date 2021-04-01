@@ -5,6 +5,7 @@ import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,8 +63,7 @@ public class Parser {
     private PreferencesRepository preferencesRepository;
     @Autowired
     private VideoMoreInformationRepository videoMoreInformationRepository;
-    @Autowired
-    private VideoSupportPathRepository videoSupportPathRepository;
+
 
 
 
@@ -464,7 +464,7 @@ public class Parser {
                                     map.put(keywordBegin, dataType(toparserTmp));
                                 }
                                 tagfound = true;
-                                ifOneTagIsFound = true;
+//                                ifOneTagIsFound = true;
                                 break;
                             } else {
                                 if (pos + keywordEndLength + 2 == lengthToPars - 1) {
@@ -541,6 +541,7 @@ public class Parser {
     }
 
     //############################## Nb of track : video audio and text ################
+    @NotNull
     private List<String> findInfoByDomain(String mcNbItem, String domain, String infosMediaXml) {
         String nbStr = findTagInString("<" + mcNbItem + ">"
                 , "</" + mcNbItem + ">", infosMediaXml, false);
@@ -563,10 +564,8 @@ public class Parser {
         return res;
     }
 
-    public List<String> listAllDirectories(ScanMessage sm) {
-        List<String> files = new ArrayList<>();
+    public void listAllDirectories(ScanMessage sm) {
         listDirectory(sm.getPathVideo(), sm);
-        return files;
     }
 
     private void listDirectory(String dirTmp, ScanMessage sm) {
@@ -629,7 +628,7 @@ public class Parser {
 
     public String readMediaInfo(String url, String option) {
         Process p;
-        String resulta = "";
+        String resultat = "";
         StringBuffer output = new StringBuffer();
         String[] commande = {"mediainfo", option, url};
         try {
@@ -641,14 +640,14 @@ public class Parser {
             while ((line = reader.readLine()) != null) {
                 output.append(line + "\n");
             }
-            resulta = output.toString();
+            resultat = output.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return resulta;
+        return resultat;
     }
 
-    public MyMediaInfo createMyMediaInfo(MyMediaInfo mmi, String mediaInfo) {
+    public MyMediaInfo createMyMediaInfo(MyMediaInfo mmi, @NotNull String mediaInfo) {
         if (mediaInfo.length() != 0) {
             // Parse File.md5
             String general = findTagInString("<track type=\"General\">", "</track>", mediaInfo, false);
@@ -683,7 +682,18 @@ public class Parser {
             } else {
                 mmi.setCodecId("");
             }
-            Double bt = (Double) mmv.get("BitRate");
+            Double bt = 0.0;
+            if ((mmv.get("BitRate")) instanceof String) {
+                String s = (String) mmv.get("BitRate");
+                if (s.contains("/")) {
+                    String s2 = s.split("/")[0].trim();
+                    if(Pattern.matches("[\\d]{1,10}", s2)){
+                        bt = parseDouble(s2);
+                    }
+                }
+            } else {
+                bt = (Double) mmv.get("BitRate");
+            }
             if (bt == null) bt = (Double) mmv.get("OverallBitRate");
             if (bt == null) bt = (Double) listGeneral.get("OverallBitRate");
             if (bt == null) bt = (Double) listGeneral.get("BitRate");
@@ -801,6 +811,10 @@ public class Parser {
         for (String part : releaseinfotmp.split(" "))
             if (Pattern.matches("[\\d]{4}", part)) {
                 year = Integer.parseInt(part);
+            }else{
+                if (Pattern.matches("[\\d]{4}", part.split("-")[0])) {
+                    year = Integer.parseInt(part);
+                }
             }
         return year;
     }
@@ -1373,6 +1387,7 @@ public class Parser {
                 if(countryRemote.contains(country2search)){
                     // we found what we were looking for
                     String titleremote = findTagInString("<td class=\"aka-item__title*>","</td>", tAndC, false);
+                    if(titleremote.length()>128)titleremote=titleremote.substring(0, 127);
                     // if titleRemote is in DB ?
 
                     countryRemote =countryRemote.replaceFirst("[\\s]*", "").trim();

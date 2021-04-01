@@ -2,6 +2,7 @@ package fr.gdvd.media_manager.controller;
 
 import fr.gdvd.media_manager.daoMysql.PreferencesRepository;
 import fr.gdvd.media_manager.entitiesMysql.*;
+import fr.gdvd.media_manager.entitiesNoDb.LinkMmiVf;
 import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
 import fr.gdvd.media_manager.service.ManagmentFilesImpl;
 import fr.gdvd.media_manager.service.RequestWeb;
@@ -178,11 +179,11 @@ public class ManagmentFilesController {
     }
 
     @PostMapping(value = "/storemmi/{idvne}/{idVneRemote}/{withUpdate}")
-    public VideoNameExport storemmi(@RequestBody List<MyMediaInfo> lmmi,
+    public VideoNameExport storemmi(@RequestBody LinkMmiVf linkMmiVf,
                                     @PathVariable int idvne,
                                     @PathVariable int idVneRemote,
                                     @PathVariable int withUpdate){
-        return managmentFiles.storemmi(lmmi, idvne, idVneRemote, withUpdate);
+        return managmentFiles.storemmi(linkMmiVf, idvne, idVneRemote, withUpdate);
     }
 
     @GetMapping(value = "/GetAllVideoByUser")

@@ -16,6 +16,7 @@ import javax.validation.constraints.Size;
 @Entity
 public class MyMediaAudio {
 
+    @SuppressWarnings("JpaModelReferenceInspection")
     @EmbeddedId
     @AttributeOverrides({
             @AttributeOverride(name = "id.MyMediaInfo",

@@ -1,6 +1,7 @@
 package fr.gdvd.media_manager.entitiesMysql;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Entity
 public class TypeMmi implements Serializable {
 
@@ -51,11 +51,13 @@ public class TypeMmi implements Serializable {
     private TypeName typeName;
 
     @Nullable
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "fk_video_film")
     private VideoFilm videoFilm;
 
-    @JsonIgnore
+//    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Nullable
     @OneToMany(mappedBy = "typeMmi")
     private List<MyMediaInfo> myMediaInfos = new ArrayList<>();

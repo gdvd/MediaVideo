@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Tuple;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +31,19 @@ public interface BasketRepository extends JpaRepository<Basket, Long> {
     @Transactional
     @Modifying
     void deleteAllByBasketNameAndMyUser_IdMyUser(BasketName bn, Long idMyUser);
+
+    @Query("select b.basketName.basketName, mmi.idMyMediaInfo, " +
+            "mmi.fileSize, vne.nameExport, vsp.pathGeneral, " +
+            "vsp.title " +
+            "from Basket as b " +
+            "left join MyMediaInfo as mmi " +
+            "on mmi.idMyMediaInfo=b.myMediaInfo " +
+            "left join VideoSupportPath as vsp " +
+            "on vsp.id_my_media_info=mmi.idMyMediaInfo " +
+            "left join VideoNameExport as vne " +
+            "on vne.idVideoNameExport=vsp.id_video_name_export " +
+            "where b.myUser.login =:login and vsp.active=1 " +
+            "and vne.active=1 and vne.complete=1 ")
+    List<Tuple> getBasketsAndMmiAndVne(String login);
+
 }

@@ -17,10 +17,10 @@ public interface MyUserRepository extends JpaRepository<MyUser, Long> {
     MyUser findByIdMyUser(Long id);
     void deleteByLogin(String id);
 
-    @Query("SELECT usr.idMyUser, usr.login FROM fr.gdvd.media_manager.entitiesMysql.MyUser AS usr")
+    @Query("SELECT usr.idMyUser, usr.login, usr.active FROM MyUser AS usr")
     List<Tuple> lUserWithId();
 
-    @Query("select login FROM fr.gdvd.media_manager.entitiesMysql.MyUser AS usr where active=1")
+    @Query("select login FROM MyUser AS usr where active=1")
     List<String> findAllLoginActive();
 
 }

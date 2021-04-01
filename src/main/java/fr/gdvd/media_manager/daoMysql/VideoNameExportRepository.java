@@ -18,6 +18,15 @@ public interface VideoNameExportRepository extends JpaRepository<VideoNameExport
     VideoNameExport findByNameExport(String nameExport);
     VideoNameExport findByIdVideoNameExport(Long idVideoNameExport);
     List<VideoNameExport> findAll();
+
+    @Query("SELECT vne.idVideoNameExport " +
+            "FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne ")
+    List<Long> findAllidsVne();
+
+    @Query("SELECT vne.nameExport " +
+            "FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne ")
+    List<String> findAllnamesVne();
+
     List<VideoNameExport> findAllByActiveIsTrueAndCompleteIsTrue();
     List<VideoNameExport> findAllByActive(boolean active);
     List<VideoNameExport> findAllByActiveAndComplete(boolean active, boolean complete);
@@ -48,6 +57,17 @@ public interface VideoNameExportRepository extends JpaRepository<VideoNameExport
             "where mu.login= ?1 AND mu.active=1 AND utne.active=1 AND vne.complete=1 " +
             "and vne.active=1")
     List<Tuple> lVneIdToName(String login);
+
+    @Query("SELECT vne.idVideoNameExport " +
+            "FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne "+
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.UserToNameExport " +
+            "as utne ON utne.id_video_name_export=vne.idVideoNameExport " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser " +
+            "AS mu ON utne.myUser=mu.idMyUser " +
+
+            "where mu.login= :login AND mu.active=1 AND utne.active=1 " +
+            "AND vne.complete=1 and vne.active=1")
+    List<Long> findAllIdsVNE(String login);
 
     @Query("SELECT vne.idVideoNameExport " +
             "FROM fr.gdvd.media_manager.entitiesMysql.VideoNameExport AS vne " +

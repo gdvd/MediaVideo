@@ -21,30 +21,30 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-//@RequestMapping("")
 @Log4j2
 @RestController
 public class MediaInfoController {
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private HttpServletRequest request;
 
-    @GetMapping(value = {"/infos", "/infos/"}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public Msg getInfos() {
+    @GetMapping(value = {"infoJWT"},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public Msg getInfosJWT() {
+        Msg msg = new Msg();
+        msg.setInfo("infoJWT");
+        return msg;
+    }
 
-        //@Autowired
-        //private HttpServletRequest request;
-        // Example : request.getHeader("origin")        -> http://localhost:4200
-        // Example : request.getHeader("referer")       -> http://localhost:4200/path
-        // Example : request.getHeader("user-agent")    -> navigator used
-        // Example : request.getRemoteUser()            -> admin
-        // Example : request.getUserPrincipal().getName()-> admin
-        // Example : request.getServletPath()           -> /path/infos
-        // Example : request.getHeader("authorization") -> token ("Baerer xxx…")
+    @GetMapping(value = {"/info", "/infos"},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public Msg getInfos() {
 
         String tk = request.getHeader(SecurityParams.JWT_HEADER);
 
@@ -61,9 +61,6 @@ public class MediaInfoController {
         InetAddress ip2;
         try {
             ip2 = InetAddress.getLocalHost();
-//            log.info("InetAddress.getHostName() : "+ip2.getHostName());
-//            log.info("InetAddress.getRemoteHost() : "+ip2.getHostAddress());
-//            log.info("InetAddress.getCanonicalHostName() : "+ip2.getCanonicalHostName());
         } catch (UnknownHostException e) {
             e.printStackTrace();
         };
@@ -89,7 +86,7 @@ InetAddress.getCanonicalHostName()  : macmini26.home
             msg.setName(username);
             msg.setState("Connected");
             msg.setUrl(request.getHeader("referer"));
-            msg.setTokenLimit(d.toString());
+            msg.setTokenLimit(new SimpleDateFormat("HH:mm:ss dd-MM-YYYY").format(d));
             msg.setNavigator(request.getHeader("user-agent"));
             msg.setInfo(remoteAddr);
         } catch (Exception e) {

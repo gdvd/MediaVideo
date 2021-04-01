@@ -21,6 +21,7 @@ public class ExportController {
 
     @Autowired
     private ExportService exportService;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private HttpServletRequest request;
     // Example : request.getHeader("origin")        -> http://localhost:4200

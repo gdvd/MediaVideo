@@ -2,12 +2,11 @@ package fr.gdvd.media_manager.service;
 
 import fr.gdvd.media_manager.daoMysql.*;
 import fr.gdvd.media_manager.entitiesMysql.*;
-import fr.gdvd.media_manager.entitiesNoDb.ScanMessage;
-import fr.gdvd.media_manager.entitiesNoDb.UserLight;
-import fr.gdvd.media_manager.entitiesNoDb.VNELight;
+import fr.gdvd.media_manager.entitiesNoDb.*;
 import fr.gdvd.media_manager.tools.Parser;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,6 +20,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.Integer.parseInt;
 
@@ -87,7 +88,11 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     private VideoTraillerRepository videoTraillerRepository;
     @Autowired
     private RequestWebImpl requestWeb;
+    @Autowired
+    private RemakeRepository remakeRepository;
 
+    @Autowired
+    private ManagmentFilesImpl managmentFiles;
 
     @Override
     public ScanMessage scanFolderWithPathdir(String path) {
@@ -206,7 +211,10 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                         return myMediaInfoRepository.findMmiPPFilterFilename(login, filter, pageable);
                     } else { //Filter on One VNE
                         Long idVne = videoNameExportRepository.findIdWithName(vneName).orElse(null);
-                        if (idVne == null) throw new RuntimeException("NameExport invalid");
+                        if (idVne == null) {
+                            List<MyMediaInfo> l = new ArrayList<>();
+                            return new PageImpl<MyMediaInfo>(l);
+                        }
                         return myMediaInfoRepository.findMmiWithFilterVNEPP(login, idVne, pageable);
                     }
                 } else { //Filter on title.videofilm
@@ -494,109 +502,39 @@ public class ManagmentFilesImpl implements ManagmentFiles {
     }
 
     @Override
-    public VideoNameExport storemmi(List<MyMediaInfo> lmmi, int idvne,
+    public VideoNameExport storemmi(LinkMmiVf linkMmiVf, int idvne,
                                     int idVneRemote, int withUpdate) {
+
+        List<MyMediaInfo> lmmi = getCompleteListMyMediaInfos(linkMmiVf);
         VideoNameExport vne = videoNameExportRepository.findByIdVideoNameExport((long) idvne);
+
         for (MyMediaInfo mmiremote : lmmi) {
+
+            //Manage Mmi
             MyMediaInfo mmi = myMediaInfoRepository.findById(mmiremote.getIdMyMediaInfo()).orElse(null);
             if (mmi == null) {
-                mmi = new MyMediaInfo();
-                mmi.setDateModif(new Date());
-                mmi.setIdMyMediaInfo(mmiremote.getIdMyMediaInfo());
-                mmi.setBitrate(mmiremote.getBitrate());
-                mmi.setCodecId(mmiremote.getCodecId());
-                mmi.setDuration(mmiremote.getDuration());
-                mmi.setFileSize(mmiremote.getFileSize());
-                mmi.setFormat(mmiremote.getFormat());
-                mmi.setHeight(mmiremote.getHeight());
-                mmi.setWidth(mmiremote.getWidth());
-                mmi = myMediaInfoRepository.save(mmi);
-
-                for (MyMediaComment mmcremote : mmiremote.getMyMediaComments()) {
-                    MyMediaComment mmc = new MyMediaComment();
-                    mmc.setMediaComment(mmcremote.getMediaComment());
-                    mmc.setMyMediaInfo(mmi);
-                    myMediaCommentRepository.save(mmc);
-                }
-
-                for (MyMediaAudio mmaremote : mmiremote.getMyMediaAudios()) {
-                    String l = mmaremote.getMyMediaLanguage().getLanguage();
-                    MyMediaLanguage ml = myMediaLanguageRepository.findByLanguage(l);
-                    if (ml == null) {
-                        ml = myMediaLanguageRepository.save(new MyMediaLanguage(l));
-                    }
-                    MyMediaAudio mma = myMediaAudioRepository.
-                            findByMyMediaInfo_IdMyMediaInfoAndMyMediaLanguage_IdMyMediaLanguage(
-                                    mmi.getIdMyMediaInfo(), ml.getIdMyMediaLanguage());
-                    if (mma == null) {
-                        mma = new MyMediaAudio(mmi, ml);
-//                        mma.setMyMediaInfo(mmi);
-//                        mma.setMyMediaLanguage(ml);
-                        mma.setBitrate(mmaremote.getBitrate());
-                        mma.setChannels(mmaremote.getChannels());
-                        mma.setDuration(mmaremote.getDuration());
-                        mma.setForced(mmaremote.isForced());
-                        mma.setFormat(mmaremote.getFormat());
-                        myMediaAudioRepository.save(mma);
-                    }
-                }
-                for (MyMediaText mmtremote : mmiremote.getMyMediaTexts()) {
-                    String l = mmtremote.getMyMediaLanguage().getLanguage();
-                    MyMediaLanguage ml = myMediaLanguageRepository.findByLanguage(l);
-                    if (ml == null) {
-                        ml = myMediaLanguageRepository.save(new MyMediaLanguage(l));
-                    }
-                    MyMediaText mmt = myMediatextRepository.
-                            findByMyMediaInfo_IdMyMediaInfoAndMyMediaLanguage_IdMyMediaLanguage(
-                                    mmi.getIdMyMediaInfo(), ml.getIdMyMediaLanguage());
-                    if (mmt == null) {
-                        mmt = new MyMediaText(mmi, ml);
-//                        mmt.setMyMediaLanguage(ml);
-//                        mmt.setMyMediaInfo(mmi);
-                        mmt.setCodecId(mmtremote.getCodecId());
-                        mmt.setForced(mmtremote.isForced());
-                        mmt.setFormat(mmtremote.getFormat());
-                        mmt.setInternal(mmtremote.isInternal());
-                        myMediatextRepository.save(mmt);
-                    }
-                }
-            } else { // MMI exist
-                if (withUpdate == 1) { // if update is selected
-                    // date1.compareTo(date2) > 0 d1 is after d2
-                    if (mmiremote.getDateModif().compareTo(mmi.getDateModif()) > 0) {
-                        // then verify mymediaaudio, mymediatext, or mymediacomment
-                        verifyMmi(mmiremote, mmi);
-                    }
-                    if (mmiremote.getTypeMmi() != null) {
-                        if (mmi.getTypeMmi() != null) {
-                            if (mmiremote.getTypeMmi().getDateModif().compareTo(mmi.getTypeMmi().getDateModif()) > 0) {
-                                //change typemmi with typemmiremote & videofilm
-
-                            }/* else { // IdtypeMmi are same
-                                if (mmiremote.getTypeMmi().getDateModif()
-                                        .compareTo(mmi.getTypeMmi().getDateModif()) > 0) {
-                                    // rebuild mmi.typemmi with mmiremote.typemmi
-                                }
-                                if (mmiremote.getTypeMmi().getVideoFilm() != null) {//if videoFilmremote exist
-                                    if (mmi.getTypeMmi().getVideoFilm() != null &&
-                                            mmiremote.getTypeMmi().getVideoFilm().getIdVideo() !=
-                                                    mmi.getTypeMmi().getVideoFilm().getIdVideo()) {
-                                        // copy videofilmRemote to videofilm
-                                    } else {
-                                        // verrify date videofilm
-                                        if (mmiremote.getTypeMmi().getVideoFilm().getDateModifFilm()
-                                                .compareTo(mmi.getTypeMmi().getVideoFilm().getDateModifFilm()) > 0) {
-                                            //MAJ videoFilm
-                                        }
-                                    }
-                                }
-                            }*/
-                        } else {
-                            //create typemmi with typemmiremote
-                        }
-                    }
+                mmi = createMmiWithMmiremote(mmiremote);
+            } else {
+                if (withUpdate == 1 &&
+                        mmiremote.getDateModif().compareTo(mmi.getDateModif()) > 0) {
+                    // then verify mymediaaudio, mymediatext, or mymediacomment
+                    verifyMmi(mmiremote, mmi);
                 }
             }
+
+            /*if (mmiremote.getIdMyMediaInfo().equals("1f2c9d2bd195a2dc6778804bcb9f3b12")) {
+                System.out.println("Stop");
+            }*/
+            // Manage TypeMmi & VideoFilm
+            if (mmiremote.getTypeMmi() != null && mmiremote.getTypeMmi().isActive()) {
+                if (mmi.getTypeMmi() != null) {
+                    // UPDATE typeMmi with typeMmiremote
+                    upDateTypeMmiAndSave(mmi, mmiremote.getTypeMmi(), withUpdate);
+                }else{
+                    upDateTypeMmiAndSave(mmi, mmiremote.getTypeMmi(), 1);
+                }
+            }
+
 
             // MMI ok -> Create VSP if din't exist
             for (VideoSupportPath vspremote : mmiremote.getVideoSupportPaths()) {
@@ -614,30 +552,200 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                     vsp = videoSupportPathRepository.save(vsp);
                 }
             }
-            if (mmiremote.getTypeMmi() != null) {
-                TypeMmi tmmi = addTypeMmi(mmiremote.getTypeMmi());
-                if (tmmi != null && mmiremote.getTypeMmi().getVideoFilm() != null) {
-                    VideoFilm vf = videoFilmRepository.findById(mmiremote.getTypeMmi()
-                            .getVideoFilm().getIdVideo()).orElse(null);
-                    if (vf == null) {
-                        vf = addVideoFilm(mmiremote.getTypeMmi().getVideoFilm());
-                        if (vf != null) {
-                            tmmi.setVideoFilm(vf);
-                            typeMmiRepository.save(tmmi);
-                        }
-                    } else {
-                        tmmi.setVideoFilm(vf);
-                        typeMmiRepository.save(tmmi);
-                    }
-                    mmi.setTypeMmi(tmmi);
-                    myMediaInfoRepository.save(mmi);
-                }
-            }
         }
         // VSP are created -> active VNE
         vne.setActive(true);
         vne.setComplete(true);
         return videoNameExportRepository.save(vne);
+    }
+
+    @NotNull
+    List<MyMediaInfo> getCompleteListMyMediaInfos(LinkMmiVf linkMmiVf) {
+        List<MyMediaInfo> lmmi = linkMmiVf.getLmmi();
+        List<LinkVfTmmi> linkVfTmmi = linkMmiVf.getLlvftmmi();
+
+        lmmi.forEach(mmi -> {
+            if (mmi.getTypeMmi() != null) {
+                for (LinkVfTmmi link : linkVfTmmi) {
+                    if (mmi.getTypeMmi().getIdTypeMmi().longValue() == link.getLink().longValue()) {
+                        mmi.getTypeMmi().setVideoFilm(link.getVf());
+                        break;
+                    }
+                }
+            }
+        });
+        return lmmi;
+    }
+
+    @NotNull
+    MyMediaInfo createMmiWithMmiremote(MyMediaInfo mmiremote) {
+        MyMediaInfo mmi = new MyMediaInfo();
+        mmi.setDateModif(new Date());
+        mmi.setIdMyMediaInfo(mmiremote.getIdMyMediaInfo());
+        mmi.setBitrate(mmiremote.getBitrate());
+        mmi.setCodecId(mmiremote.getCodecId());
+        mmi.setDuration(mmiremote.getDuration());
+        mmi.setFileSize(mmiremote.getFileSize());
+        mmi.setFormat(mmiremote.getFormat());
+        mmi.setHeight(mmiremote.getHeight());
+        mmi.setWidth(mmiremote.getWidth());
+        mmi = myMediaInfoRepository.save(mmi);
+
+        for (MyMediaComment mmcremote : mmiremote.getMyMediaComments()) {
+            MyMediaComment mmc = new MyMediaComment();
+            mmc.setMediaComment(mmcremote.getMediaComment());
+            mmc.setMyMediaInfo(mmi);
+            myMediaCommentRepository.save(mmc);
+        }
+
+        for (MyMediaAudio mmaremote : mmiremote.getMyMediaAudios()) {
+            String l = mmaremote.getMyMediaLanguage().getLanguage();
+            MyMediaLanguage ml = myMediaLanguageRepository.findByLanguage(l);
+            if (ml == null) {
+                ml = myMediaLanguageRepository.save(new MyMediaLanguage(l));
+            }
+            MyMediaAudio mma = myMediaAudioRepository.
+                    findByMyMediaInfo_IdMyMediaInfoAndMyMediaLanguage_IdMyMediaLanguage(
+                            mmi.getIdMyMediaInfo(), ml.getIdMyMediaLanguage());
+            if (mma == null) {
+                mma = new MyMediaAudio(mmi, ml);
+//                        mma.setMyMediaInfo(mmi);
+//                        mma.setMyMediaLanguage(ml);
+                mma.setBitrate(mmaremote.getBitrate());
+                mma.setChannels(mmaremote.getChannels());
+                mma.setDuration(mmaremote.getDuration());
+                mma.setForced(mmaremote.isForced());
+                mma.setFormat(mmaremote.getFormat());
+                myMediaAudioRepository.save(mma);
+            }
+        }
+        for (MyMediaText mmtremote : mmiremote.getMyMediaTexts()) {
+            String l = mmtremote.getMyMediaLanguage().getLanguage();
+            MyMediaLanguage ml = myMediaLanguageRepository.findByLanguage(l);
+            if (ml == null) {
+                ml = myMediaLanguageRepository.save(new MyMediaLanguage(l));
+            }
+            MyMediaText mmt = myMediatextRepository.
+                    findByMyMediaInfo_IdMyMediaInfoAndMyMediaLanguage_IdMyMediaLanguage(
+                            mmi.getIdMyMediaInfo(), ml.getIdMyMediaLanguage());
+            if (mmt == null) {
+                mmt = new MyMediaText(mmi, ml);
+//                        mmt.setMyMediaLanguage(ml);
+//                        mmt.setMyMediaInfo(mmi);
+                mmt.setCodecId(mmtremote.getCodecId());
+                mmt.setForced(mmtremote.isForced());
+                mmt.setFormat(mmtremote.getFormat());
+                mmt.setInternal(mmtremote.isInternal());
+                myMediatextRepository.save(mmt);
+            }
+        }
+        return mmi;
+    }
+
+    /*void saveTypemmiWithTMRemote(MyMediaInfo mmiremote, MyMediaInfo mmi) {
+        TypeMmi tm = new TypeMmi();
+        tm.setActive(true);
+        mmi.setTypeMmi(tm);
+        upDateTypeMmiAndSave(mmi.getTypeMmi(), mmiremote.getTypeMmi());
+        myMediaInfoRepository.save(mmi);
+    }*/
+
+    private void updateVideoFilmWithremoteVF(VideoFilm videoFilm, VideoFilm videoFilmRemote) {
+        if (videoFilmRemote.getVideoPosters() != null && videoFilmRemote.getVideoPosters().size()!=0) {
+            if (videoFilm.getVideoPosters() != null  && videoFilm.getVideoPosters().size()!=0) {
+                VideoPoster oldVP = videoPosterRepository.findFirstByVideoFilm(videoFilm);
+                //Update urlImg
+                oldVP.setUlrImg(videoFilmRemote.getVideoPosters().get(0).getUlrImg());
+                videoPosterRepository.save(oldVP);
+            } else {
+                VideoPoster newVP = new VideoPoster(
+                        null,
+                        videoFilmRemote.getVideoPosters().get(0).getIdMd5Poster(),
+                        videoFilmRemote.getVideoPosters().get(0).getFileName(),
+                        videoFilmRemote.getVideoPosters().get(0).getUlrImg(),
+                        videoFilm
+                );
+                videoPosterRepository.save(newVP);
+            }
+
+        }
+        if (videoFilmRemote.getVideoComment() != null) {
+            if (videoFilm.getVideoComment() != null) {
+                VideoComment oldVC = videoCommentRepository.findByVideoFilm(videoFilm);
+                oldVC.setComment(videoFilmRemote.getVideoComment().getComment());
+                videoCommentRepository.save(oldVC);
+            } else {
+                VideoComment newVC = new VideoComment(
+                        null,
+                        videoFilmRemote.getVideoComment().getComment(),
+                        videoFilm);
+                videoCommentRepository.save(newVC);
+            }
+        }
+        if (videoFilmRemote.getVideoTrailler() != null) {
+            if (videoFilm.getVideoTrailler() != null) {
+                VideoTrailler oldVT = videoTraillerRepository.findByVideoFilm(videoFilm);
+                oldVT.setTrailler(videoFilmRemote.getVideoTrailler().getTrailler());
+                videoTraillerRepository.save(oldVT);
+            } else {
+                VideoTrailler newVT = new VideoTrailler(null,
+                        videoFilmRemote.getVideoTrailler().getTrailler(),
+                        videoFilm);
+                videoTraillerRepository.save(newVT);
+            }
+        }
+    }
+
+    private TypeMmi upDateTypeMmiAndSave(MyMediaInfo mmi, TypeMmi typeMmiRemote, int withUpdate) {
+        TypeMmi tmmiNew = null;
+        if(mmi.getTypeMmi() != null) {
+            tmmiNew = typeMmiRepository.findByIdTypeMmi( mmi.getTypeMmi().getIdTypeMmi());
+        }else{
+            tmmiNew = new TypeMmi();
+        }
+        if (withUpdate == 1) updateInfo(typeMmiRemote, tmmiNew);
+        if (typeMmiRemote.getVideoFilm() != null) {
+            String idVf = typeMmiRepository.getIdVideoFilmWithIdTmmi(tmmiNew.getIdTypeMmi())
+                    .orElse("");
+            if (idVf.length() > 0) {
+                tmmiNew.setVideoFilm(videoFilmRepository.findById(idVf).orElse(null));
+            } else {
+                //Search if videoFilm with typeMmiRemote.VideoFilm.idVideo exist
+                VideoFilm vf = videoFilmRepository.findById(
+                        typeMmiRemote.getVideoFilm().getIdVideo()).orElse(null);
+                if (vf != null) {
+                    updateVideoFilmWithremoteVF(vf, typeMmiRemote.getVideoFilm());
+                    tmmiNew.setVideoFilm(typeMmiRemote.getVideoFilm());
+                } else {
+                    //Create new VideoFilm with VideoFilmRemote
+                    vf = managmentFiles.addVideoFilm(
+                            typeMmiRemote.getVideoFilm());
+                    tmmiNew.setVideoFilm(vf);
+                }
+            }
+            tmmiNew = typeMmiRepository.save(tmmiNew);
+            mmi.setTypeMmi(tmmiNew);
+            myMediaInfoRepository.save(mmi);
+        }
+        return tmmiNew;
+    }
+
+    private void updateInfo(TypeMmi typeMmiRemote, TypeMmi tmmiNew) {
+        tmmiNew.setNameSerieVO(typeMmiRemote.getNameSerieVO());
+        tmmiNew.setNameSerie(typeMmiRemote.getNameSerie());
+        TypeName tn = typeNameRepository.findByTypeName(typeMmiRemote.getTypeName().getTypeName()).orElse(null);
+        if (tn == null) {
+            tn = typeNameRepository.save(
+                    new TypeName(null,
+                            typeMmiRemote.getTypeName().getTypeName().substring(0, 15), null));
+        }
+        tmmiNew.setTypeName(tn);
+        tmmiNew.setEpisode(typeMmiRemote.getEpisode());
+        tmmiNew.setSeason(typeMmiRemote.getSeason());
+        if(typeMmiRemote.getDateModif()!=null){
+            tmmiNew.setDateModif(typeMmiRemote.getDateModif());
+        }
+        tmmiNew.setActive(true);
     }
 
     private void verifyMmi(MyMediaInfo mmiremote, MyMediaInfo mmi) {
@@ -816,7 +924,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         }
 
     }
-
+/*
     private TypeMmi addTypeMmi(TypeMmi tmmi) {
         TypeName tn = tmmi.getTypeName();
         if (tn == null) {
@@ -826,7 +934,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         TypeMmi tmmiNew = new TypeMmi(null, tmmi.getSeason(), tmmi.getEpisode(), tmmi.getNameSerie(),
                 tmmi.getNameSerieVO(), true, new Date(), tn, null, null);
         return typeMmiRepository.save(tmmiNew);
-    }
+    }*/
 
     private VideoFilm addVideoFilm(VideoFilm vfRemote) {
         VideoFilm vf = new VideoFilm();
@@ -845,10 +953,29 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         vf.setYear(vfRemote.getYear());
         vf.setScoreOnHundred(vfRemote.getScoreOnHundred());
         vf.setNbOfVote(vfRemote.getNbOfVote());
-        vf.setRemake(vfRemote.getRemake());
-        vf.setIdVideo(vfRemote.getIdVideo());
-        vf = videoFilmRepository.save(vf);
+        Remake nrem = null;
+        if (vfRemote.getRemake() != null) {
+            Optional<Remake> rem = getOneRemake(vfRemote.getRemake());
+            if (rem.isPresent()) {
+                rem.get().getRemakes().add(vfRemote.getIdVideo());
+                nrem = remakeRepository.save(rem.get());
+            }
+        }
 
+        vf.setIdVideo(vfRemote.getIdVideo());
+        vf.setRemake(nrem);
+        vf = videoFilmRepository.save(vf);
+        if (nrem != null) {
+            for (String r : vfRemote.getRemake().getRemakes()) {
+                VideoFilm v = videoFilmRepository.findById(r).orElse(null);
+                if (v != null) {
+                    if (v != null && vf.getRemake().getIdRemake() != nrem.getIdRemake()) {
+                        v.setRemake(nrem);
+                        videoFilmRepository.save(v);
+                    }
+                }
+            }
+        }
         if (vfRemote.getVideoPosters() != null && vfRemote.getVideoPosters().size() > 0) {
             for (VideoPoster vp : vfRemote.getVideoPosters()) {
                 VideoPoster vpnew = new VideoPoster(null, vp.getIdMd5Poster(), vp.getFileName(), vp.getUlrImg(), vf);
@@ -971,6 +1098,31 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         return videoFilmRepository.save(vf);
     }
 
+    private Optional<Remake> getOneRemake(Remake rem) {
+        if (rem != null) {
+            for (String r : rem.getRemakes()) {
+                VideoFilm vf = new VideoFilm();
+                vf.setIdVideo(r);
+                Optional<Remake> nr = remakeRepository.findFirstByVideoFilms(vf);
+                if (nr.isPresent()) {
+                    return nr;
+                }
+            }
+            List<VideoFilm> lvf = new ArrayList<>();
+            for (String r : rem.getRemakes()) {
+                Optional<VideoFilm> vf = videoFilmRepository.findById(r);
+                vf.ifPresent(lvf::add);
+            }
+            if (lvf.size() != 0) {
+                Remake r = new Remake(null,
+                        lvf.stream().map(VideoFilm::getIdVideo).collect(Collectors.toSet()),
+                        null);
+                return Optional.ofNullable(r);
+            }
+        }
+        return Optional.empty();
+    }
+
     @Override
     public List<MyMediaInfo> getAllMmi(List<String> listIdMmi) {
         List<MyMediaInfo> lmmi = new ArrayList<>();
@@ -1024,7 +1176,7 @@ public class ManagmentFilesImpl implements ManagmentFiles {
 
         if (mmi == null) {
             md5 = setMd5(pathGeneral);
-            if(md5.equals("")) throw new RuntimeException("idMd5 doesn't exist");
+            if (md5.equals("")) throw new RuntimeException("idMd5 doesn't exist");
             mmi = myMediaInfoRepository.findById(md5).orElse(null);
             if (mmi == null) {
                 mmi = new MyMediaInfo();
@@ -1047,15 +1199,15 @@ public class ManagmentFilesImpl implements ManagmentFiles {
                 "--Inform=General;%Duration/String3%").replace("\n", "").split(":");
         Collections.reverse(Arrays.asList(mediaInfoDurationTbl));
         Double duration = 0.0;
-        if (mediaInfoDurationTbl.length != 0) {
+        if (mediaInfoDurationTbl.length != 0 & (!mediaInfoDurationTbl[0].equals(""))) {
             String secStr = mediaInfoDurationTbl[0];
             duration = Double.parseDouble(secStr);
             if (mediaInfoDurationTbl.length > 1) {
                 String minStr = mediaInfoDurationTbl[1];
-                duration = ((Double.parseDouble(minStr)) * 60)+duration;
+                duration = ((Double.parseDouble(minStr)) * 60) + duration;
                 if (mediaInfoDurationTbl.length > 2) {
                     String hrsStr = mediaInfoDurationTbl[2];
-                    duration = ((Double.parseDouble(hrsStr)) * 3600)+duration;
+                    duration = ((Double.parseDouble(hrsStr)) * 3600) + duration;
                 }
             }
         } else {
@@ -1153,6 +1305,11 @@ public class ManagmentFilesImpl implements ManagmentFiles {
             lvne.add(new VNELight((Long) t.toArray()[0], (String) t.toArray()[1]));
         }
         return lvne;
+    }
+
+    @Override
+    public List<VideoKind> getAllKinds(String login) {
+        return videoKindRepository.findAll();
     }
 
     @Override

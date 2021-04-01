@@ -15,29 +15,70 @@ import java.util.List;
 public interface VideoUserScoreRepository extends JpaRepository<VideoUserScore, EmbeddedKeyVideoUserScore> {
 
     VideoUserScore findByVideoFilmAndMyUser(VideoFilm vf, MyUser mu);
+    List<VideoUserScore> findAllByMyUser(MyUser myUser);
     VideoUserScore findByVideoFilm_IdVideoAndMyUser_IdMyUser(String idVideo, Long idMyUser);
 
+    @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, vus.videoFilm.year " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:idUser and " +
+            "vus.noteOnHundred >= :scoreMin and " +
+            "vus.noteOnHundred <= :scoreMax " +
+            "order by :sortBy ASC")
+    List<Tuple> getAllIdVideoWithScoreAndLoginWithoutNullableAsc(
+            Long idUser, int scoreMin, int scoreMax, String sortBy);
+
+    @Query("select vus.videoFilm.idVideo " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:idUser and " +
+            "vus.noteOnHundred >= :scoreMin and " +
+            "vus.noteOnHundred <= :scoreMax " +
+            "order by :sortBy ASC")
+    List<String> getAllIdVideoWithScoreAndLoginWithoutNullableAscV2(
+            Long idUser, int scoreMin, int scoreMax, String sortBy);
+
+    @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, vus.videoFilm.year " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:idUser and " +
+            "vus.noteOnHundred >= :scoreMin and " +
+            "vus.noteOnHundred <= :scoreMax " +
+            "order by :sortBy DESC")
+    List<Tuple> getAllIdVideoWithScoreAndLoginWithoutNullableDesc(
+            Long idUser, int scoreMin, int scoreMax, String sortBy);
+
+    @Query("select vus.videoFilm.idVideo " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:idUser and " +
+            "vus.noteOnHundred >= :scoreMin and " +
+            "vus.noteOnHundred <= :scoreMax " +
+            "order by :sortBy DESC")
+    List<String> getAllIdVideoWithScoreAndLoginWithoutNullableDescV2(
+            Long idUser, int scoreMin, int scoreMax, String sortBy);
+
+    @Query("select vus.videoFilm.idVideo " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:idUser and " +
+            "vus.noteOnHundred >= :scoreMin and " +
+            "vus.noteOnHundred <= :scoreMax " +
+            "order by :sortBy DESC")
+    List<String> getAllIdVideoWithScoreAndLoginWithoutNullableDescTEST(
+            Long idUser, int scoreMin, int scoreMax, String sortBy);
+
+    @Query("select count(vus) " +
+            "from fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "where vus.myUser.idMyUser = :idUser And " +
+            "vus.videoFilm.idVideo = :idVideo")
+    int findVusNumberWithIdvideoAndIdLogin(
+            Long idUser, String idVideo);
+/*
 //Works but there's no comment
-/*    @Query("select vf.idVideo, vus.noteOnHundred, vus.dateModifScoreUser " +
+    @Query("select vf.idVideo, vus.noteOnHundred, vus.dateModifScoreUser " +
             "from fr.gdvd.media_manager.entitiesMysql.VideoFilm AS vf " +
             "left join fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
             "on vus.videoFilm=vf.idVideo " +
             "left join fr.gdvd.media_manager.entitiesMysql.MyUser as mu " +
             "on mu.idMyUser=vus.myUser " +
             "where mu.login =:login")
-    List<Tuple> getAllScoreByLogin(String login);*/
+    List<Tuple> getAllScoreByLogin(String login);
+*/
 
-//Didn't works
-    /*@Query("select vf.idVideo, vus.noteOnHundred, vus.dateModifScoreUser, csu.comment " +
-            "from fr.gdvd.media_manager.entitiesMysql.VideoFilm AS vf " +
-            "left join fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
-            "on vus.videoFilm=vf.idVideo " +
-            "left join fr.gdvd.media_manager.entitiesMysql.MyUser as mu " +
-            "on mu.idMyUser=vus.myUser " +
-            "join fr.gdvd.media_manager.entitiesMysql.CommentScoreUser as csu " +
-            "on csu.idCommentScoreUser=vus.commentScoreUser " +
-            "where mu.login =:login")
-    List<Tuple> getAllScoreByLogin(String login);*/
-
-    List<VideoUserScore> findAllByMyUser(MyUser myUser);
 }

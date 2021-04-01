@@ -8,6 +8,7 @@ Install apache                          :   (already install on mac os x)
 Install MySQL                           :   https://dev.mysql.com/doc/refman/5.7/en/osx-installation-pkg.html
 Install PhpMyAdmin                      :   https://www.javatpoint.com/how-to-install-phpmyadmin-on-mac
         or MySQLWorkBench               :   https://dev.mysql.com/doc/workbench/en/wb-installing-mac.html
+Install NodeJS                          :   https://nodejs.org/en/download/
 Install Angular.7                       :   https://www.javatpoint.com/angular-7-installation
 -----------------------
 2) Create DB ->
@@ -69,3 +70,16 @@ Start your navigator, at                :   '[machineName].local' or '[yourDns]'
     password                            :   admin
 Click on admin's menu
 and change the password.
+-----------------------
+7) Use it
+Go to the [managment] menu -> [ScanFolder]
+Enter the path to your video folder
+Click [OK]
+Enter the name export
+click [StoreData]
+let it finish (about 150Mo/sec)
+When it's over (all lines are in white background)
+Change menu, go to the [Video] menu
+Select title or click on the magnifying glass
+wait for responses, and double click on download icon
+and continue.

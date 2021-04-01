@@ -1,9 +1,6 @@
 package fr.gdvd.media_manager.service;
 
-import fr.gdvd.media_manager.entitiesMysql.MyMediaInfo;
-import fr.gdvd.media_manager.entitiesMysql.VideoArtist;
-import fr.gdvd.media_manager.entitiesMysql.VideoNameExport;
-import fr.gdvd.media_manager.entitiesMysql.VideoSupportPath;
+import fr.gdvd.media_manager.entitiesMysql.*;
 import fr.gdvd.media_manager.entitiesNoDb.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +28,7 @@ public interface ManagmentFiles {
                                                             String logintoapply,
                                                             String login);
     List<VideoNameExport> getAllPathRemote(String login);
-    VideoNameExport storemmi(List<MyMediaInfo> lmmi, int idvne, int idVneRemote, int withUpdate);
+    VideoNameExport storemmi(LinkMmiVf linkMmiVf, int idvne, int idVneRemote, int withUpdate);
     List<MyMediaInfo> getAllVideoByUser();
     Page getAllVideoByUserAndByPage(String login, int size, int page, int pos);
     Page getAllVideoByUserAndByPage2(String login, int size, int page, int pos);
@@ -55,4 +52,6 @@ public interface ManagmentFiles {
     void deletecountry(String country);
     void updatealltitles();
     List<UserLight> listUserWithId();
+
+    List<VideoKind> getAllKinds(String login);
 }
