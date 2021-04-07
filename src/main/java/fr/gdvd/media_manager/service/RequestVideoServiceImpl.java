@@ -910,7 +910,8 @@ public class RequestVideoServiceImpl implements RequestVideoService {
                 if((Boolean) t.toArray()[2]){
                     UserLight ul = new UserLight(
                             (Long) t.toArray()[0],
-                            (String) t.toArray()[1]
+                            (String) t.toArray()[1],
+                            (String) t.toArray()[3]
                     );
                     if (!ul.getLogin().equals("admin")) lul.add(ul);
                 }

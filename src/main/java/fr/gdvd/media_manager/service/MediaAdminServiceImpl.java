@@ -70,8 +70,11 @@ public class MediaAdminServiceImpl implements MediaAdminService {
     }
 
     @Override
-    public MyUser updateUser(MyUser MyUser) {
-        return myUserRepository.save(MyUser);
+    public MyUser updateUser(MyUser myUser) {
+        myUser.setApiKey(testApikey(myUser.getApiKey()));
+        myUser.setNickName(testNickname(myUser.getNickName()));
+        myUser.setDateModif(new Date());
+        return myUserRepository.save(myUser);
     }
 
     @Override
@@ -749,6 +752,8 @@ public class MediaAdminServiceImpl implements MediaAdminService {
         myUser.setLogin(user.getLogin());
         myUser.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         myUser.setActive(true);
+        myUser.setApiKey(testApikey(user.getApiKey()));
+        myUser.setNickName(testNickname(user.getNickname()));
         myUser.setDateModif(new Date());
         user.getRoles().forEach(r -> {
             MyRole role = myRoleRepository.findByRole(r);
@@ -757,6 +762,22 @@ public class MediaAdminServiceImpl implements MediaAdminService {
         });
         myUserRepository.save(myUser);
         return myUser;
+    }
+
+    private String testNickname(String nickname) {
+        if(nickname != null && Pattern.matches("[\\w\\-]{1,8}", nickname)){
+            return nickname;
+        }else{
+            return null;
+        }
+    }
+
+    private String testApikey(String apikey) {
+        if(apikey != null && Pattern.matches("[\\w\\-]{4,32}", apikey)){
+            return apikey;
+        }else{
+            return null;
+        }
     }
 
     private List<MyRole> checkRoles(List<String> lstr) {
@@ -852,7 +873,8 @@ public class MediaAdminServiceImpl implements MediaAdminService {
             if (role == null) myRoleRepository.save(new MyRole(null, r));
             myUser.getRoles().add(role);
         });
-
+        myUser.setApiKey(testApikey(user.getApiKey()));
+        myUser.setNickName(testNickname(user.getNickname()));
         myUser.setLogin(user.getLogin());
         myUser.setDateModif(new Date());
         return myUserRepository.save(myUser);

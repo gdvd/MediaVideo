@@ -39,6 +39,16 @@ public class MyUser implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModif;
 
+    @Nullable
+    @Size(min = 4)
+    @Size(max = 32)
+    private String apiKey;
+
+    @Nullable
+    @Size(min = 1)
+    @Size(max = 8)
+    private String nickName;
+
     @ManyToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name="my_users2roles",
             joinColumns = {@JoinColumn(name="fkUser")},

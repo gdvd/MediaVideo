@@ -12,5 +12,7 @@ public class Usr {
     private Long id;
     private String login;
     private String password;
+    private String apiKey;
+    private String nickname;
     private List<String> roles;
 }

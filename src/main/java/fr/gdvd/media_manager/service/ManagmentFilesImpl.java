@@ -1317,7 +1317,10 @@ public class ManagmentFilesImpl implements ManagmentFiles {
         List<Tuple> ltul = myUserRepository.lUserWithId();
         List<UserLight> lul = new ArrayList<>();
         for (Tuple t : ltul) {
-            lul.add(new UserLight((Long) t.toArray()[0], (String) t.toArray()[1]));
+            lul.add(new UserLight(
+                    (Long) t.toArray()[0],
+                    (String) t.toArray()[1],
+                    (String) t.toArray()[3]));
         }
         return lul;
     }

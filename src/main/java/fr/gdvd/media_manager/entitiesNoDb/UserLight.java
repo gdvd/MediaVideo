@@ -12,4 +12,5 @@ import lombok.ToString;
 public class UserLight {
     private Long idMyUser;
     private String login;
+    private String nickname;
 }

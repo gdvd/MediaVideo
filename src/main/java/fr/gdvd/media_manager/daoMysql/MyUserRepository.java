@@ -17,7 +17,7 @@ public interface MyUserRepository extends JpaRepository<MyUser, Long> {
     MyUser findByIdMyUser(Long id);
     void deleteByLogin(String id);
 
-    @Query("SELECT usr.idMyUser, usr.login, usr.active FROM MyUser AS usr")
+    @Query("SELECT usr.idMyUser, usr.login, usr.active, usr.nickName FROM MyUser AS usr")
     List<Tuple> lUserWithId();
 
     @Query("select login FROM MyUser AS usr where active=1")
