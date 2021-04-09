@@ -4,6 +4,8 @@ import fr.gdvd.media_manager.entitiesMysql.EmbeddedKeyVideoUserScore;
 import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import fr.gdvd.media_manager.entitiesMysql.VideoFilm;
 import fr.gdvd.media_manager.entitiesMysql.VideoUserScore;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -69,6 +71,26 @@ public interface VideoUserScoreRepository extends JpaRepository<VideoUserScore, 
             "vus.videoFilm.idVideo = :idVideo")
     int findVusNumberWithIdvideoAndIdLogin(
             Long idUser, String idVideo);
+
+    @Query("select vus.videoFilm.idVideo from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:usr " +
+            "order by vus.dateModifScoreUser DESC")
+    List<String> getLastScore2(Long usr, Pageable findScore);
+
+    @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, " +
+            "vus.commentScoreUser.comment, vus.dateModifScoreUser " +
+            "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:usr " +
+            "order by vus.dateModifScoreUser DESC")
+    Page<Tuple> getLastScore1(Long usr, Pageable findScore);
+
+    @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, " +
+            "vus.commentScoreUser.comment, vus.dateModifScoreUser " +
+            "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:usr " +
+            "order by vus.dateModifScoreUser DESC")
+    List<Tuple> getLastScore(Long usr, Pageable findScore);
+
 /*
 //Works but there's no comment
     @Query("select vf.idVideo, vus.noteOnHundred, vus.dateModifScoreUser " +

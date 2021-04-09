@@ -15,6 +15,7 @@ public interface MyUserRepository extends JpaRepository<MyUser, Long> {
     List<MyUser> findAllByLoginNotNull();
     List<MyUser> findAllByActiveIsTrue();
     MyUser findByIdMyUser(Long id);
+    MyUser findByApiKey(String apikey);
     void deleteByLogin(String id);
 
     @Query("SELECT usr.idMyUser, usr.login, usr.active, usr.nickName FROM MyUser AS usr")

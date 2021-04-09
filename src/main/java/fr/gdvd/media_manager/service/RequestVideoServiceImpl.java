@@ -56,6 +56,8 @@ public class RequestVideoServiceImpl implements RequestVideoService {
     private VideoCommentRepository videoCommentRepository;
     @Autowired
     private VideoCountryRepository videoCountryRepository;
+    @Autowired
+    private RequestWebImpl requestWebImpl;
 
     @Override
     public Page<VideoFilm> getRequestVideo(RequestVideo req, String login) {
@@ -80,7 +82,10 @@ public class RequestVideoServiceImpl implements RequestVideoService {
 
         Page<VideoFilm> lvf = null;
 
-//        log.info("==== request -> state : " + states);
+        if(req.getTitle()!=""){
+            req.setTitle(requestWebImpl.cleanRequest(req.getTitle()));
+        }
+
         switch (states) {
             case (1):
                 lvf = getVideoFilmsByDefault(req, login, states, sorter);

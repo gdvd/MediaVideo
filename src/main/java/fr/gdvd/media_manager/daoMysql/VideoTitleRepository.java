@@ -20,5 +20,8 @@ public interface VideoTitleRepository extends JpaRepository<VideoTitle, Embedded
     Optional<VideoTitle> findByVideoFilm_IdVideoAndVideoCountry_IdCountry(String idVideoFilm, Long idCountry);
     Optional<VideoTitle> findByVideoCountryAndVideoFilm(
             VideoCountry vc, VideoFilm vf);
+    @Query("select vt.title from VideoTitle as vt " +
+            "where vt.id.idVideo = :idvideo")
+    List<String> findTitlesByIdvideo(String idvideo);
 
 }

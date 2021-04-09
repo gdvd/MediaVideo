@@ -355,65 +355,24 @@ public class RequestWebImpl implements RequestWeb {
     }
 
     @Override
-    public List<RequestImdb> getResultRequestWeb(String query1, Long idTmmi) {
+    public List<RequestImdb> getResultRequestWeb(String query0, Long idTmmi) {
         List<RequestImdb> lri = new ArrayList<>();
         String completeUrl = "";
         String query2 = "";
         List<String> lquery = new ArrayList<>();
-        if (Pattern.matches("tt[\\d]{6,9}", query1)) {
+        if (Pattern.matches("tt[\\d]{6,9}", query0)) {
             RequestImdb ri = new RequestImdb();
-            ri.setLink("/title/" + query1);
-            ri.setName(query1);
+            ri.setLink("/title/" + query0);
+            ri.setName(query0);
             ri.setVideo(true);
             lri.add(ri);
 
         } else {
-            query1 = query1.replaceAll("[\\œ]+", "oe");
-            query1 = query1.replaceAll("[^\\w\\s\\é\\'\\è\\ç\\à\\ë\\ê\\û\\ù\\ô\\ï\\î]+", " ");
-            query1 = query1.replace("^[\\s]*", "").trim();
-            query1 = query1.replaceAll("[\\s]+", " ");
 
+            // Fix request
+            String query1 = cleanRequest(query0);
             lquery.add(query1);
-
-            query2 = query1.replaceAll("\\sl\\s", " l'");
-            query2 = query2.replaceAll("\\sL\\s", " l'");
-            query2 = query2.replaceAll("^l\\s", " l'");
-            query2 = query2.replaceAll("^L\\s", " l'");
-
-            query2 = query1.replaceAll("\\sj\\s", " j'");
-            query2 = query2.replaceAll("\\sJ\\s", " j'");
-            query2 = query2.replaceAll("^j\\s", " j'");
-            query2 = query2.replaceAll("^J\\s", " j'");
-
-            query2 = query1.replaceAll("\\sm\\s", " m'");
-            query2 = query2.replaceAll("\\sM\\s", " m'");
-            query2 = query2.replaceAll("^m\\s", " m'");
-            query2 = query2.replaceAll("^M\\s", " m'");
-
-            query2 = query1.replaceAll("\\ss\\s", " s'");
-            query2 = query2.replaceAll("\\sS\\s", " s'");
-            query2 = query2.replaceAll("^s\\s", " s'");
-            query2 = query2.replaceAll("^S\\s", " s'");
-
-            query2 = query2.replaceAll("\\sc\\s", " c'");
-            query2 = query2.replaceAll("\\sC\\s", " C'");
-            query2 = query2.replaceAll("^c\\s", " c'");
-            query2 = query2.replaceAll("^C\\s", " C'");
-
-            query2 = query2.replaceAll("\\sd\\s", " d'");
-            query2 = query2.replaceAll("\\sD\\s", " D'");
-            query2 = query2.replaceAll("^d\\s", " d'");
-            query2 = query2.replaceAll("^D\\s", " D'");
-
-            query2 = query2.replaceAll("\\sn\\s", " n'");
-            query2 = query2.replaceAll("\\sN\\s", " N'");
-            query2 = query2.replaceAll("^n\\s", " n'");
-            query2 = query2.replaceAll("^N\\s", " N'");
-
-            query2 = query2.replaceAll("\\st\\s", " t'");
-            query2 = query2.replaceAll("\\sT\\s", " T'");
-            query2 = query2.replaceAll("^t\\s", " t'");
-            query2 = query2.replaceAll("^T\\s", " T'");
+            query2 = addQuote(query1);
 
             if (!query1.equals(query2)) {
                 lquery.add(query2);
@@ -510,6 +469,80 @@ public class RequestWebImpl implements RequestWeb {
             }
         }
         return lri;
+    }
+
+    @NotNull
+    private String addQuote(String query1) {
+        String query2;
+        query2 = query1.replaceAll("\\sl\\s", " l'");
+        query2 = query2.replaceAll("\\sL\\s", " l'");
+        query2 = query2.replaceAll("^l\\s", " l'");
+        query2 = query2.replaceAll("^L\\s", " l'");
+
+        query2 = query1.replaceAll("\\sj\\s", " j'");
+        query2 = query2.replaceAll("\\sJ\\s", " j'");
+        query2 = query2.replaceAll("^j\\s", " j'");
+        query2 = query2.replaceAll("^J\\s", " j'");
+
+        query2 = query1.replaceAll("\\sm\\s", " m'");
+        query2 = query2.replaceAll("\\sM\\s", " m'");
+        query2 = query2.replaceAll("^m\\s", " m'");
+        query2 = query2.replaceAll("^M\\s", " m'");
+
+        query2 = query1.replaceAll("\\ss\\s", " s'");
+        query2 = query2.replaceAll("\\sS\\s", " s'");
+        query2 = query2.replaceAll("^s\\s", " s'");
+        query2 = query2.replaceAll("^S\\s", " s'");
+
+        query2 = query2.replaceAll("\\sc\\s", " c'");
+        query2 = query2.replaceAll("\\sC\\s", " C'");
+        query2 = query2.replaceAll("^c\\s", " c'");
+        query2 = query2.replaceAll("^C\\s", " C'");
+
+        query2 = query2.replaceAll("\\sd\\s", " d'");
+        query2 = query2.replaceAll("\\sD\\s", " D'");
+        query2 = query2.replaceAll("^d\\s", " d'");
+        query2 = query2.replaceAll("^D\\s", " D'");
+
+        query2 = query2.replaceAll("\\sn\\s", " n'");
+        query2 = query2.replaceAll("\\sN\\s", " N'");
+        query2 = query2.replaceAll("^n\\s", " n'");
+        query2 = query2.replaceAll("^N\\s", " N'");
+
+        query2 = query2.replaceAll("\\st\\s", " t'");
+        query2 = query2.replaceAll("\\sT\\s", " T'");
+        query2 = query2.replaceAll("^t\\s", " t'");
+        query2 = query2.replaceAll("^T\\s", " T'");
+        return query2;
+    }
+
+    @NotNull
+    String cleanRequest(String query) {
+
+        String q1 = "";
+        for(String q: query.split("")){
+            if(q.charAt(0) < 255) { // erase one encoding of 'é' : with code 769. (and maybe others accent)
+                q1 = q1 + q;
+            }
+        }
+        query = q1;
+
+        query = query.replaceAll( "^[\\s]*", "");
+        query = query.trim();
+        query = query.replaceAll( "[\\s]+", " ");
+
+        query = query.replaceAll( "[\\œ]+", "oe");
+        query = query.replaceAll( "[\\’]+", "'");
+        query = query.replaceAll( "[\\ç]+", "c");
+
+        query = query.replaceAll( "[\\à\\ä\\â]+", "a");
+        query = query.replaceAll( "[\\è\\ë\\ê\\é́]+", "e");
+        query = query.replaceAll( "[\\î\\ï]+", "i");
+        query = query.replaceAll( "[\\ò\\ô\\ö]+", "o");
+        query = query.replaceAll( "[\\û\\û\\ù]+", "u");
+
+        query = query.replaceAll("[^\\w\\s]+", " ");
+        return query;
     }
 
     @Override
