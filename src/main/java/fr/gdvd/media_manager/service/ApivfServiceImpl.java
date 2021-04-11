@@ -1,25 +1,27 @@
 package fr.gdvd.media_manager.service;
 
 import fr.gdvd.media_manager.daoMysql.MyUserRepository;
+import fr.gdvd.media_manager.daoMysql.VideoFilmRepository;
 import fr.gdvd.media_manager.daoMysql.VideoTitleRepository;
 import fr.gdvd.media_manager.daoMysql.VideoUserScoreRepository;
 import fr.gdvd.media_manager.entitiesMysql.MyUser;
+import fr.gdvd.media_manager.entitiesMysql.VideoFilm;
 import fr.gdvd.media_manager.entitiesMysql.VideoUserScore;
-import fr.gdvd.media_manager.entitiesNoDb.EleBasket;
+import fr.gdvd.media_manager.entitiesNoDb.Item;
 import fr.gdvd.media_manager.entitiesNoDb.ScoreUserLight;
+import fr.gdvd.media_manager.entitiesNoDb.UserScoreLight;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.gdvd.media_manager.sec.SecurityParams.URL_SITE;
 
@@ -33,6 +35,11 @@ public class ApivfServiceImpl implements ApivfService {
     private VideoUserScoreRepository videoUserScoreRepository;
     @Autowired
     private VideoTitleRepository videoTitleRepository;
+    @Autowired
+    private VideoFilmRepository videoFilmRepository;
+
+    public static final String headRss = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel>";
+    public static final String footerRss = "</channel></rss>";
 
     @Override
     public String getrss(String apikey, int quatity, String loginRequest) {
@@ -42,55 +49,88 @@ public class ApivfServiceImpl implements ApivfService {
 
         // search apikey in MyUser, if exist
         MyUser mu = myUserRepository.findByApiKey(apikey);
+        List<Item> li = new ArrayList<>();
         if (mu != null) {
-
-            //TODO: tmp
-            res = "GOOD";
             // search loginRequest
             if (loginRequest.length() > 0) {
-//                String[] ids = loginRequest.split("-");
+                Map<String, List<VideoFilm>> mlsul = new HashMap<>();
                 if (quatity <= 0) {
                     // verify if there is a subscribe
                     // search for the last notes, in seconds ('quantity')
                 } else {
                     // search for the last 'quatity' notes
                     // request on videoUserScore
-                    List<ScoreUserLight> lsul = lastScoreBylogin(quatity,
+                    mlsul = lastScoreBylogin(quatity,
                             loginRequest.split("-"));
                 }
+                // Convert Map with data -> List<Item>
+                li = converdataMapToItemList(mlsul);
             } else {
                 res = err;
             }
         } else {
             res = err;
         }
-
-        return res;
+        String result = li.toString();
+        return headRss + result.substring(1, result.length()-1) + footerRss;
     }
 
-    private List<ScoreUserLight> lastScoreBylogin(int quatity, String[] ids) {
-        for (String usr : ids) {
-            Pageable findScore = PageRequest.of(0, quatity);
-            Long idUsr = Long.parseLong(usr);
-
-            List<Tuple> lt = videoUserScoreRepository.getLastScore(idUsr, findScore);
-            List<ScoreUserLight> lsul = convertListTupleInListSUL(lt);
-
+    private List<Item> converdataMapToItemList(Map<String, List<VideoFilm>> mlsul) {
+        List<Item> li = new ArrayList<>();
+        for (Map.Entry<String, List<VideoFilm>> e : mlsul.entrySet()) {
+            String login = e.getKey();
+            for (VideoFilm vf : e.getValue()) {
+                List<VideoUserScore> lvu = vf.getVideoUserScores().stream()
+                        .filter(vus->vus.getMyUser().getLogin().equals(login))
+                        .collect(Collectors.toList());
+                VideoUserScore vu = lvu.get(0);
+                Item i = new Item();
+                i.setTitle(login + "'s score : "+ (vu.getNoteOnHundred()/10)+" / 10");
+                i.setDescription(vf.getVideoTitles().get(0).getTitle());
+                i.setPubDate(vu.getDateModifScoreUser().toString());
+                i.setLink("http://gdvd.ddns.net:82/videoid?title=" +
+                        Base64.getUrlEncoder().encodeToString(vf.getIdVideo().getBytes()) +
+                        "&sortValue=2&sortOrder=0&sortUser=0&charsreadySel=1&keywordTitleIsSel=1");
+                i.setComment(vu.getCommentScoreUser()!=null? vu.getCommentScoreUser().getComment():"");
+                li.add(i);
+            }
         }
-        return null;
+        return li;
     }
 
-    private void getFirstTitle(List<ScoreUserLight> lsul) {
-
+    private Map<String, List<VideoFilm>> lastScoreBylogin(int quatity, String[] ids) {
+        Map<String, List<VideoFilm>> mlsul = new HashMap();
+        for (String usr : ids) {
+            Long idUsr = Long.parseLong(usr);
+            String username = getLogin(idUsr).orElse(null);
+            if (username != null) {
+                Pageable pageable = PageRequest.of(0, quatity/*, Sort.by("dateModifScoreUser").descending()*/);
+                List<VideoFilm> l = videoFilmRepository.findVFwithUserOrderByDateModifScoreUser(
+                        idUsr, new Date(), pageable);
+                mlsul.put(username, l);
+                /*
+                //BUG with 'pageable', the request return sometimes : List<Tuple>.size() = 0 !
+                Pageable pageable = PageRequest.of(0, quatity, Sort.by("dateModifScoreUser"));
+                List<Tuple> l = videoUserScoreRepository.getLastScore0(idUsr, pageable);
+                List<ScoreUserLight> lsul = convertListTupleInListSUL(lt);
+                mlsul.put(username, lsul);
+                */
+            }
+        }
+        return mlsul;
     }
 
-    private List<ScoreUserLight> convertListTupleInListSUL(List<Tuple> lt) {
+    private Optional<String> getLogin(Long idUsr) {
+        return myUserRepository.findLoginByIdUser(idUsr);
+    }
+
+    /*private List<ScoreUserLight> convertListTupleInListSUL(List<Tuple> lt) {
         List<ScoreUserLight> lsul = new ArrayList<>();
         if (lt.size() > 0) {
             for (Tuple t : lt) {
                 ScoreUserLight sul = new ScoreUserLight(
                         (String) t.toArray()[0],
-                        "",
+                        getFirstTitle((String) t.toArray()[0]),
                         (int) t.toArray()[1],
                         (String) t.toArray()[2],
                         (Timestamp) t.toArray()[3]
@@ -104,5 +144,10 @@ public class ApivfServiceImpl implements ApivfService {
         }
         return lsul;
     }
+
+    private String getFirstTitle(String idtt) {
+        List<String> lt = videoTitleRepository.findTitlesByIdvideo(idtt);
+        return lt.get(0);
+    }*/
 
 }

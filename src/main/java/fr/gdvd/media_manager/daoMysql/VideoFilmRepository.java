@@ -705,4 +705,25 @@ List<Tuple> findAlltByUserScoreNotNull(Long idUser, List<String> lids,
 List<Tuple> findAlltByUserScoreNotNullAndNotInRange(Long idUser, List<String> lids,
                                                     int scoreMin, int scoreMax);
 
+
+    @Query("select  vf from fr.gdvd.media_manager.entitiesMysql.VideoFilm AS vf " +
+            "Left join fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "on vus.videoFilm = vf.idVideo " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser as mu " +
+            "on mu.idMyUser=vus.myUser " +
+            "where vus.dateModifScoreUser <= :dateModif " +
+            "and mu.idMyUser =:iduser " +
+            "order by vus.dateModifScoreUser desc ")
+    List<VideoFilm> findVFwithUserOrderByDateModifScoreUser(Long iduser, Date dateModif,
+                                                            Pageable pageable);
+
+    @Query("select vf from fr.gdvd.media_manager.entitiesMysql.VideoFilm AS vf " +
+            "Left join fr.gdvd.media_manager.entitiesMysql.VideoUserScore as vus " +
+            "on vus.videoFilm = vf.idVideo " +
+            "LEFT JOIN fr.gdvd.media_manager.entitiesMysql.MyUser as mu " +
+            "on mu.idMyUser=vus.myUser " +
+            "where vus.dateModifScoreUser < :dateMax and mu.idMyUser =:iduser " +
+            "order by vus.dateModifScoreUser desc ")
+    List<VideoFilm> findVFwithUserOrderByDateModifScoreUser0(Long iduser,
+            Date dateMax,  Pageable pageable);
 }

@@ -4,6 +4,7 @@ import fr.gdvd.media_manager.entitiesMysql.EmbeddedKeyVideoUserScore;
 import fr.gdvd.media_manager.entitiesMysql.MyUser;
 import fr.gdvd.media_manager.entitiesMysql.VideoFilm;
 import fr.gdvd.media_manager.entitiesMysql.VideoUserScore;
+import fr.gdvd.media_manager.entitiesNoDb.UserScoreLight;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -72,24 +73,53 @@ public interface VideoUserScoreRepository extends JpaRepository<VideoUserScore, 
     int findVusNumberWithIdvideoAndIdLogin(
             Long idUser, String idVideo);
 
-    @Query("select vus.videoFilm.idVideo from VideoUserScore as vus " +
+    @Query("select vus " +
+            "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:usr")
+    List<VideoUserScore> getLastScore(Long usr, Pageable pageable);
+
+    @Query("select vus " +
+            "from VideoUserScore as vus " +
             "where vus.myUser.idMyUser =:usr " +
             "order by vus.dateModifScoreUser DESC")
-    List<String> getLastScore2(Long usr, Pageable findScore);
+    List<VideoUserScore> getLastScore00(Long usr, Pageable pageable);
 
     @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, " +
             "vus.commentScoreUser.comment, vus.dateModifScoreUser " +
             "from VideoUserScore as vus " +
             "where vus.myUser.idMyUser =:usr " +
             "order by vus.dateModifScoreUser DESC")
-    Page<Tuple> getLastScore1(Long usr, Pageable findScore);
+    List<Tuple> getLastScore0(Long usr, Pageable pageable);
 
     @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, " +
             "vus.commentScoreUser.comment, vus.dateModifScoreUser " +
             "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:usr")
+    List<Tuple> getLastScore1(Long usr, Pageable pageable);
+
+    @Query("select vus.videoFilm.idVideo " +
+            "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =:usr")
+    List<Tuple> getLastScore2(Long usr);
+
+    @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, " +
+            "vus.commentScoreUser.comment, vus.dateModifScoreUser " +
+            "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =21 " +
+            "order by vus.dateModifScoreUser DESC")
+    List<Tuple> getLastScore3(Long usr, Pageable pageable);
+
+    @Query("select vus.videoFilm.idVideo, vus.noteOnHundred, " +
+            "vus.commentScoreUser.comment, vus.dateModifScoreUser " +
+            "from VideoUserScore as vus " +
+            "where vus.myUser.idMyUser =21 ")
+    List<Tuple> getLastScore4(Long usr, Pageable pageable);
+
+    @Query("select vus " +
+            "from VideoUserScore as vus " +
             "where vus.myUser.idMyUser =:usr " +
             "order by vus.dateModifScoreUser DESC")
-    List<Tuple> getLastScore(Long usr, Pageable findScore);
+    List<UserScoreLight> getLastScore5(Long usr, Pageable pageable);
 
 /*
 //Works but there's no comment

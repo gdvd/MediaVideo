@@ -7,6 +7,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import javax.persistence.Tuple;
 import java.util.List;
+import java.util.Optional;
 
 @RepositoryRestResource
 public interface MyUserRepository extends JpaRepository<MyUser, Long> {
@@ -24,4 +25,6 @@ public interface MyUserRepository extends JpaRepository<MyUser, Long> {
     @Query("select login FROM MyUser AS usr where active=1")
     List<String> findAllLoginActive();
 
+    @Query("select usr.login FROM MyUser AS usr where active=1 AND usr.idMyUser = :idUsr")
+    Optional<String> findLoginByIdUser(Long idUsr);
 }

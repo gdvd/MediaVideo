@@ -1,5 +1,6 @@
 package fr.gdvd.media_manager.controller;
 
+import fr.gdvd.media_manager.entitiesNoDb.Item;
 import fr.gdvd.media_manager.entitiesNoDb.Msg;
 import fr.gdvd.media_manager.service.ApivfService;
 import fr.gdvd.media_manager.service.ApivfServiceImpl;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Log4j2
 @RestController
@@ -24,8 +26,8 @@ public class Apivf {
     @GetMapping(value = {"/getrss/{apikey}/{quatity}/{loginRequest}"},
             produces = {MediaType.APPLICATION_ATOM_XML_VALUE})
     public String getrss(@PathVariable String apikey,
-                         @PathVariable int quatity,
-                         @PathVariable String loginRequest) {
+                             @PathVariable int quatity,
+                             @PathVariable String loginRequest) {
         return apivfService.getrss(apikey, quatity, loginRequest);
     }
 
