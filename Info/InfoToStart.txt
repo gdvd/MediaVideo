@@ -83,10 +83,3 @@ Change menu, go to the [Video] menu
 Select title or click on the magnifying glass
 wait for responses, and double click on download icon
 and continue.
------------------------
-8)Use RSS
-URL : http://[Domain:Port]/apivf/getrss/[ApiKey]/[NbResult]/[IdLogin1-IdLogin2-Idlogin3]
-with :
-[ApiKey] : in "Admin", click on [login] to edit, and read "ApiKey"
-[NbResult] : Number of result
-[IdLogin1-IdLogin2-Idlogin3] : in "Admin", value after "login", in brackets, each login separate with '-'
