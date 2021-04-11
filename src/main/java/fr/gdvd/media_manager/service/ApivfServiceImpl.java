@@ -50,7 +50,10 @@ public class ApivfServiceImpl implements ApivfService {
         // search apikey in MyUser, if exist
         MyUser mu = myUserRepository.findByApiKey(apikey);
         List<Item> li = new ArrayList<>();
+
+
         if (mu != null) {
+            log.info("Request RSS : "+mu.getLogin()+" quantity : "+ quatity + " on : "+ loginRequest);
             // search loginRequest
             if (loginRequest.length() > 0) {
                 Map<String, List<VideoFilm>> mlsul = new HashMap<>();
@@ -72,7 +75,7 @@ public class ApivfServiceImpl implements ApivfService {
             res = err;
         }
         String result = li.toString();
-        result = result.replaceAll("</item>,", "<item>");
+        result = result.replaceAll("</item>,[\\s]*<item>", "</item><item>");
         return headRss + result.substring(1, result.length()-1) + footerRss;
     }
 
