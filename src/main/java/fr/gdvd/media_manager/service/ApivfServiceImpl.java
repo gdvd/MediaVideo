@@ -88,7 +88,7 @@ public class ApivfServiceImpl implements ApivfService {
                 i.setTitle(login + "'s score : "+ (vu.getNoteOnHundred()/10)+" / 10");
                 i.setDescription(vf.getVideoTitles().get(0).getTitle());
                 i.setPubDate(vu.getDateModifScoreUser().toString());
-                i.setLink("http://localhost/videoid?title=" +
+                i.setLink(URL_SITE + "/videoid?title=" +
                         Base64.getUrlEncoder().encodeToString(vf.getIdVideo().getBytes()) +
                         "&sortValue=2&sortOrder=0&sortUser=0&charsreadySel=1&keywordTitleIsSel=1");
                 i.setComment(vu.getCommentScoreUser()!=null? vu.getCommentScoreUser().getComment():"");
