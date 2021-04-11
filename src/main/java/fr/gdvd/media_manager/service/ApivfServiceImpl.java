@@ -52,8 +52,6 @@ public class ApivfServiceImpl implements ApivfService {
         // search apikey in MyUser, if exist
         MyUser mu = myUserRepository.findByApiKey(apikey);
         List<Item> li = new ArrayList<>();
-
-
         if (mu != null) {
             log.info("Request RSS : " + mu.getLogin() + " quantity : " + quatity + " on : " + loginRequest);
             // search loginRequest
@@ -125,7 +123,6 @@ public class ApivfServiceImpl implements ApivfService {
         Map<String, List<VideoFilm>> mlsul = new HashMap();
         for (String usr : ids) {
             if (usr.equals("0")) {
-                /***********************************************/
                 Pageable pageable = PageRequest.of(0, quatity);
                 List<VideoFilm> l = videoFilmRepository.findVFByLast(pageable);
                 mlsul.put("DB", l);
@@ -146,5 +143,31 @@ public class ApivfServiceImpl implements ApivfService {
     private Optional<String> getLogin(Long idUsr) {
         return myUserRepository.findLoginByIdUser(idUsr);
     }
+
+    /*private List<ScoreUserLight> convertListTupleInListSUL(List<Tuple> lt) {
+        List<ScoreUserLight> lsul = new ArrayList<>();
+        if (lt.size() > 0) {
+            for (Tuple t : lt) {
+                ScoreUserLight sul = new ScoreUserLight(
+                        (String) t.toArray()[0],
+                        getFirstTitle((String) t.toArray()[0]),
+                        (int) t.toArray()[1],
+                        (String) t.toArray()[2],
+                        (Timestamp) t.toArray()[3]
+                );
+                sul.setTitle(videoTitleRepository.findTitlesByIdvideo(sul.getIdtt()).get(0));
+                sul.setIdtt(URL_SITE + "/videoid?title=" +
+                        Base64.getEncoder().encodeToString((sul.getIdtt()).getBytes()) +
+                        "&sortValue=2&sortOrder=0&sortUser=0&charsreadySel=1&keywordTitleIsSel=1");
+                lsul.add(sul);
+            }
+        }
+        return lsul;
+    }
+
+    private String getFirstTitle(String idtt) {
+        List<String> lt = videoTitleRepository.findTitlesByIdvideo(idtt);
+        return lt.get(0);
+    }*/
 
 }
