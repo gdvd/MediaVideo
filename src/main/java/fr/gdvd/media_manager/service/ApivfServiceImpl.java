@@ -72,6 +72,7 @@ public class ApivfServiceImpl implements ApivfService {
             res = err;
         }
         String result = li.toString();
+        result = result.replaceAll("</item>,", "<item>");
         return headRss + result.substring(1, result.length()-1) + footerRss;
     }
 
@@ -85,7 +86,7 @@ public class ApivfServiceImpl implements ApivfService {
                         .collect(Collectors.toList());
                 VideoUserScore vu = lvu.get(0);
                 Item i = new Item();
-                i.setTitle(login + "'s score : "+ (vu.getNoteOnHundred()/10)+" / 10");
+                i.setTitle(login + "'s score : "+ ((float) vu.getNoteOnHundred()/10)+"/10");
                 i.setDescription(vf.getVideoTitles().get(0).getTitle());
                 i.setPubDate(vu.getDateModifScoreUser().toString());
                 i.setLink(URL_SITE + "/videoid?title=" +
