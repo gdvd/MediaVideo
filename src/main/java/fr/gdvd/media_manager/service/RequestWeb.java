@@ -26,26 +26,15 @@ public interface RequestWeb {
     MyMediaInfo eraseLinkTmmiVideofilm(Long idTmmi, String idVideo, String idMmi);
     MyMediaInfo eraseLinkMmiTmmi(Long idTmmi, String idMmi);
     MyMediaInfo eraseTmmi(Long idTmmi, String idVideo, String idMmi);
-
     List<Basket> getbaskets(String login, String name);
-
     List<Basket> addtobasket(String idMmi, String login, String nameBasket);
-
     BasketInfo getfilenameofidsbasket(BasketInfo bi);
-
     void deletelocalbasketname(String nameBasket, Long idUser);
-
     void deleteOneId(String nameBasket, Long idUser, String idMmi);
-
     List<OneSimpleScore> getLastScore();
-
     MyMediaInfo postcommentforuser(String idMmi, String comment);
-
     VideoFilm postcommentvideo(String idVideo, String comment);
-
     Remake setremake(String idvf, String idremake);
-
     TitileWithIdttt getTitleWithId(TitileWithIdttt titileWithIdttt);
-
     List<LinkVfTmmi> getVideofilmWithIdtypemmi(List<Long> links);
 }

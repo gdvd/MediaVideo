@@ -726,4 +726,8 @@ List<Tuple> findAlltByUserScoreNotNullAndNotInRange(Long idUser, List<String> li
             "order by vus.dateModifScoreUser desc ")
     List<VideoFilm> findVFwithUserOrderByDateModifScoreUser0(Long iduser,
             Date dateMax,  Pageable pageable);
+
+    @Query("select distinct vf from fr.gdvd.media_manager.entitiesMysql.VideoFilm AS vf " +
+            "order by vf.dateModifFilm desc ")
+    List<VideoFilm> findVFByLast(Pageable pageable);
 }

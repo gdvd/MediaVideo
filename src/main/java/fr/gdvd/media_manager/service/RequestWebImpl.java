@@ -532,9 +532,9 @@ public class RequestWebImpl implements RequestWeb {
         query = query.replaceAll( "[\\s]+", " ");
 
         query = query.replaceAll( "[\\œ]+", "oe");
-        query = query.replaceAll( "[\\’]+", "'");
         query = query.replaceAll( "[\\ç]+", "c");
         query = query.replaceAll( "[\\’]+", "'");
+        query = query.replaceAll( "[\\`]+", "'");
 
         query = query.replaceAll( "[\\à\\ä\\â]+", "a");
         query = query.replaceAll( "[\\è\\ë\\ê\\é́]+", "e");

@@ -15,10 +15,10 @@ public class Item {
     public String toString() {
         return "<item>" +
                 "<title>" + title + "</title>" +
-                "<description>" + description + "</description>" +
-                "<pubDate>" + pubDate + "</pubDate>" +
                 "<link>" + link + "</link>" +
+                "<pubDate>" + pubDate + "</pubDate>" +
                 "<comment>" + comment + "</comment>" +
+                "<description>" + description + "</description>" +
                 "</item>";
     }
 }
