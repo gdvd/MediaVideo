@@ -27,3 +27,5 @@ BUG.txt
 /nbdist/
 /.nb-gradle/
 /build/
+/src/main/java/fr/gdvd/media_manager/sec/SecurityParams.java
+/logServerMediaInfo/*.log
